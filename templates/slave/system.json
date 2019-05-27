@@ -1,0 +1,25 @@
+{
+	"apiurl":"",
+	"wsurl":"",
+	"node":
+	{
+		"uuid":"[GIVEN UUID]",
+		"isHW":"[False|True]",
+		"type":[TYPE OF NODE],
+		"ostype":"[Linux|Windows|etc]",
+		"osversion":"[Any|Win10|Ubuntu14.04|etc]",
+		"name":"[NAME OF THE NODE]",
+		"description":"[DESCRIPTION]",
+		"isMasterNode":"[False|True]",
+		"isLocalServerEnabled":"[False|True]",
+		"isWebEnabled":"[False|True]"
+	},
+	"user":
+	{
+
+	},
+	"device":
+	{
+		
+	}
+}

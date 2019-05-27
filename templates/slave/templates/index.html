@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='images/node/favicon.ico') }}">
+    <title>Node</title>
+    <link href="{{ url_for('static', filename='css/vendor/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/vendor/sticky-footer-navbar.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/node/common.css') }}" rel="stylesheet">
+</head>
+ 
+<body>
+    <header>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">MakeSense</a>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="\">Node <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="\config">Config</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="RedirectToMaster()">Master</a>
+                    </li>
+                </ul>
+                <form class="form-inline mt-2 mt-md-0">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">10:00 AM</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Begin page content -->
+    <main role="main" class="container">
+        <br><br>
+        <div class="row">
+            <div class="col-lg-2">
+            </div>
+            <div class="col-lg-8">
+                <div class="card" >
+                    <div class="card-body" id="idWidget"></div>
+                </div>
+            </div>
+            <div class="col-lg-2">
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">MakeSense@2018</span>
+        </div>
+    </footer>
+
+    <!-- Icons -->
+    <script src="{{ url_for('static', filename='js/vendor/feather.min.js') }}"></script>
+    <script>
+        feather.replace()
+    </script>
+
+    <script src="{{ url_for('static', filename='js/vendor/jquery-3.3.1.min.js') }}"></script>
+    <script type="text/javascript">
+        var myVar       = "{{ data }}";
+        var decodedJSON = $('<div/>').html(myVar).text();
+        var jsonData    = $.parseJSON(decodedJSON);
+
+        var GlobalIP    = jsonData.ip
+        var GlobalPort  = jsonData.port
+
+        function RedirectToMaster() {
+            window.location.href = "http://" + GlobalIP + ":8080/nodes";
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/vendor/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/node/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/node/index.js') }}"></script>
+</body>
+ 
+</html>

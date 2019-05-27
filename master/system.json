@@ -1,0 +1,25 @@
+{
+	"key":"ac6de837-7863-72a9-c789-a0aae7e9d93e",
+	"username":"ykiveish",
+	"password":"1234",
+	"apiurl":"http://10.0.0.17:8080/",
+	"wsurl":"ws://10.0.0.17:1981/",
+	"node":
+	{
+		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d020",
+		"isHW":"False",
+		"type":1,
+		"ostype":"Linux",
+		"osversion":"Unknown",
+		"brandname":"Master",
+		"name":"Master",
+		"description":"Master Node",
+        "isMasterNode":"True",
+        "isLocalServerEnabled":"True",
+        "isWebEnabled":"True"
+	},
+	"user":
+	{
+		
+	}
+}
