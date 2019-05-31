@@ -1,0 +1,29 @@
+{
+	"key":"ac6de837-7863-72a9-c789-a0aae7e9d93e",
+	"username":"ykiveish",
+	"password":"1234",
+	"apiurl":"http://10.0.0.17/",
+	"wsurl":"ws://10.0.0.17:8181/",
+	"node":
+	{
+		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d021",
+		"isHW":"False",
+		"type":2017,
+		"ostype":"Any",
+		"osversion":"Any",
+		"brandname":"Camera Surveillance",
+		"name":"HJT",
+		"description":"Camera Surveillance",
+        "isMasterNode":"False",
+        "isLocalServerEnabled":"True",
+        "isWebEnabled":"True"
+	},
+	"user":
+	{
+		
+	},
+	"device":
+	{
+		
+	}
+}
