@@ -7,8 +7,10 @@ import time
 import thread
 import threading
 
+import subprocess
 import urllib2
 import urllib
+import re
 
 from mksdk import MkSFile
 from mksdk import MkSNode
@@ -29,9 +31,11 @@ class ICamera():
 		self.FramesPerVideo 	= 60 * 15
 		self.CurrentImageIndex 	= 0 # Can be 0 or 1
 
-	def GetRequest (url):
+	def GetRequest (self, url):
 		username = 'admin'
 		password = 'admin'
+
+		# print ("[Camera Surveillance]>", "GetRequest Enter", url)
 
 		p = urllib2.HTTPPasswordMgrWithDefaultRealm()
 		p.add_password(None, url, username, password)
@@ -39,8 +43,11 @@ class ICamera():
 		handler = urllib2.HTTPBasicAuthHandler(p)
 		opener = urllib2.build_opener(handler)
 		urllib2.install_opener(opener)
+		data = urllib2.urlopen(url).read()
 
-		return urllib2.urlopen(url).read()
+		# print ("[Camera Surveillance]>", "GetRequest Exit", data)
+
+		return data
 
 	def Frame(self):
 		command = self.GetFrame()
@@ -89,11 +96,20 @@ class HJTCamera(ICamera):
 		return self.Commands['frame']
 
 	def GetUID(self):
+		data = self.GetRequest(self.Address + self.Commands['getxqp2pattr'])
+		items = data.split("\r\n")
+		for item in items:
+			if "xqp2p_uid" in item:
+				uid = item.split('\"')
+				return uid[1]
 		return 0
 
 	def GetMACAddress(self):
-		res = self.GetRequest(self.Address + self.Commands['getnetattr'])
-		return 0
+		data = self.GetRequest(self.Address + self.Commands['getnetattr'])
+		# Find MAC address from recieved string
+		p = re.compile(ur'(?:[0-9a-fA-F]:?){12}')
+		mac = re.findall(p, data)
+		return mac[0] # TODO - Check mac is not null
 
 class Context():
 	def __init__(self, node):
@@ -121,6 +137,7 @@ class Context():
 
 		self.Cameras 					= []
 
+	# TODO - Should be part of MKSDK
 	def OpenURL(self, url):
 		try: 
 			response = urllib2.urlopen(url).read()
@@ -128,12 +145,15 @@ class Context():
 			if 401 == e.code:
 				return True
 		except urllib2.URLError, e:
-			print "URLError", e
+			pass
+			# print "URLError", e
 		except httplib.HTTPException, e:
-			print "HTTPException", e
+			pass
+			# print "HTTPException", e
 		
 		return False
 
+	# TODO - Should be part of MKSDK
 	def Ping(self, address):
 		response = subprocess.call("ping -c 1 %s" % address,
 		        shell=True,
@@ -153,6 +173,7 @@ class Context():
 			print "Scanning ", IPAddress
 			res = self.Ping(IPAddress)
 			if True == res:
+				print "Device found, ", IPAddress
 				res = self.OpenURL("http://" + IPAddress)
 				if True == res:
 					print "Camera found, ", IPAddress
@@ -206,27 +227,34 @@ class Context():
 					self.Cameras.append(item)
 
 		# Search for cameras and update local database
-		ips = self.Scan()
+		# ips = self.Scan()
+		ips = ["10.0.0.20"]
 		for ip in ips:
 			camera = HJTCamera(ip)
 			mac = camera.GetMACAddress()
+			print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac)
 			# Search for this MAC address in local database
 			found = False
 			for item in self.Cameras:
 				if mac in item["mac"]:
 					found = True
 					break
+			# print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", found)
 			if found is False:
 				# New camera found
 				uid = camera.GetUID()
-				self.Cameras.append( json.dumps({
+				self.Cameras.append({
 								'mac': str(mac),
 								'uid': str(uid),
 								'ip': str(ip),
 								'name': 'Camera_' + str(uid),
 								'enable':1 
+				})
+				# Save new camera to database
+				self.Node.SetFileContent("db.json", json.dumps({
+								'cameras': self.Cameras
 				}))
-		
+	
 	def OnMasterFoundHandler(self, masters):
 		print "OnMasterFoundHandler"
 
