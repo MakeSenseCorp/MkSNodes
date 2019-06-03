@@ -68,66 +68,6 @@
                         <span class="badge badge-secondary badge-pill" id="cameras_count_id">0</span>
                       </h6>
                       	<div id="cameras_list_id"></div>
-
-						<div class="row">
-							<div class="col-lg-6">
-								<div class="card">
-									<div class="card-body">
-										<h6 class="d-flex justify-content-between align-items-center mb-3">
-											<span class="text-muted">Camera_1</span>
-										</h6>
-										<div class="row">
-											<div class="col-lg-12">
-												<img width="100%" src="http://10.0.0.6/tmpfs/auto.jpg?t=" onload="setTimeout(function(){src=src.substring(0, (src.lastIndexOf('t=')+2))+(new Date()).getTime()}, 1000)"/>
-											</div>
-				      					</div><br>
-										<div class="row">
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
-											</div>
-				      					</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-lg-6">
-								<div class="card">
-									<div class="card-body">
-										<h6 class="d-flex justify-content-between align-items-center mb-3">
-											<span class="text-muted">Camera_2</span>
-										</h6>
-										<div class="row">
-											<div class="col-lg-12">
-												<img width="100%" src="http://10.0.0.6/tmpfs/auto.jpg?t=" onload="setTimeout(function(){src=src.substring(0, (src.lastIndexOf('t=')+2))+(new Date()).getTime()}, 1000)"/>
-											</div>
-				      					</div><br>
-										<div class="row">
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
-											</div>
-											<div class="col-lg-3">
-												<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
-											</div>
-				      					</div>
-									</div>
-								</div>
-							</div>
-						</div>
-
                     </div>
                   </div>
         	    </div>
@@ -147,13 +87,69 @@
 
         <script>
           	var NodeUUID = "ac6de837-9863-72a9-c789-a0aae7e9d021";
-			var GetConnectionsList = function() {
-				
-			}
 
-			var GetFrame = function() {
+			// Gey makesense api instanse.
+			var api = MkSAPIBuilder.GetInstance();
+
+			var CameraCell = `
+						<div class="col-lg-6">
+		                    <div class="card">
+								<div class="card-body">
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">[NAME]</span>
+									</h6>
+									<div class="row">
+										<div class="col-lg-12">
+											<img width="100%" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" onload="setTimeout(function(){src=src.substring(0, (src.lastIndexOf('t=')+2))+(new Date()).getTime()}, 1000)"/>
+										</div>
+				  					</div><br>
+									<div class="row">
+										<div class="col-lg-3">
+											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
+										</div>
+										<div class="col-lg-3">
+											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
+										</div>
+										<div class="col-lg-3">
+											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
+										</div>
+										<div class="col-lg-3">
+											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
+										</div>
+				  					</div>
+								</div>
+							</div>
+						</div>
+          `;
 			
-			}
+			api.ConnectGateway(function() {
+				console.log("Connection to Gateway was established.");
+
+				api.GetNodeSensorsInfo(NodeUUID, function(res){
+					cameras = res.data.payload;
+					var html = "";
+					var cameraCount = cameras.length;
+					for (i = 0; i < cameraCount; i++) {
+						camera = cameras[i];
+						if (i % 2) {
+							html += `<div class="row">`;
+						}
+
+						row = CameraCell;
+				        row = row.split("[NAME]").join(camera.name);
+				        row = row.split("[IPADDRESS]").join(camera.ip);
+				        html += row;
+
+						if (i % 2 != 0) {
+							html += `</div>`;
+						}
+					}
+
+					document.getElementById("cameras_count_id").innerHTML = cameraCount;
+					document.getElementById("cameras_list_id").innerHTML = html;
+              		feather.replace();
+				});
+			});
 
 			feather.replace();
         </script>

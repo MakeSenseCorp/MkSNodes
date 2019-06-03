@@ -36,22 +36,28 @@ class ICamera():
 		password = 'admin'
 
 		# print ("[Camera Surveillance]>", "GetRequest Enter", url)
+		
+		try:
+			p = urllib2.HTTPPasswordMgrWithDefaultRealm()
+			p.add_password(None, url, username, password)
 
-		p = urllib2.HTTPPasswordMgrWithDefaultRealm()
-		p.add_password(None, url, username, password)
-
-		handler = urllib2.HTTPBasicAuthHandler(p)
-		opener = urllib2.build_opener(handler)
-		urllib2.install_opener(opener)
-		data = urllib2.urlopen(url).read()
+			handler = urllib2.HTTPBasicAuthHandler(p)
+			opener = urllib2.build_opener(handler)
+			urllib2.install_opener(opener)
+			data = urllib2.urlopen(url).read()
+		except urllib2.URLError, e:
+			# TODO - Exit node
+			print ("HTTPException", e)
+			return "", True
 
 		# print ("[Camera Surveillance]>", "GetRequest Exit", data)
 
-		return data
+		return data, False
 
 	def Frame(self):
 		command = self.GetFrame()
-		return self.GetRequest(self.Address + command)
+		frame, error = self.GetRequest(self.Address + command)
+		return frame
 
 	def StartRecording(self):
 		thread.start_new_thread(self.RecordingThread, ())
@@ -105,7 +111,10 @@ class HJTCamera(ICamera):
 		return 0
 
 	def GetMACAddress(self):
-		data = self.GetRequest(self.Address + self.Commands['getnetattr'])
+		data, error = self.GetRequest(self.Address + self.Commands['getnetattr'])
+		if error is True:
+			return ""
+
 		# Find MAC address from recieved string
 		p = re.compile(ur'(?:[0-9a-fA-F]:?){12}')
 		mac = re.findall(p, data)
@@ -228,7 +237,7 @@ class Context():
 
 		# Search for cameras and update local database
 		# ips = self.Scan()
-		ips = ["10.0.0.20"]
+		ips = ["10.0.0.6"]
 		for ip in ips:
 			camera = HJTCamera(ip)
 			mac = camera.GetMACAddress()
@@ -278,6 +287,8 @@ class Context():
 
 	def OnGetSensorInfoRequestHandler(self, packet, sock):
 		print "OnGetSensorInfoRequestHandler"
+		enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
+		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
 
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
 		print "OnSetSensorInfoRequestHandler"
