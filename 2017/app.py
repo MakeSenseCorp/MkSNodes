@@ -195,21 +195,39 @@ class Context():
 	# CustomRequestHandlers
 	def StartRecordingHandler(self, sock, packet):
 		print("StartRecordingHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STARTED'
+		})
 
 	def StopRecordingHandler(self, sock, packet):
 		print("StopRecordingHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STOPPED'
+		})
 
 	def StartMotionDetectionHandler(self, sock, packet):
 		print("StartMotionDetectionHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STARTED'
+		})
 
 	def StopMotionDetectionHandler(self, sock, packet):
 		print("StopMotionDetectionHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STOPPED'
+		})
 
 	def StartSecurityHandler(self, sock, packet):
 		print("StartSecurityHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STARTED'
+		})
 
 	def StopSecurityHandler(self, sock, packet):
 		print("StopSecurityHandler")
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'return_code': 'STOPPED'
+		})
 
 	def SetCameraNameHandler(self, sock, packet):
 		print("SetCameraNameHandler")
@@ -237,7 +255,7 @@ class Context():
 
 		# Search for cameras and update local database
 		# ips = self.Scan()
-		ips = ["10.0.0.6"]
+		ips = ["10.0.0.1"]
 		for ip in ips:
 			camera = HJTCamera(ip)
 			mac = camera.GetMACAddress()

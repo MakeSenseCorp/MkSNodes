@@ -105,13 +105,13 @@
 				  					</div><br>
 									<div class="row">
 										<div class="col-lg-3">
-											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
+											<center><span onClick="Recording(this, '[CAMERA_MAC]', '[CAMERA_UID]');" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
 										</div>
 										<div class="col-lg-3">
-											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
+											<center><span onClick="Motion(this, '[CAMERA_MAC]', '[CAMERA_UID]');" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
 										</div>
 										<div class="col-lg-3">
-											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
+											<center><span onClick="Security(this, '[CAMERA_MAC]', '[CAMERA_UID]');" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
 										</div>
 										<div class="col-lg-3">
 											<center><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
@@ -138,6 +138,8 @@
 						row = CameraCell;
 				        row = row.split("[NAME]").join(camera.name);
 				        row = row.split("[IPADDRESS]").join(camera.ip);
+						row = row.split("[CAMERA_MAC]").join(camera.mac);
+						row = row.split("[CAMERA_UID]").join(camera.uid);
 				        html += row;
 
 						if (i % 2 != 0) {
@@ -150,6 +152,72 @@
               		feather.replace();
 				});
 			});
+
+			var Recording = function(elem, camera_mac, camera_uid) {
+				var action = (elem.style.color == 'red') ? false:true;
+
+				if (action) {
+					api.SendCustomCommand(NodeUUID, "start_recording", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "red";
+					});
+				} else {
+					api.SendCustomCommand(NodeUUID, "stop_recording", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "green";
+					});
+				}
+			}
+
+			var Motion = function(elem, camera_mac, camera_uid) {
+				var action = (elem.style.color == 'black') ? true:false;
+
+				if (action) {
+					api.SendCustomCommand(NodeUUID, "start_motion_detection", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "red";
+					});
+				} else {
+					api.SendCustomCommand(NodeUUID, "stop_motion_detection", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "black";
+					});
+				}
+			}
+
+			var Security = function(elem, camera_mac, camera_uid) {
+				var action = (elem.style.color == 'black') ? true:false;
+
+				if (action) {
+					api.SendCustomCommand(NodeUUID, "start_security", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "red";
+					});
+				} else {
+					api.SendCustomCommand(NodeUUID, "stop_security", {
+						mac: camera_mac,
+						uid: camera_uid
+					}, function(res) {
+						console.log(res);
+						elem.style.color = "black";
+					});
+				}
+			}
 
 			feather.replace();
         </script>
