@@ -12,6 +12,10 @@ import urllib2
 import urllib
 import re
 
+import numpy as np
+from PIL import Image
+from io import BytesIO
+
 from mksdk import MkSFile
 from mksdk import MkSNode
 from mksdk import MkSSlaveNode
@@ -21,8 +25,32 @@ from mksdk import MkSProtocol
 
 from flask import Response, request
 
+class MkSImageProcessing():
+	def __init__(self):
+		self.ObjName 	= "ImageProcessing"
+		self.MAX_DIFF	= 261120
+	
+	def CompareJpegImages(self, img_one, img_two):
+		if (img_one is None or img_two is None):
+			return 0
+		
+		try:
+			im = [None, None] 								# to hold two arrays
+			for i, f in enumerate([img_one, img_two]):
+				# .filter(ImageFilter.GaussianBlur(radius=2))) # blur using PIL
+				im[i] = (np.array(Image.open(BytesIO(f))
+				.convert('L')            					# convert to grayscale using PIL
+				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
+				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
+			diff_precentage = (float(self.MAX_DIFF - (np.abs(im[0] - im[1]).sum())) / self.MAX_DIFF) * 100
+			return diff_precentage
+		except Exception as e:
+			print ("[MkSImageProcessing] Exception", e)
+			return 0
+
 class ICamera():
 	def __init__(self, ip):
+		self.ImP				= MkSImageProcessing()
 		self.IPAddress 			= ip
 		self.Address 			= "http://" + self.IPAddress + "/"
 		self.IsRecoding 		= False
@@ -60,9 +88,11 @@ class ICamera():
 		return frame
 
 	def StartRecording(self):
-		thread.start_new_thread(self.RecordingThread, ())
+		if (self.IsRecoding is False):
+			thread.start_new_thread(self.RecordingThread, ())
 
 	def StopRecording(self):
+		print ("[Camera] Stop recording", self.IPAddress)
 		self.IsRecoding = False
 
 	def MakeVideoThread(self, index):
@@ -70,20 +100,51 @@ class ICamera():
 		return True
 
 	def RecordingThread(self):
-		record_ticker = 0;
-		while self.IsRecoding is True:
-			frame = self.Frame()
-			file = open("videos_fs/images/" + str(self.CurrentImageIndex) + "/" + str(time.time()) + ".jpg", "w")
-			file.write(frame)
-			file.close()
-			record_ticker += 1
-			time.sleep(1)
+		# TODO - Create folder path if there are none
+		record_ticker = 0
+		
+		frameCurr = None
+		framePrev = None
 
-			if self.FramesPerVideo == record_ticker:
+		# Count items in images folders 0 and 1
+		# TODO - Each camera has its own folder
+		directory = "/home/ykiveish/mks/mksnodes/2017/video_fs/images/0"
+		imagesZero 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+		directory = "/home/ykiveish/mks/mksnodes/2017/video_fs/images/1"
+		imagesOne 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+
+		# TODO - Update record_ticker according to images in folder
+		# TODO - Is video creation is on going?
+		if (imagesOne is 0):
+			record_ticker 			= imagesZero
+			self.CurrentImageIndex 	= 0
+		else:
+			record_ticker 			= imagesOne
+			self.CurrentImageIndex 	= 1
+
+		print ("[Camera] Start recording", self.IPAddress)
+		self.IsRecoding = True
+		while self.IsRecoding is True:
+			frameCurr = self.Frame()
+			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
+
+			print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
+			if (diff < 98.0):
+				# TODO - Work with relative path or check "pwd"
+				file = open("/home/ykiveish/mks/mksnodes/2017/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
+				file.write(frameCurr)
+				file.close()
+				print ("[Camera] Save frame")
+				record_ticker += 1
+				framePrev = frameCurr
+
+			if self.FramesPerVideo <= record_ticker:
 				# Switch to second buffer and prepare video
-				thread.start_new_thread(self.RecordingThread, (self.CurrentImageIndex,))
+				thread.start_new_thread(self.MakeVideoThread, (self.CurrentImageIndex,))
 				self.CurrentImageIndex = 1 - self.CurrentImageIndex
 				record_ticker = 0
+			
+			time.sleep(1)
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -94,6 +155,9 @@ class HJTCamera(ICamera):
 			'getserverinfo': 	"web/cgi-bin/hi3510/param.cgi?cmd=getserverinfo",
 			'getxqp2pattr': 	"web/cgi-bin/hi3510/param.cgi?cmd=getxqp2pattr"
 		}
+
+	def GetIp(self):
+		return self.IPAddress
 
 	def GetAPIName(self):
 		return "hjt-ipc6100-b1w"
@@ -145,6 +209,7 @@ class Context():
 		}
 
 		self.Cameras 					= []
+		self.ObjCameras					= []
 
 	# TODO - Should be part of MKSDK
 	def OpenURL(self, url):
@@ -195,12 +260,25 @@ class Context():
 	# CustomRequestHandlers
 	def StartRecordingHandler(self, sock, packet):
 		print("StartRecordingHandler")
+		print (packet)
+		# Find camera
+		for item in self.ObjCameras:
+			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+				# TODO - Each camera must have its own directory
+				item.StartRecording()
+				
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
 		})
 
 	def StopRecordingHandler(self, sock, packet):
 		print("StopRecordingHandler")
+		# Find camera
+		for item in self.ObjCameras:
+			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+				# TODO - Each camera must have its own directory
+				item.StopRecording()
+		
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STOPPED'
 		})
@@ -258,6 +336,7 @@ class Context():
 		ips = ["10.0.0.1"]
 		for ip in ips:
 			camera = HJTCamera(ip)
+			self.ObjCameras.append(camera)
 			mac = camera.GetMACAddress()
 			print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac)
 			# Search for this MAC address in local database
