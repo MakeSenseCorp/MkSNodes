@@ -1,0 +1,29 @@
+{
+	"key":"ac6de837-7863-72a9-c789-a0aae7e9d93e",
+	"username":"ykiveish",
+	"password":"1234",
+	"apiurl":"http://ec2-18-236-253-240.us-west-2.compute.amazonaws.com/",
+	"wsurl":"ws://ec2-18-236-253-240.us-west-2.compute.amazonaws.com:8181/",
+	"node":
+	{
+		"uuid":"ac6de837-7863-72a9-c789-a0aae7e9d510",
+		"isHW":"False",
+		"type":1982,
+		"ostype":"Any",
+		"osversion":"Any",
+		"brandname":"YouTube Player",
+		"name":"Player",
+		"description":"YouTube Player",
+        "isMasterNode":"False",
+        "isLocalServerEnabled":"True",
+        "isWebEnabled":"True"
+	},
+	"user":
+	{
+		
+	},
+	"device":
+	{
+		
+	}
+}
