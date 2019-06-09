@@ -11,6 +11,7 @@ import subprocess
 import urllib2
 import urllib
 import re
+from subprocess import call
 
 import numpy as np
 from PIL import Image
@@ -28,7 +29,7 @@ from flask import Response, request
 class MkSImageProcessing():
 	def __init__(self):
 		self.ObjName 	= "ImageProcessing"
-		self.MAX_DIFF	= 261120
+		self.MAX_DIFF	= 10000 # MAX = 261120
 	
 	def CompareJpegImages(self, img_one, img_two):
 		if (img_one is None or img_two is None):
@@ -43,6 +44,8 @@ class MkSImageProcessing():
 				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
 				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
 			diff_precentage = (float(self.MAX_DIFF - (np.abs(im[0] - im[1]).sum())) / self.MAX_DIFF) * 100
+			if (diff_precentage < 0):
+				return self.MAX_DIFF
 			return diff_precentage
 		except Exception as e:
 			print ("[MkSImageProcessing] Exception", e)
@@ -73,7 +76,7 @@ class ICamera():
 			opener = urllib2.build_opener(handler)
 			urllib2.install_opener(opener)
 			data = urllib2.urlopen(url).read()
-		except urllib2.URLError, e:
+		except Exception as e:
 			# TODO - Exit node
 			print ("HTTPException", e)
 			return "", True
@@ -81,6 +84,9 @@ class ICamera():
 		# print ("[Camera Surveillance]>", "GetRequest Exit", data)
 
 		return data, False
+
+	def GetCapturingProcess(self):
+		return int((float(self.CurrentImageIndex / self.FramesPerVideo)) * 100)
 
 	def Frame(self):
 		command = self.GetFrame()
@@ -96,8 +102,9 @@ class ICamera():
 		self.IsRecoding = False
 
 	def MakeVideoThread(self, index):
+		print("---------------> MakeVideoThread", str(index))
 		call(["bash", "make_video.sh", str(index)])
-		return True
+		print("<--------------- MakeVideoThread", str(index))
 
 	def RecordingThread(self):
 		# TODO - Create folder path if there are none
@@ -113,6 +120,7 @@ class ICamera():
 		directory = "/home/ykiveish/mks/mksnodes/2017/video_fs/images/1"
 		imagesOne 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
 
+		# TODO - Percentage of threshhold should be managable from UI
 		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
 		if (imagesOne is 0):
@@ -129,7 +137,7 @@ class ICamera():
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
 
 			print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
-			if (diff < 98.0):
+			if (diff < 75.0):
 				# TODO - Work with relative path or check "pwd"
 				file = open("/home/ykiveish/mks/mksnodes/2017/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
 				file.write(frameCurr)
@@ -166,7 +174,7 @@ class HJTCamera(ICamera):
 		return self.Commands['frame']
 
 	def GetUID(self):
-		data = self.GetRequest(self.Address + self.Commands['getxqp2pattr'])
+		data, error = self.GetRequest(self.Address + self.Commands['getxqp2pattr'])
 		items = data.split("\r\n")
 		for item in items:
 			if "xqp2p_uid" in item:
@@ -180,7 +188,7 @@ class HJTCamera(ICamera):
 			return ""
 
 		# Find MAC address from recieved string
-		p = re.compile(ur'(?:[0-9a-fA-F]:?){12}')
+		p = re.compile('(?:[0-9a-fA-F]:?){12}') # ur'(?:[0-9a-fA-F]:?){12}'
 		mac = re.findall(p, data)
 		return mac[0] # TODO - Check mac is not null
 
@@ -204,6 +212,10 @@ class Context():
 			'start_security': 			self.StartSecurityHandler,
 			'stop_security': 			self.StopSecurityHandler,
 			'set_camera_name': 			self.SetCameraNameHandler,
+			'get_capture_progress':		self.GetCaptureProgressHandler,
+			'set_face_detection':		self.SetFaceDetectionHandler,
+			'set_camera_sensetivity':	self.SetCameraSensetivityHandler,
+			'get_videos_list':			self.GetVideosListHandler,
 		}
 		self.CustomResponseHandlers				= {
 		}
@@ -215,13 +227,13 @@ class Context():
 	def OpenURL(self, url):
 		try: 
 			response = urllib2.urlopen(url).read()
-		except urllib2.HTTPError, e:
+		except urllib2.HTTPError as e:
 			if 401 == e.code:
 				return True
-		except urllib2.URLError, e:
+		except urllib2.URLError as e:
 			pass
 			# print "URLError", e
-		except httplib.HTTPException, e:
+		except httplib.HTTPException as e:
 			pass
 			# print "HTTPException", e
 		
@@ -244,13 +256,13 @@ class Context():
 		itemsFound = []
 		for i in range(1, 16):
 			IPAddress = IPAddressPrefix + str(i)
-			print "Scanning ", IPAddress
+			print ("Scanning ", IPAddress)
 			res = self.Ping(IPAddress)
 			if True == res:
-				print "Device found, ", IPAddress
+				print ("Device found, ", IPAddress)
 				res = self.OpenURL("http://" + IPAddress)
 				if True == res:
-					print "Camera found, ", IPAddress
+					print ("Camera found, ", IPAddress)
 					itemsFound.append(IPAddress)
 		return itemsFound
     
@@ -309,6 +321,27 @@ class Context():
 
 	def SetCameraNameHandler(self, sock, packet):
 		print("SetCameraNameHandler")
+	
+	def GetCaptureProgressHandler(self, sock, packet):
+		# Find camera
+		ret = 0
+		for item in self.ObjCameras:
+			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+				# TODO - Each camera must have its own directory
+				ret = item.GetCapturingProcess()
+				
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'progress': str(ret)
+		})
+
+	def SetFaceDetectionHandler(self, sock, packet):
+		print("SetFaceDetectionHandler")
+
+	def SetCameraSensetivityHandler(self, sock, packet):
+		print("SetCameraSensetivityHandler")
+	
+	def GetVideosListHandler(self, sock, packet):
+		print("GetVideosListHandler")
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -316,13 +349,13 @@ class Context():
 		self.Handlers[command](message_type, source, data)
 
 	def WSConnectedHandler(self):
-		print "WSConnectedHandler"
+		print ("WSConnectedHandler")
 
 	def WSConnectionClosedHandler(self):
-		print "WSConnectionClosedHandler"
+		print ("WSConnectionClosedHandler")
 
 	def NodeSystemLoadedHandler(self):
-		print "NodeSystemLoadedHandler"
+		print ("NodeSystemLoadedHandler")
 		# Loading local database
 		jsonSensorStr = self.Node.GetFileContent("db.json")
 		if jsonSensorStr != "":
@@ -362,33 +395,33 @@ class Context():
 				}))
 	
 	def OnMasterFoundHandler(self, masters):
-		print "OnMasterFoundHandler"
+		print ("OnMasterFoundHandler")
 
 	def OnMasterSearchHandler(self):
-		print "OnMasterSearchHandler"
+		print ("OnMasterSearchHandler")
 
 	def OnMasterDisconnectedHandler(self):
-		print "OnMasterDisconnectedHandler"
+		print ("OnMasterDisconnectedHandler")
 
 	def OnDeviceConnectedHandler(self):
-		print "OnDeviceConnectedHandler"
+		print ("OnDeviceConnectedHandler")
 
 	def OnLocalServerStartedHandler(self):
-		print "OnLocalServerStartedHandler"
+		print ("OnLocalServerStartedHandler")
 
 	def OnAceptNewConnectionHandler(self, sock):
-		print "OnAceptNewConnectionHandler"
+		print ("OnAceptNewConnectionHandler")
 
 	def OnTerminateConnectionHandler(self, sock):
-		print "OnTerminateConnectionHandler"
+		print ("OnTerminateConnectionHandler")
 
 	def OnGetSensorInfoRequestHandler(self, packet, sock):
-		print "OnGetSensorInfoRequestHandler"
+		print ("OnGetSensorInfoRequestHandler")
 		enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
 		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
 
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
-		print "OnSetSensorInfoRequestHandler"
+		print ("OnSetSensorInfoRequestHandler")
 	
 	def OnCustomCommandRequestHandler(self, sock, json_data):
 		print ("OnCustomCommandRequestHandler")
@@ -430,13 +463,13 @@ class Context():
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
-			print "WorkingHandler"
+			print ("WorkingHandler")
 
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
 			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
-				print "  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type
+				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 
 Service = MkSSlaveNode.SlaveNode()
 Node 	= MkSNode.Node("Camera Surveillance", Service)
@@ -470,7 +503,7 @@ def main():
 	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
-	print "Exit Node ..."
+	print ("Exit Node ...")
 
 if __name__ == "__main__":
     main()
