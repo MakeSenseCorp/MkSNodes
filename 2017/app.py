@@ -12,6 +12,7 @@ import urllib2
 import urllib
 import re
 from subprocess import call
+import Queue
 
 import numpy as np
 from PIL import Image
@@ -25,6 +26,68 @@ from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
 
 from flask import Response, request
+
+class EthernetDeviceScanner():
+	def __init__(self):
+		self.ObjName 		= "EthernetDeviceScanner"
+		self.IPList			= []
+		self.ThreadCounter 	= 0
+
+	def Ping(address):
+		response = subprocess.call("ping -c 1 %s" % address,
+				shell=True,
+				stdout=open('/dev/null', 'w'),
+				stderr=subprocess.STDOUT)
+		# Check response
+		if response == 0:
+			return True
+		else:
+			return False
+	
+	def PingThread(self, address):
+		res = self.Ping(address)
+		if True == res:
+			self.IPList.append(address)
+		# TODO - Protect with mutex
+		self.ThreadCounter += 1
+
+	def Scan(self, network, range):
+		self.ThreadCounter 	= 0
+		IPAddressPrefix 	= network
+		IPs 				= range[1] - range[0]
+
+		if (IPs < 0):
+			return []
+		
+		for i in range(range[0], range[1]):
+			IPAddress = IPAddressPrefix + str(i)
+			print ("Scanning ", IPAddress)
+			thread.start_new_thread(self.PingThread, (IPAddress,))
+		
+		# TODO - Protect with mutex
+		while (self.ThreadCounter != IPs):
+			pass
+
+class VideoCreator():
+	def __init__(self):
+		self.ObjName 	= "VideoCreator"
+		self.Orders 	= Queue.Queue()
+		self.IsRunning	= True
+		thread.start_new_thread(self.OrdersManagerThread, ())
+	
+	def AddOrder(self, order):
+		self.Orders.put(order)
+		self.IsRunning = True
+
+	def OrdersManagerThread(self):
+		while (self.IsRunning is True):
+			item = self.Orders.get(block=True,timeout=None)
+			print (item)
+			print ("[VideoCreator] Start video encoding...", str(item["path"]), str(item["index"]))
+			call(["bash", "make_video.sh", str(item["index"])])
+			print ("[VideoCreator] Start video encoding... DONE", str(item["path"]), str(item["index"]))
+
+GEncoder = VideoCreator()
 
 class MkSImageProcessing():
 	def __init__(self):
@@ -45,7 +108,7 @@ class MkSImageProcessing():
 				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
 			diff_precentage = (float(self.MAX_DIFF - (np.abs(im[0] - im[1]).sum())) / self.MAX_DIFF) * 100
 			if (diff_precentage < 0):
-				return self.MAX_DIFF
+				return 0
 			return diff_precentage
 		except Exception as e:
 			print ("[MkSImageProcessing] Exception", e)
@@ -59,8 +122,8 @@ class ICamera():
 		self.IsRecoding 		= False
 		self.ImagesPath 		= "images"
 		self.videosPath 		= "videos"
-		self.FramesPerVideo 	= 60 * 15
-		self.CurrentImageIndex 	= 0 # Can be 0 or 1
+		self.FramesPerVideo 	= 60 * 10
+		self.CurrentImageIndex 	= 0
 
 	def GetRequest (self, url):
 		username = 'admin'
@@ -101,12 +164,8 @@ class ICamera():
 		print ("[Camera] Stop recording", self.IPAddress)
 		self.IsRecoding = False
 
-	def MakeVideoThread(self, index):
-		print("---------------> MakeVideoThread", str(index))
-		call(["bash", "make_video.sh", str(index)])
-		print("<--------------- MakeVideoThread", str(index))
-
 	def RecordingThread(self):
+		global GEncoder
 		# TODO - Create folder path if there are none
 		record_ticker = 0
 		
@@ -115,41 +174,48 @@ class ICamera():
 
 		# Count items in images folders 0 and 1
 		# TODO - Each camera has its own folder
-		directory = "/home/ykiveish/mks/mksnodes/2017/video_fs/images/0"
-		imagesZero 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
-		directory = "/home/ykiveish/mks/mksnodes/2017/video_fs/images/1"
-		imagesOne 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+		#directory = "/tmp/video_fs/images/0"
+		#imagesZero 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
+		#directory = "/tmp/video_fs/images/1"
+		#imagesOne 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
 
 		# TODO - Percentage of threshhold should be managable from UI
 		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
-		if (imagesOne is 0):
-			record_ticker 			= imagesZero
-			self.CurrentImageIndex 	= 0
-		else:
-			record_ticker 			= imagesOne
-			self.CurrentImageIndex 	= 1
+		#if (imagesOne is 0):
+		#	record_ticker 			= imagesZero
+		#	self.CurrentImageIndex 	= 0
+		#else:
+		#	record_ticker 			= imagesOne
+		#	self.CurrentImageIndex 	= 1
 
 		print ("[Camera] Start recording", self.IPAddress)
 		self.IsRecoding = True
+		indexer = 0
 		while self.IsRecoding is True:
 			frameCurr = self.Frame()
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
 
-			print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
+			# print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
 			if (diff < 75.0):
 				# TODO - Work with relative path or check "pwd"
-				file = open("/home/ykiveish/mks/mksnodes/2017/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
+				file = open("/tmp/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
 				file.write(frameCurr)
 				file.close()
-				print ("[Camera] Save frame")
+				print ("[Camera] Save frame", str(self.CurrentImageIndex), record_ticker)
 				record_ticker += 1
 				framePrev = frameCurr
-
+			
 			if self.FramesPerVideo <= record_ticker:
+				GEncoder.AddOrder({
+					'path': "/tmp/video_fs/images/" + str(self.CurrentImageIndex),
+					'index': str(self.CurrentImageIndex)
+				})
 				# Switch to second buffer and prepare video
-				thread.start_new_thread(self.MakeVideoThread, (self.CurrentImageIndex,))
-				self.CurrentImageIndex = 1 - self.CurrentImageIndex
+				# thread.start_new_thread(self.MakeVideoThread, (self.CurrentImageIndex,))
+				# self.CurrentImageIndex = 1 - self.CurrentImageIndex
+				indexer += 1
+				self.CurrentImageIndex = indexer % 10
 				record_ticker = 0
 			
 			time.sleep(1)
@@ -205,21 +271,23 @@ class Context():
 			'undefined':				self.UndefindHandler
 		}
 		self.CustomRequestHandlers				= {
-			'start_recording': 			self.StartRecordingHandler,
-			'stop_recording': 			self.StopRecordingHandler,
-			'start_motion_detection': 	self.StartMotionDetectionHandler,
-			'stop_motion_detection': 	self.StopMotionDetectionHandler,
-			'start_security': 			self.StartSecurityHandler,
-			'stop_security': 			self.StopSecurityHandler,
-			'set_camera_name': 			self.SetCameraNameHandler,
-			'get_capture_progress':		self.GetCaptureProgressHandler,
-			'set_face_detection':		self.SetFaceDetectionHandler,
-			'set_camera_sensetivity':	self.SetCameraSensetivityHandler,
-			'get_videos_list':			self.GetVideosListHandler,
+			'start_recording': 							self.StartRecordingHandler,
+			'stop_recording': 							self.StopRecordingHandler,
+			'start_motion_detection': 					self.StartMotionDetectionHandler,
+			'stop_motion_detection': 					self.StopMotionDetectionHandler,
+			'start_security': 							self.StartSecurityHandler,
+			'stop_security': 							self.StopSecurityHandler,
+			'set_camera_name': 							self.SetCameraNameHandler,
+			'get_capture_progress':						self.GetCaptureProgressHandler,
+			'set_face_detection':						self.SetFaceDetectionHandler,
+			'set_camera_sensetivity':					self.SetCameraSensetivityHandler,
+			'get_videos_list':							self.GetVideosListHandler,
+			'get_misc_information':						self.GetMiscInformationHandler,
 		}
 		self.CustomResponseHandlers				= {
 		}
 
+		self.DB							= None
 		self.Cameras 					= []
 		self.ObjCameras					= []
 
@@ -278,6 +346,11 @@ class Context():
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
 				# TODO - Each camera must have its own directory
 				item.StartRecording()
+				cameras = self.DB["cameras"]
+				for item in cameras:
+					if (item["ip"] in packet["payload"]["data"]["ip"]):
+						item["recording"] = 1
+						self.Node.SetFileContent("db.json", json.dumps(self.DB))
 				
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
@@ -290,6 +363,11 @@ class Context():
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
 				# TODO - Each camera must have its own directory
 				item.StopRecording()
+				cameras = self.DB["cameras"]
+				for item in cameras:
+					if (item["ip"] in packet["payload"]["data"]["ip"]):
+						item["recording"] = 0
+						self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STOPPED'
@@ -297,24 +375,44 @@ class Context():
 
 	def StartMotionDetectionHandler(self, sock, packet):
 		print("StartMotionDetectionHandler")
+		cameras = self.DB["cameras"]
+		for item in cameras:
+			if (item["ip"] in packet["payload"]["data"]["ip"]):
+				item["motion_detection"] = 1
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
 		})
 
 	def StopMotionDetectionHandler(self, sock, packet):
 		print("StopMotionDetectionHandler")
+		cameras = self.DB["cameras"]
+		for item in cameras:
+			if (item["ip"] in packet["payload"]["data"]["ip"]):
+				item["motion_detection"] = 0
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STOPPED'
 		})
 
 	def StartSecurityHandler(self, sock, packet):
 		print("StartSecurityHandler")
+		cameras = self.DB["cameras"]
+		for item in cameras:
+			if (item["ip"] in packet["payload"]["data"]["ip"]):
+				item["security"] = 1
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
 		})
 
 	def StopSecurityHandler(self, sock, packet):
 		print("StopSecurityHandler")
+		cameras = self.DB["cameras"]
+		for item in cameras:
+			if (item["ip"] in packet["payload"]["data"]["ip"]):
+				item["security"] = 0
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STOPPED'
 		})
@@ -342,6 +440,9 @@ class Context():
 	
 	def GetVideosListHandler(self, sock, packet):
 		print("GetVideosListHandler")
+	
+	def GetMiscInformationHandler(self, sock, packet):
+		print ("GetFramesCountToVideoCreationHandler")
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -359,14 +460,14 @@ class Context():
 		# Loading local database
 		jsonSensorStr = self.Node.GetFileContent("db.json")
 		if jsonSensorStr != "":
-			data = json.loads(jsonSensorStr)
-			if data is not None:
-				for item in data["cameras"]:
+			self.DB = json.loads(jsonSensorStr)
+			if self.DB is not None:
+				for item in self.DB["cameras"]:
 					self.Cameras.append(item)
 
 		# Search for cameras and update local database
 		# ips = self.Scan()
-		ips = ["10.0.0.1"]
+		ips = ["10.0.0.4"]
 		for ip in ips:
 			camera = HJTCamera(ip)
 			self.ObjCameras.append(camera)
