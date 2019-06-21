@@ -16,6 +16,7 @@ import Queue
 
 import numpy as np
 from PIL import Image
+from PIL import ImageFilter
 from io import BytesIO
 
 from mksdk import MkSFile
@@ -92,17 +93,20 @@ GEncoder = VideoCreator()
 class MkSImageProcessing():
 	def __init__(self):
 		self.ObjName 	= "ImageProcessing"
-		self.MAX_DIFF	= 10000 # MAX = 261120
+		self.MAX_DIFF	= 5000 # MAX = 261120
 	
 	def CompareJpegImages(self, img_one, img_two):
 		if (img_one is None or img_two is None):
 			return 0
 		
 		try:
+			emboss_img_one = Image.open(BytesIO(img_one)).filter(ImageFilter.EMBOSS)
+			emboss_img_two = Image.open(BytesIO(img_two)).filter(ImageFilter.EMBOSS)
+
 			im = [None, None] 								# to hold two arrays
-			for i, f in enumerate([img_one, img_two]):
+			for i, f in enumerate([emboss_img_one, emboss_img_two]):
 				# .filter(ImageFilter.GaussianBlur(radius=2))) # blur using PIL
-				im[i] = (np.array(Image.open(BytesIO(f))
+				im[i] = (np.array(f
 				.convert('L')            					# convert to grayscale using PIL
 				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
 				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
@@ -197,7 +201,7 @@ class ICamera():
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
 
 			# print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
-			if (diff < 75.0):
+			if (diff < 95.0):
 				# TODO - Work with relative path or check "pwd"
 				file = open("/tmp/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
 				file.write(frameCurr)
@@ -218,7 +222,7 @@ class ICamera():
 				self.CurrentImageIndex = indexer % 10
 				record_ticker = 0
 			
-			time.sleep(1)
+			time.sleep(0.5)
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
