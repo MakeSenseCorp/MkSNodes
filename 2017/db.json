@@ -1,1 +1,1 @@
-{"cameras": [{"recording": 1, "enable": 1, "uid": "MMMM-395599-BECDA", "ip": "10.0.0.4", "camera_sensetivity_recording": 75, "frame_per_video": 900, "mac": "00:FC:60:77:C6:CD", "face_detect": 0, "motion_detection": 0, "name": "Camera_MMMM-395599-BECDA"}]}
+{"cameras": [{"frame_per_video": 900, "enable": 1, "uid": "MMMM-395599-BECDA", "ip": "192.168.0.100", "camera_sensetivity_recording": 75, "recording": 1, "mac": "00:FC:60:77:C6:CD", "face_detect": 0, "motion_detection": 0, "name": "Camera_MMMM-395599-BECDA"}]}

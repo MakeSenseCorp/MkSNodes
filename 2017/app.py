@@ -222,7 +222,7 @@ class ICamera():
 				self.CurrentImageIndex = indexer % 10
 				record_ticker = 0
 			
-			time.sleep(0.5)
+			#time.sleep(0.5)
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -469,9 +469,19 @@ class Context():
 				for item in self.DB["cameras"]:
 					self.Cameras.append(item)
 
+		if not os.path.exists("/tmp/video_fs"):
+			os.mkdir("/tmp/video_fs")
+		if not os.path.exists("/tmp/video_fs/videos"):
+			os.mkdir("/tmp/video_fs/videos")
+		if not os.path.exists("/tmp/video_fs/images"):
+			os.mkdir("/tmp/video_fs/images")
+		for i in range(0,9):
+			if not os.path.exists("/tmp/video_fs/images/" + str(i)):
+				os.mkdir("/tmp/video_fs/images/" + str(i))
+
 		# Search for cameras and update local database
 		# ips = self.Scan()
-		ips = ["10.0.0.4"]
+		ips = ["192.168.0.100"]
 		for ip in ips:
 			camera = HJTCamera(ip)
 			self.ObjCameras.append(camera)
@@ -484,6 +494,8 @@ class Context():
 					found = True
 					break
 			# print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", found)
+			# TODO - Make it work
+			break
 			if found is False:
 				# New camera found
 				uid = camera.GetUID()

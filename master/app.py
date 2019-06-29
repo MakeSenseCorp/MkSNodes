@@ -37,10 +37,10 @@ class Context():
 		}
 
 	def UndefindHandler(self, packet):
-		print "UndefindHandler"
+		print ("UndefindHandler")
 	
 	def GetConnectionsListRequestHandler(self, packet):
-		print "GetConnectionsListRequestHandler"
+		print ("GetConnectionsListRequestHandler")
 		if THIS.Node.Network.GetNetworkState() is "CONN":
 			connections = []
 			for item in THIS.Node.LocalServiceNode.GetConnections():
@@ -58,7 +58,7 @@ class Context():
 			THIS.Node.Network.SendWebSocket(message)
 
 	def GetInstalledNodesListRequestHandler(self, packet):
-		print "GetInstalledNodesListRequestHandler"
+		print ("GetInstalledNodesListRequestHandler")
 	
 	def OnCustomCommandRequestHandler(self, sock, packet):
 		print ("OnCustomCommandRequestHandler")
@@ -104,13 +104,13 @@ class Context():
 		self.Handlers[command](packet)
 	
 	def WSConnectedHandler(self):
-		print "WSConnectedHandler"
+		print ("WSConnectedHandler")
 
 	def WSConnectionClosedHandler(self):
-		print "WSConnectionClosedHandler"
+		print ("WSConnectionClosedHandler")
 
 	def NodeSystemLoadedHandler(self):
-		print "NodeSystemLoadedHandler"
+		print ("NodeSystemLoadedHandler")
 		self.SystemLoaded = True
 
 	def OnNodeWorkTick(self):
@@ -119,7 +119,7 @@ class Context():
 			self.CurrentTimestamp = time.time()
 
 			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
-				print "  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type
+				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 
 Service = MkSMasterNode.MasterNode()
 Node 	= MkSNode.Node("MASTER", Service)
@@ -147,7 +147,7 @@ def main():
 	# Run Node
 	THIS.Node.Run(THIS.OnNodeWorkTick)
 	
-	print "Exit Node ..."
+	print ("Exit Node ...")
 
 if __name__ == "__main__":
 	main()
