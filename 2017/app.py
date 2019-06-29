@@ -486,6 +486,10 @@ class Context():
 			camera = HJTCamera(ip)
 			self.ObjCameras.append(camera)
 			mac = camera.GetMACAddress()
+			for item in self.Cameras:
+				if ip in item["ip"] and 1 == item["recording"]:
+					camera.StartRecording()
+					break
 			print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac)
 			# Search for this MAC address in local database
 			found = False

@@ -165,13 +165,13 @@
 				  					</div><br>
 									<div class="row">
 										<div class="col-lg-3">
-											<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="circle"></span></center>
+											<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
 										</div>
 										<div class="col-lg-3">
-											<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="users"></span></center>
+											<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
 										</div>
 										<div class="col-lg-3">
-											<center><span onClick="Security(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: black" data-feather="shield"></span></center>
+											<center><span onClick="Security(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [SECURITY_COLOR]" data-feather="shield"></span></center>
 										</div>
 										<div class="col-lg-3">
 											<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
@@ -218,6 +218,25 @@
 				        row = row.split("[IPADDRESS]").join(camera.ip);
 						row = row.split("[CAMERA_MAC]").join(camera.mac);
 						row = row.split("[CAMERA_UID]").join(camera.uid);
+
+						if (1 == camera.recording) {
+							row = row.split("[RECORDING_COLOR]").join("red");
+						} else {
+							row = row.split("[RECORDING_COLOR]").join("green");
+						}
+
+						if (1 == camera.security) {
+							row = row.split("[SECURITY_COLOR]").join("red");
+						} else {
+							row = row.split("[SECURITY_COLOR]").join("black");
+						}
+						
+						if (1 == camera.motion_detection) {
+							row = row.split("[MOTION_COLOR]").join("red");
+						} else {
+							row = row.split("[MOTION_COLOR]").join("black");
+						}
+						
 				        html += row;
 
 						if (i % 2 != 0) {
