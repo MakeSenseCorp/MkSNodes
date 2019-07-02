@@ -30,11 +30,12 @@ from flask import Response, request
 
 class EthernetDeviceScanner():
 	def __init__(self):
-		self.ObjName 		= "EthernetDeviceScanner"
-		self.IPList			= []
-		self.ThreadCounter 	= 0
+		self.ObjName 			= "EthernetDeviceScanner"
+		self.IPList				= []
+		self.ThreadCounter 		= 0
+		self.ThreadCounterLock	= threading.Lock()
 
-	def Ping(address):
+	def Ping(self, address):
 		response = subprocess.call("ping -c 1 %s" % address,
 				shell=True,
 				stdout=open('/dev/null', 'w'),
@@ -47,27 +48,69 @@ class EthernetDeviceScanner():
 	
 	def PingThread(self, address):
 		res = self.Ping(address)
+		self.ThreadCounterLock.acquire()
 		if True == res:
 			self.IPList.append(address)
-		# TODO - Protect with mutex
 		self.ThreadCounter += 1
+		self.ThreadCounterLock.release()
 
-	def Scan(self, network, range):
-		self.ThreadCounter 	= 0
-		IPAddressPrefix 	= network
-		IPs 				= range[1] - range[0]
+	def Scan(self, network, index):
+		self.ThreadCounter 		= 0
+		self.Network		 	= network
+		self.IPCount 			= index[1] - index[0]
 
-		if (IPs < 0):
+		if (self.IPCount < 0):
 			return []
 		
-		for i in range(range[0], range[1]):
-			IPAddress = IPAddressPrefix + str(i)
-			print ("Scanning ", IPAddress)
-			thread.start_new_thread(self.PingThread, (IPAddress,))
+		for i in range(index[0], index[1]):
+			address = self.Network + str(i)
+			thread.start_new_thread(self.PingThread, (address,))
 		
-		# TODO - Protect with mutex
-		while (self.ThreadCounter != IPs):
+		while (self.ThreadCounter != self.IPCount):
 			pass
+		
+		return self.IPList
+
+class HJTCameraScanner():
+	def __init__(self):
+		self.ObjName 			= "HJTCameraScanner"
+		self.Cameras			= []
+		self.ThreadCounter 		= 0
+		self.ThreadCounterLock	= threading.Lock()
+
+	def SendRequest(self, url):
+		try:
+			urllib2.urlopen("http://" + url, timeout = 1).read()
+		except urllib2.HTTPError as e:
+			if 401 == e.code:
+				return True
+		except:
+			pass
+		
+		return False
+	
+	def RequestThread(self, address):
+		res = self.SendRequest(address)
+		self.ThreadCounterLock.acquire()
+		if True == res:
+			self.Cameras.append(address)
+		self.ThreadCounter += 1
+		self.ThreadCounterLock.release()
+
+	def Scan(self, addresses):
+		self.ThreadCounter 		= 0
+		self.CamerasCount 		= len(addresses)
+
+		if (self.CamerasCount < 0):
+			return []
+		
+		for ip in addresses:
+			thread.start_new_thread(self.RequestThread, (ip,))
+		
+		while (self.ThreadCounter != self.CamerasCount):
+			pass
+		
+		return self.Cameras
 
 class VideoCreator():
 	def __init__(self):
@@ -186,12 +229,6 @@ class ICamera():
 		# TODO - Percentage of threshhold should be managable from UI
 		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
-		#if (imagesOne is 0):
-		#	record_ticker 			= imagesZero
-		#	self.CurrentImageIndex 	= 0
-		#else:
-		#	record_ticker 			= imagesOne
-		#	self.CurrentImageIndex 	= 1
 
 		print ("[Camera] Start recording", self.IPAddress)
 		self.IsRecoding = True
@@ -294,6 +331,7 @@ class Context():
 		self.DB							= None
 		self.Cameras 					= []
 		self.ObjCameras					= []
+		self.DeviceScanner 				= EthernetDeviceScanner()
 
 	# TODO - Should be part of MKSDK
 	def OpenURL(self, url):
@@ -475,13 +513,14 @@ class Context():
 			os.mkdir("/tmp/video_fs/videos")
 		if not os.path.exists("/tmp/video_fs/images"):
 			os.mkdir("/tmp/video_fs/images")
-		for i in range(0,9):
+		for i in range(0,10):
 			if not os.path.exists("/tmp/video_fs/images/" + str(i)):
 				os.mkdir("/tmp/video_fs/images/" + str(i))
 
 		# Search for cameras and update local database
-		# ips = self.Scan()
-		ips = ["192.168.0.100"]
+		cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
+		HJTScanner = HJTCameraScanner()
+		ips = HJTScanner.Scan(cameras)
 		for ip in ips:
 			camera = HJTCamera(ip)
 			self.ObjCameras.append(camera)
