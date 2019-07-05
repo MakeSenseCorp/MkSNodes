@@ -175,7 +175,7 @@ class ICamera():
 		self.IsRecoding 		= False
 		self.ImagesPath 		= "images"
 		self.videosPath 		= "videos"
-		self.FramesPerVideo 	= 2048
+		self.FramesPerVideo 	= 2000
 		self.CurrentImageIndex 	= 0
 
 	def GetRequest (self, url):
@@ -198,7 +198,7 @@ class ICamera():
 		return data, False
 
 	def GetCapturingProcess(self):
-		return int((float(self.CurrentImageIndex / self.FramesPerVideo)) * 100)
+		return int((float(self.CurrentImageIndex) / float(self.FramesPerVideo)) * 100.0)
 
 	def Frame(self):
 		command = self.GetFrame()
@@ -219,11 +219,14 @@ class ICamera():
 		frameCurr = None
 		framePrev = None
 
+		# TODO - Create logging to file system.
+		# TODO - Create common print message format
 		# TODO - Create folder path if there are none
 		# TODO - Each camera has its own folder
 		# TODO - Percentage of threshhold should be managable from UI
 		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
+		# TODO - Each camera must have its own video folder.
 
 		recordingBuffer = []
 		print ("[Camera] Start recording", self.IPAddress)
@@ -233,10 +236,11 @@ class ICamera():
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
 			if (diff < 98.0):
 				recordingBuffer.append(frameCurr)
-				print ("[Camera] Save frame", str(self.CurrentImageIndex), len(recordingBuffer))
+				print ("[Camera] Save frame", len(recordingBuffer))
 				framePrev = frameCurr
+				self.CurrentImageIndex = len(recordingBuffer)
 			
-			if self.FramesPerVideo <= len(recordingBuffer):
+			if self.FramesPerVideo <= self.CurrentImageIndex:
 				GEncoder.AddOrder({
 					'images': recordingBuffer
 				})
@@ -405,8 +409,8 @@ class Context():
 		ret = 0
 		for item in self.ObjCameras:
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
-				# TODO - Each camera must have its own directory
 				ret = item.GetCapturingProcess()
+				break
 				
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'progress': str(ret)
@@ -422,7 +426,20 @@ class Context():
 		print("GetVideosListHandler")
 	
 	def GetMiscInformationHandler(self, sock, packet):
-		print ("GetFramesCountToVideoCreationHandler")
+		print ("GetMiscInformationHandler")
+		dbCameras = self.DB["cameras"]
+		for itemCamera in dbCameras:
+			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
+				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+					'frame_per_video': str(itemCamera["frame_per_video"]),
+					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
+					'face_detect': str(itemCamera["face_detect"])
+				})
+				return
+		
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'error': 'bad camera'
+		})
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -445,16 +462,11 @@ class Context():
 				for item in self.DB["cameras"]:
 					self.Cameras.append(item)
 
-		# Create file system for storing images and videos
+		# Create file system for storing videos
 		if not os.path.exists("/tmp/video_fs"):
 			os.mkdir("/tmp/video_fs")
 		if not os.path.exists("/tmp/video_fs/videos"):
 			os.mkdir("/tmp/video_fs/videos")
-		if not os.path.exists("/tmp/video_fs/images"):
-			os.mkdir("/tmp/video_fs/images")
-		for i in range(0,10):
-			if not os.path.exists("/tmp/video_fs/images/" + str(i)):
-				os.mkdir("/tmp/video_fs/images/" + str(i))
 
 		# Search for cameras and update local database
 		cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
