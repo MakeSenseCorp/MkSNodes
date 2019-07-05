@@ -12,6 +12,7 @@ import urllib2
 import urllib
 import re
 from subprocess import call
+from subprocess import Popen, PIPE
 import Queue
 
 import numpy as np
@@ -126,10 +127,15 @@ class VideoCreator():
 	def OrdersManagerThread(self):
 		while (self.IsRunning is True):
 			item = self.Orders.get(block=True,timeout=None)
-			print (item)
-			print ("[VideoCreator] Start video encoding...", str(item["path"]), str(item["index"]))
-			call(["bash", "make_video.sh", str(item["index"])])
-			print ("[VideoCreator] Start video encoding... DONE", str(item["path"]), str(item["index"]))
+			print ("[VideoCreator] Start video encoding...")
+			images = item["images"]
+			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', '8', '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', '8', '/tmp/video_fs/videos/video'+str(time.time())+'.avi'], stdin=PIPE)
+			for frame in images:
+				image = Image.open(BytesIO(frame))
+				image.save(recordingProcess.stdin, 'JPEG')
+			recordingProcess.stdin.close()
+			recordingProcess.wait()
+			print ("[VideoCreator] Start video encoding... DONE")
 
 GEncoder = VideoCreator()
 
@@ -169,14 +175,12 @@ class ICamera():
 		self.IsRecoding 		= False
 		self.ImagesPath 		= "images"
 		self.videosPath 		= "videos"
-		self.FramesPerVideo 	= 60 * 10
+		self.FramesPerVideo 	= 2048
 		self.CurrentImageIndex 	= 0
 
 	def GetRequest (self, url):
 		username = 'admin'
 		password = 'admin'
-
-		# print ("[Camera Surveillance]>", "GetRequest Enter", url)
 		
 		try:
 			p = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -190,8 +194,6 @@ class ICamera():
 			# TODO - Exit node
 			print ("HTTPException", e)
 			return "", True
-
-		# print ("[Camera Surveillance]>", "GetRequest Exit", data)
 
 		return data, False
 
@@ -213,53 +215,32 @@ class ICamera():
 
 	def RecordingThread(self):
 		global GEncoder
-		# TODO - Create folder path if there are none
-		record_ticker = 0
 		
 		frameCurr = None
 		framePrev = None
 
-		# Count items in images folders 0 and 1
+		# TODO - Create folder path if there are none
 		# TODO - Each camera has its own folder
-		#directory = "/tmp/video_fs/images/0"
-		#imagesZero 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
-		#directory = "/tmp/video_fs/images/1"
-		#imagesOne 	= len([name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))])
-
 		# TODO - Percentage of threshhold should be managable from UI
 		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
 
+		recordingBuffer = []
 		print ("[Camera] Start recording", self.IPAddress)
 		self.IsRecoding = True
-		indexer = 0
 		while self.IsRecoding is True:
 			frameCurr = self.Frame()
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
-
-			# print ("[Camera]", self.IPAddress, "Get frame", record_ticker, "Diff", diff)
-			if (diff < 95.0):
-				# TODO - Work with relative path or check "pwd"
-				file = open("/tmp/video_fs/images/" + str(self.CurrentImageIndex) + "/" + str(record_ticker) + ".jpg", "w")
-				file.write(frameCurr)
-				file.close()
-				print ("[Camera] Save frame", str(self.CurrentImageIndex), record_ticker)
-				record_ticker += 1
+			if (diff < 98.0):
+				recordingBuffer.append(frameCurr)
+				print ("[Camera] Save frame", str(self.CurrentImageIndex), len(recordingBuffer))
 				framePrev = frameCurr
 			
-			if self.FramesPerVideo <= record_ticker:
+			if self.FramesPerVideo <= len(recordingBuffer):
 				GEncoder.AddOrder({
-					'path': "/tmp/video_fs/images/" + str(self.CurrentImageIndex),
-					'index': str(self.CurrentImageIndex)
+					'images': recordingBuffer
 				})
-				# Switch to second buffer and prepare video
-				# thread.start_new_thread(self.MakeVideoThread, (self.CurrentImageIndex,))
-				# self.CurrentImageIndex = 1 - self.CurrentImageIndex
-				indexer += 1
-				self.CurrentImageIndex = indexer % 10
-				record_ticker = 0
-			
-			#time.sleep(0.5)
+				recordingBuffer = []
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -333,49 +314,6 @@ class Context():
 		self.ObjCameras					= []
 		self.DeviceScanner 				= EthernetDeviceScanner()
 
-	# TODO - Should be part of MKSDK
-	def OpenURL(self, url):
-		try: 
-			response = urllib2.urlopen(url).read()
-		except urllib2.HTTPError as e:
-			if 401 == e.code:
-				return True
-		except urllib2.URLError as e:
-			pass
-			# print "URLError", e
-		except httplib.HTTPException as e:
-			pass
-			# print "HTTPException", e
-		
-		return False
-
-	# TODO - Should be part of MKSDK
-	def Ping(self, address):
-		response = subprocess.call("ping -c 1 %s" % address,
-		        shell=True,
-		        stdout=open('/dev/null', 'w'),
-		        stderr=subprocess.STDOUT)
-		# Check response
-		if response == 0:
-			return True
-		else:
-			return False
-
-	def Scan(self):
-		IPAddressPrefix = "10.0.0."
-		itemsFound = []
-		for i in range(1, 16):
-			IPAddress = IPAddressPrefix + str(i)
-			print ("Scanning ", IPAddress)
-			res = self.Ping(IPAddress)
-			if True == res:
-				print ("Device found, ", IPAddress)
-				res = self.OpenURL("http://" + IPAddress)
-				if True == res:
-					print ("Camera found, ", IPAddress)
-					itemsFound.append(IPAddress)
-		return itemsFound
-    
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
 
@@ -507,6 +445,7 @@ class Context():
 				for item in self.DB["cameras"]:
 					self.Cameras.append(item)
 
+		# Create file system for storing images and videos
 		if not os.path.exists("/tmp/video_fs"):
 			os.mkdir("/tmp/video_fs")
 		if not os.path.exists("/tmp/video_fs/videos"):
@@ -521,38 +460,52 @@ class Context():
 		cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
 		HJTScanner = HJTCameraScanner()
 		ips = HJTScanner.Scan(cameras)
+		# Foreach camera,
+		#	1. Get UID and MAC.
+		#	2. Check DB if MAC and UID exist, is so save found IP.
+		#	3. If camera does not exist, save it.
+		dbCameras = self.DB["cameras"]
 		for ip in ips:
 			camera = HJTCamera(ip)
-			self.ObjCameras.append(camera)
 			mac = camera.GetMACAddress()
-			for item in self.Cameras:
-				if ip in item["ip"] and 1 == item["recording"]:
-					camera.StartRecording()
+			uid = camera.GetUID()
+			print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac, uid, ip)
+
+			cameraFound = False
+			# Update camera IP (if it was changed)
+			for itemCamera in dbCameras:
+				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
+					# Update DB with current IP
+					itemCamera["ip"] = ip
+					# Check weither need to start recording
+					if 1 == itemCamera["recording"]:
+						print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
+						camera.StartRecording()
+					# Add camera to camera obejct DB
+					self.ObjCameras.append(camera)
+					cameraFound = True
+					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - True")
 					break
-			print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac)
-			# Search for this MAC address in local database
-			found = False
-			for item in self.Cameras:
-				if mac in item["mac"]:
-					found = True
-					break
-			# print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", found)
-			# TODO - Make it work
-			break
-			if found is False:
-				# New camera found
-				uid = camera.GetUID()
-				self.Cameras.append({
+			
+			if cameraFound is False:
+				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
+				# Append new camera.
+				dbCameras.append({
 								'mac': str(mac),
 								'uid': str(uid),
 								'ip': str(ip),
 								'name': 'Camera_' + str(uid),
-								'enable':1 
+								'enable':1,
+								"frame_per_video": 900,
+								"camera_sensetivity_recording": 75,
+								"recording": 0,
+								"face_detect": 0,
+								"security": 0,
+								"motion_detection": 0
 				})
-				# Save new camera to database
-				self.Node.SetFileContent("db.json", json.dumps({
-								'cameras': self.Cameras
-				}))
+		self.DB["cameras"] = dbCameras
+		# Save new camera to database
+		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 	
 	def OnMasterFoundHandler(self, masters):
 		print ("OnMasterFoundHandler")
