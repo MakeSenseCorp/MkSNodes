@@ -65,7 +65,7 @@
 
                     <div class="card-body">
                       <h6 class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted">Cameras List (<a href="#" onclick="GetFrameFromAllCameras()">Refresh</a>)</span>
+                        <span class="text-muted">Cameras List</span>
                         <span class="badge badge-secondary badge-pill" id="cameras_count_id">0</span>
                       </h6>
                       	<div id="cameras_list_id"></div>
@@ -74,52 +74,59 @@
         	    </div>
 			</div>
 			<!-- Modal -->
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog" role="document">
+			<div class="modal fade bd-example-modal-xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-xl" role="document">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+							<h5 class="modal-title" id="exampleModalLabel">Settings</h5>
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 							</button>
 						</div>
 						<div class="modal-body">
-							<div class="card">
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Precentage till next video creation (<a href="#" onclick="">Refresh</a>)</span>
-									</h6>
-									<div class="progress">
-										<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+							<div class="row">
+								<div class="col-lg-6">
+									<div class="card">
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Precentage till next video creation</span>
+											</h6>
+											<div class="progress">
+												<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+											</div>
+										</div>
+										<div class="card-body">
+											<div class="custom-control custom-switch">
+												<input type="checkbox" class="custom-control-input" id="facedetectState">
+												<label class="custom-control-label" for="facedetectState">Face detection (Enable/Disable)</label>
+											</div>
+										</div>
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Camera sensetivity</span>
+												<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
+											</h6>
+											<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="0.5" id="rangeCameraSensetivity">
+										</div>
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Frames Per Video</span>
+												<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
+											</h6>
+											<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
+										</div>
 									</div>
 								</div>
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Face detection (Enable/Disable)</span>
-									</h6>
-									<div class="form-group form-check">
-										<input type="checkbox" class="form-check-input" id="exampleCheck1">
-										<label class="form-check-label" for="exampleCheck1">Check me out</label>
+								<div class="col-lg-6">
+									<div class="card">
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Video Files</span>
+												<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
+											</h6>
+											<div id="files_list_id"></div>
+										</div>
 									</div>
-								</div>
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Camera sensetivity</span>
-									</h6>
-									<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
-								</div>
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Frames Per Video</span>
-									</h6>
-									<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
-								</div>
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Vidoe Files <a href="#" onclick="GetFileList();">Refresh</a></span>
-										<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
-									</h6>
-									<div id="files_list_id"></div>
 								</div>
 							</div>
 						</div>
@@ -158,9 +165,6 @@
 										<span class="text-muted">[NAME]</span>
 									</h6>
 									<div class="row">
-										<!-- <div class="col-lg-12">
-											<img width="100%" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" onload="setTimeout(function(){src=src.substring(0, (src.lastIndexOf('t=')+2))+(new Date()).getTime()}, 1000)"/>
-										</div> -->
 										<div class="col-lg-12">
 											<img width="100%" class="rounded" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" id="id_[IPADDRESS]" onLoad="update('[IPADDRESS]');"/>
 										</div>
@@ -197,6 +201,12 @@
 				formatter: function(value) {
 					return 'Current value: ' + value;
 				}
+			});
+			$('#rangeFramesPerVideo').slider().on('slide', function(ev) {
+				document.getElementById("rangeFramesPerVideoValue").innerHTML = ev.value;
+			});
+			$('#rangeCameraSensetivity').slider().on('slide', function(ev) {
+				document.getElementById("rangeCameraSensetivityValue").innerHTML = ev.value;
 			});
 
 			var takeError = function () {
@@ -304,6 +314,15 @@
 					cameraSensetivity = res.data.payload.camera_sensetivity_recording;
 					$('#rangeFramesPerVideo').slider('setValue', framesPerVideo);
 					$('#rangeCameraSensetivity').slider('setValue', cameraSensetivity);
+					document.getElementById("rangeFramesPerVideoValue").innerHTML = framesPerVideo;
+					document.getElementById("rangeCameraSensetivityValue").innerHTML = cameraSensetivity;
+					
+					if (res.data.payload.face_detect == 1) {
+						document.getElementById("facedetectState").checked = true;
+					} else {
+						document.getElementById("facedetectState").checked = false;
+					}
+					
 				});
 			}
 
