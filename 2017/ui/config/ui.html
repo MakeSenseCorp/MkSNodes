@@ -89,6 +89,16 @@
 									<div class="card">
 										<div class="card-body">
 											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">IP Adrress</span>
+												<span class="text-muted" id="ipAddress">10.0.0.23</span>
+											</h6>
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">MAC Address</span>
+												<span class="text-muted" id="macAddress">28:45:f4:87:89</span>
+											</h6>
+										</div>
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
 												<span class="text-muted">Precentage till next video creation</span>
 											</h6>
 											<div class="progress">
@@ -106,7 +116,7 @@
 												<span class="text-muted">Camera sensetivity</span>
 												<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
 											</h6>
-											<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="0.5" id="rangeCameraSensetivity">
+											<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
 										</div>
 										<div class="card-body">
 											<h6 class="d-flex justify-content-between align-items-center mb-3">
@@ -132,7 +142,7 @@
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary">Save changes</button>
+							<button type="button" class="btn btn-primary" onclick="MiscInfoSave()">Save changes</button>
 						</div>
 					</div>
 				</div>
@@ -303,11 +313,11 @@
 				}
 			}
 
-			function GetMiscInfo (camer_ip, camera_mac, camera_uid) {
+			function GetMiscInfo (camera_ip, camera_mac, camera_uid) {
 				api.SendCustomCommand(NodeUUID, "get_misc_information", {
-					mac: self.CameraMAC,
-					uid: self.CameraUID,
-					ip: self.CameraIP
+					mac: camera_mac,
+					uid: camera_uid,
+					ip: camera_ip
 				}, function(res) {
 					console.log(res);
 					framesPerVideo = res.data.payload.frame_per_video;
@@ -316,13 +326,31 @@
 					$('#rangeCameraSensetivity').slider('setValue', cameraSensetivity);
 					document.getElementById("rangeFramesPerVideoValue").innerHTML = framesPerVideo;
 					document.getElementById("rangeCameraSensetivityValue").innerHTML = cameraSensetivity;
+					document.getElementById("ipAddress").innerHTML = camera_ip;
+					document.getElementById("macAddress").innerHTML = camera_mac;
 					
 					if (res.data.payload.face_detect == 1) {
 						document.getElementById("facedetectState").checked = true;
 					} else {
 						document.getElementById("facedetectState").checked = false;
 					}
-					
+				});
+			}
+
+			function MiscInfoSave() {
+				camera_ip = document.getElementById("ipAddress").innerHTML;
+				camera_mac = document.getElementById("macAddress").innerHTML;
+				camera_sensetivity_recording = document.getElementById("rangeCameraSensetivityValue").innerHTML;
+				frame_per_video = document.getElementById("rangeFramesPerVideoValue").innerHTML;
+				face_detect = (document.getElementById("facedetectState").checked) ? 1 : 0;
+				api.SendCustomCommand(NodeUUID, "set_misc_information", {
+					mac: camera_mac,
+					ip: camera_ip,
+					frame_per_video: frame_per_video,
+					camera_sensetivity_recording: camera_sensetivity_recording,
+					face_detect: face_detect
+				}, function(res) {
+					console.log(res);
 				});
 			}
 

@@ -169,14 +169,19 @@ class MkSImageProcessing():
 
 class ICamera():
 	def __init__(self, ip):
-		self.ImP				= MkSImageProcessing()
-		self.IPAddress 			= ip
-		self.Address 			= "http://" + self.IPAddress + "/"
-		self.IsRecoding 		= False
-		self.ImagesPath 		= "images"
-		self.videosPath 		= "videos"
-		self.FramesPerVideo 	= 2000
-		self.CurrentImageIndex 	= 0
+		self.ImP					= MkSImageProcessing()
+		self.IPAddress 				= ip
+		self.Address 				= "http://" + self.IPAddress + "/"
+		self.IsRecoding 			= False
+		self.FramesPerVideo 		= 2000
+		self.RecordingSensetivity 	= 95
+		self.CurrentImageIndex 		= 0
+	
+	def SetFramesPerVideo(self, value):
+		self.FramesPerVideo = value
+
+	def SetRecordingSensetivity(self, value):
+		self.RecordingSensetivity = value
 
 	def GetRequest (self, url):
 		username = 'admin'
@@ -234,9 +239,9 @@ class ICamera():
 		while self.IsRecoding is True:
 			frameCurr = self.Frame()
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
-			if (diff < 98.0):
+			if (diff < self.RecordingSensetivity):
 				recordingBuffer.append(frameCurr)
-				print ("[Camera] Save frame", len(recordingBuffer))
+				print ("[Camera] Save frame", len(recordingBuffer), diff, self.RecordingSensetivity)
 				framePrev = frameCurr
 				self.CurrentImageIndex = len(recordingBuffer)
 			
@@ -309,6 +314,7 @@ class Context():
 			'set_camera_sensetivity':					self.SetCameraSensetivityHandler,
 			'get_videos_list':							self.GetVideosListHandler,
 			'get_misc_information':						self.GetMiscInformationHandler,
+			'set_misc_information':						self.SetMiscInformationHandler,
 		}
 		self.CustomResponseHandlers				= {
 		}
@@ -441,6 +447,33 @@ class Context():
 			'error': 'bad camera'
 		})
 
+	def SetMiscInformationHandler(self, sock, packet):
+		print ("SetMiscInformationHandler")
+		dbCameras = self.DB["cameras"]
+		for itemCamera in dbCameras:
+			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
+				itemCamera["frame_per_video"] = packet["payload"]["data"]["frame_per_video"]
+				itemCamera["camera_sensetivity_recording"] = packet["payload"]["data"]["camera_sensetivity_recording"]
+				itemCamera["face_detect"] = packet["payload"]["data"]["face_detect"]
+
+				self.DB["cameras"] = dbCameras
+				# Save new camera to database
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+
+				for item in self.ObjCameras:
+					if (item.GetIp() in packet["payload"]["data"]["ip"]):
+						item.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
+						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
+		
+				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+					'error': 'success'
+				})
+				return
+		
+		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+			'error': 'bad camera'
+		})
+	
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
 		command = data['device']['command']
@@ -493,6 +526,8 @@ class Context():
 					if 1 == itemCamera["recording"]:
 						print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
 						camera.StartRecording()
+					camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
+					camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
 					# Add camera to camera obejct DB
 					self.ObjCameras.append(camera)
 					cameraFound = True
@@ -508,13 +543,17 @@ class Context():
 								'ip': str(ip),
 								'name': 'Camera_' + str(uid),
 								'enable':1,
-								"frame_per_video": 900,
-								"camera_sensetivity_recording": 75,
+								"frame_per_video": 2000,
+								"camera_sensetivity_recording": 95,
 								"recording": 0,
 								"face_detect": 0,
 								"security": 0,
 								"motion_detection": 0
 				})
+				camera.SetFramesPerVideo(2000)
+				camera.SetRecordingSensetivity(95)
+				# Add camera to camera obejct DB
+				self.ObjCameras.append(camera)
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
