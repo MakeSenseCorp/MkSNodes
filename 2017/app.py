@@ -6,6 +6,13 @@ import json
 import time
 import thread
 import threading
+import logging
+logging.basicConfig(
+	filename='app.log',
+	level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 import subprocess
 import urllib2
@@ -118,8 +125,12 @@ class VideoCreator():
 		self.ObjName 	= "VideoCreator"
 		self.Orders 	= Queue.Queue()
 		self.IsRunning	= True
+		self.FPS		= 8
 		thread.start_new_thread(self.OrdersManagerThread, ())
 	
+	def SetFPS(self, fps):
+		self.FPS = fps
+
 	def AddOrder(self, order):
 		self.Orders.put(order)
 		self.IsRunning = True
@@ -127,15 +138,18 @@ class VideoCreator():
 	def OrdersManagerThread(self):
 		while (self.IsRunning is True):
 			item = self.Orders.get(block=True,timeout=None)
-			print ("[VideoCreator] Start video encoding...")
+			logging.info("[VideoCreator] Start video encoding...")
 			images = item["images"]
-			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', '8', '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', '8', '/tmp/video_fs/videos/video'+str(time.time())+'.avi'], stdin=PIPE)
+			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), '/tmp/video_fs/videos/video'+str(time.time())+'.avi'], stdin=PIPE)
 			for frame in images:
 				image = Image.open(BytesIO(frame))
 				image.save(recordingProcess.stdin, 'JPEG')
 			recordingProcess.stdin.close()
 			recordingProcess.wait()
-			print ("[VideoCreator] Start video encoding... DONE")
+			logging.debug("[VideoCreator] {images} {item}".format(images = str(id(images)), item = str(id(item))))
+			images = []
+			item = None
+			logging.info("[VideoCreator] Start video encoding... DONE")
 
 GEncoder = VideoCreator()
 
@@ -241,7 +255,7 @@ class ICamera():
 			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
 			if (diff < self.RecordingSensetivity):
 				recordingBuffer.append(frameCurr)
-				print ("[Camera] Save frame", len(recordingBuffer), diff, self.RecordingSensetivity)
+				print("[Camera] Save frame {frames} {diff} {sensitivity}".format(frames = str(len(recordingBuffer)), diff = str(diff), sensitivity = str(self.RecordingSensetivity)))
 				framePrev = frameCurr
 				self.CurrentImageIndex = len(recordingBuffer)
 			
@@ -249,7 +263,9 @@ class ICamera():
 				GEncoder.AddOrder({
 					'images': recordingBuffer
 				})
+				logging.debug("recordingBuffer " + str(id(recordingBuffer)))
 				recordingBuffer = []
+				self.CurrentImageIndex = len(recordingBuffer)
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -260,6 +276,7 @@ class HJTCamera(ICamera):
 			'getserverinfo': 	"web/cgi-bin/hi3510/param.cgi?cmd=getserverinfo",
 			'getxqp2pattr': 	"web/cgi-bin/hi3510/param.cgi?cmd=getxqp2pattr"
 		}
+		self.UserSensitiviy = 0
 
 	def GetIp(self):
 		return self.IPAddress
@@ -387,22 +404,31 @@ class Context():
 
 	def StartSecurityHandler(self, sock, packet):
 		print("StartSecurityHandler")
+		self.DB["security"] = 1
 		cameras = self.DB["cameras"]
 		for item in cameras:
-			if (item["ip"] in packet["payload"]["data"]["ip"]):
-				item["security"] = 1
-				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+			item["security"] = 1
+			item["camera_sensetivity_recording"] = 90
+		self.DB["cameras"] = cameras
+		for item in self.ObjCameras:
+			item.UserSensitiviy = item.RecordingSensetivity
+			item.SetRecordingSensetivity(90)
+		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
 		})
 
 	def StopSecurityHandler(self, sock, packet):
 		print("StopSecurityHandler")
+		self.DB["security"] = 0
 		cameras = self.DB["cameras"]
 		for item in cameras:
-			if (item["ip"] in packet["payload"]["data"]["ip"]):
-				item["security"] = 0
-				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+			item["security"] = 0
+			item["camera_sensetivity_recording"] = 96
+		for item in self.ObjCameras:
+			item.SetRecordingSensetivity(item.UserSensitiviy)
+		self.DB["cameras"] = cameras
+		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STOPPED'
 		})
@@ -581,8 +607,9 @@ class Context():
 
 	def OnGetSensorInfoRequestHandler(self, packet, sock):
 		print ("OnGetSensorInfoRequestHandler")
-		enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
-		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
+		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
+		# THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
+		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, self.DB)
 
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
 		print ("OnSetSensorInfoRequestHandler")

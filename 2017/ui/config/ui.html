@@ -62,15 +62,29 @@
         	<div class="row">
         	    <div class="col-lg-12">
         	        <div class="card">
-
-                    <div class="card-body">
-                      <h6 class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted">Cameras List</span>
-                        <span class="badge badge-secondary badge-pill" id="cameras_count_id">0</span>
-                      </h6>
-                      	<div id="cameras_list_id"></div>
-                    </div>
-                  </div>
+						<div class="card-body">
+							<div class="card">
+								<div class="card-body">
+									<div class="row">
+										<div class="col-lg-12 d-flex align-items-center">
+											<span id="cameraSecurtity" onClick="Security(this);" style="width: 35px; height: 35px; cursor: pointer;color: green" data-feather="shield"></span>
+											<span id="cameraSecurtityText" style="font-size: 20px;">&nbsp;&nbsp;Unknown</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<br><br>
+							<h6 class="d-flex justify-content-between align-items-center mb-3">
+								<span class="text-muted">Cameras List</span>
+								<span class="badge badge-secondary badge-pill" id="cameras_count_id">0</span>
+							</h6>
+							<div class="card">
+								<div class="card-body">
+									<div id="cameras_list_id"></div>
+								</div>
+							</div>
+						</div>
+                  	</div>
         	    </div>
 			</div>
 			<!-- Modal -->
@@ -124,6 +138,13 @@
 												<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
 											</h6>
 											<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
+										</div>
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Frames Second</span>
+												<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
+											</h6>
+											<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="30" data-slider-step="1" id="rangeFramesPerSecond">
 										</div>
 									</div>
 								</div>
@@ -180,17 +201,14 @@
 										</div>
 				  					</div><br>
 									<div class="row">
-										<div class="col-lg-3">
-											<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
+										<div class="col-lg-4">
+											<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
 										</div>
-										<div class="col-lg-3">
-											<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
+										<div class="col-lg-4">
+											<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
 										</div>
-										<div class="col-lg-3">
-											<center><span onClick="Security(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: [SECURITY_COLOR]" data-feather="shield"></span></center>
-										</div>
-										<div class="col-lg-3">
-											<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></center>
+										<div class="col-lg-4">
+											<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: green" data-feather="settings"></span></center>
 										</div>
 									</div>
 								</div>
@@ -206,6 +224,12 @@
 					return 'Current value: ' + value;
 				}
 			});
+			$('#rangeFramesPerSecond').slider({
+				value : 0,
+				formatter: function(value) {
+					return 'Current value: ' + value;
+				}
+			});
 			$('#rangeCameraSensetivity').slider({
 				value : 0,
 				formatter: function(value) {
@@ -214,6 +238,9 @@
 			});
 			$('#rangeFramesPerVideo').slider().on('slide', function(ev) {
 				document.getElementById("rangeFramesPerVideoValue").innerHTML = ev.value;
+			});
+			$('#rangeFramesPerSecond').slider().on('slide', function(ev) {
+				document.getElementById("rangeFramesPerSecondValue").innerHTML = ev.value;
 			});
 			$('#rangeCameraSensetivity').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValue").innerHTML = ev.value;
@@ -237,51 +264,64 @@
 			api.ConnectGateway(function() {
 				console.log("Connection to Gateway was established.");
 
-				api.GetNodeSensorsInfo(NodeUUID, function(res){
-					cameras = res.data.payload;
+				api.GetNodeSensorsInfo(NodeUUID, function(res) {
+					data = res.data.payload;
+					cameras = data.cameras;
 					var html = "";
 					var cameraCount = cameras.length;
-					console.log(cameras);
+					var enabledIndex = 0;
 					for (i = 0; i < cameraCount; i++) {
 						camera = cameras[i];
-						if (i % 2) {
-							html += `<div class="row">`;
-						}
 
-						row = CameraCell;
-				        row = row.split("[NAME]").join(camera.name);
-				        row = row.split("[IPADDRESS]").join(camera.ip);
-						row = row.split("[CAMERA_MAC]").join(camera.mac);
-						row = row.split("[CAMERA_UID]").join(camera.uid);
+						if (camera.enable === 1) {
+							if (enabledIndex % 2) {
+								html += `<div class="row">`;
+							}
+							enabledIndex++;
 
-						if (1 == camera.recording) {
-							row = row.split("[RECORDING_COLOR]").join("red");
-						} else {
-							row = row.split("[RECORDING_COLOR]").join("green");
-						}
+							row = CameraCell;
+							row = row.split("[NAME]").join(camera.name);
+							row = row.split("[IPADDRESS]").join(camera.ip);
+							row = row.split("[CAMERA_MAC]").join(camera.mac);
+							row = row.split("[CAMERA_UID]").join(camera.uid);
 
-						if (1 == camera.security) {
-							row = row.split("[SECURITY_COLOR]").join("red");
-						} else {
-							row = row.split("[SECURITY_COLOR]").join("black");
-						}
-						
-						if (1 == camera.motion_detection) {
-							row = row.split("[MOTION_COLOR]").join("red");
-						} else {
-							row = row.split("[MOTION_COLOR]").join("black");
-						}
-						
-				        html += row;
+							if (1 == camera.recording) {
+								row = row.split("[RECORDING_COLOR]").join("red");
+							} else {
+								row = row.split("[RECORDING_COLOR]").join("green");
+							}
 
-						if (i % 2 != 0) {
-							html += `</div>`;
-						}
+							if (1 == camera.security) {
+								row = row.split("[SECURITY_COLOR]").join("red");
+							} else {
+								row = row.split("[SECURITY_COLOR]").join("black");
+							}
+							
+							if (1 == camera.motion_detection) {
+								row = row.split("[MOTION_COLOR]").join("red");
+							} else {
+								row = row.split("[MOTION_COLOR]").join("black");
+							}
+							
+							html += row;
 
-						img.src = "http://" + camera.ip + "/tmpfs/auto.jpg?" + new Date;
+							if (i % 2 != 0) {
+								html += `</div>`;
+							}
+
+							img.src = "http://" + camera.ip + "/tmpfs/auto.jpg?" + new Date;
+						}
 					}
 
-					document.getElementById("cameras_count_id").innerHTML = cameraCount;
+					if (1 == data.security) {
+						document.getElementById("cameraSecurtity").style.color = "red";
+						document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Enabled";
+					} else {
+						document.getElementById("cameraSecurtity").style.color = "green";
+						document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Disabled";
+					}
+					
+					document.getElementById("cameras_count_id").innerHTML = enabledIndex;
 					document.getElementById("cameras_list_id").innerHTML = html;
               		feather.replace();
 				});
@@ -417,26 +457,22 @@
 				}
 			}
 
-			var Security = function(elem, camera_mac, camera_uid, camer_ip) {
-				var action = (elem.style.color == 'black') ? true:false;
+			var Security = function(elem) {
+				var action = (elem.style.color == 'green') ? true:false;
 
 				if (action) {
+					document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Enabled";
 					api.SendCustomCommand(NodeUUID, "start_security", {
-						mac: camera_mac,
-						uid: camera_uid,
-						ip: camer_ip
 					}, function(res) {
 						console.log(res);
 						elem.style.color = "red";
 					});
 				} else {
+					document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Disabled";
 					api.SendCustomCommand(NodeUUID, "stop_security", {
-						mac: camera_mac,
-						uid: camera_uid,
-						ip: camer_ip
 					}, function(res) {
 						console.log(res);
-						elem.style.color = "black";
+						elem.style.color = "green";
 					});
 				}
 			}
