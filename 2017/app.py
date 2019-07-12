@@ -183,14 +183,19 @@ class MkSImageProcessing():
 
 class ICamera():
 	def __init__(self, ip):
-		self.ImP					= MkSImageProcessing()
-		self.IPAddress 				= ip
-		self.Address 				= "http://" + self.IPAddress + "/"
-		self.IsRecoding 			= False
-		self.FramesPerVideo 		= 2000
-		self.RecordingSensetivity 	= 95
-		self.CurrentImageIndex 		= 0
-	
+		self.ImP						= MkSImageProcessing()
+		self.IPAddress 					= ip
+		self.Address 					= "http://" + self.IPAddress + "/"
+		self.IsGetFrame 				= False
+		self.IsRecoding 				= False
+		self.IsCameraWorking 			= False
+		self.IsSecurity					= False
+		self.FramesPerVideo 			= 2000
+		self.RecordingSensetivity 		= 95
+		self.SecuritySensitivity 		= 92
+		self.CurrentImageIndex 			= 0
+		self.OnImageDifferentCallback	= None
+
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
 
@@ -224,19 +229,44 @@ class ICamera():
 		frame, error = self.GetRequest(self.Address + command)
 		return frame
 
+	def StartSecurity(self):
+		self.IsSecurity = True
+		self.IsGetFrame = True
+
+	def StopSecurity(self):
+		self.IsSecurity = False
+		if self.IsRecoding is False:
+			self.IsGetFrame = False
+	
+	def StartGettingFrames(self):
+		self.IsGetFrame = True
+
+	def StopGettingFrames(self):
+		self.IsGetFrame = False
+	
 	def StartRecording(self):
-		if (self.IsRecoding is False):
-			thread.start_new_thread(self.RecordingThread, ())
+		self.IsRecoding = True
+		self.IsGetFrame = True
 
 	def StopRecording(self):
-		print ("[Camera] Stop recording", self.IPAddress)
 		self.IsRecoding = False
+		if self.IsSecurity is False:
+			self.IsGetFrame = False
 
-	def RecordingThread(self):
+	def StartCamera(self):
+		if (self.IsCameraWorking is False):
+			thread.start_new_thread(self.CameraThread, ())
+
+	def StopCamera(self):
+		print ("[Camera] Stop recording", self.IPAddress)
+		self.IsCameraWorking = False
+
+	def CameraThread(self):
 		global GEncoder
 		
-		frameCurr = None
-		framePrev = None
+		frameCurr 		= None
+		framePrev 		= None
+		frameDifference = 0
 
 		# TODO - Create logging to file system.
 		# TODO - Create common print message format
@@ -248,24 +278,35 @@ class ICamera():
 		# TODO - Each camera must have its own video folder.
 
 		recordingBuffer = []
-		print ("[Camera] Start recording", self.IPAddress)
-		self.IsRecoding = True
-		while self.IsRecoding is True:
-			frameCurr = self.Frame()
-			diff = self.ImP.CompareJpegImages(frameCurr, framePrev)
-			if (diff < self.RecordingSensetivity):
-				recordingBuffer.append(frameCurr)
-				print("[Camera] Save frame {frames} {diff} {sensitivity}".format(frames = str(len(recordingBuffer)), diff = str(diff), sensitivity = str(self.RecordingSensetivity)))
-				framePrev = frameCurr
-				self.CurrentImageIndex = len(recordingBuffer)
+		self.IsCameraWorking = True
+		while self.IsCameraWorking is True:
+			if self.IsGetFrame is True:
+				frameCurr = self.Frame()
+				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
+			else:
+				time.sleep(0.5)
 			
-			if self.FramesPerVideo <= self.CurrentImageIndex:
-				GEncoder.AddOrder({
-					'images': recordingBuffer
-				})
-				logging.debug("recordingBuffer " + str(id(recordingBuffer)))
-				recordingBuffer = []
-				self.CurrentImageIndex = len(recordingBuffer)
+			if self.IsSecurity is True:
+				if (frameDifference < self.SecuritySensitivity):
+					print("[Camera] Security {diff} {sensitivity}".format(diff = str(frameDifference), sensitivity = str(self.SecuritySensitivity)))
+					framePrev = frameCurr
+					if self.OnImageDifferentCallback is not None:
+						self.OnImageDifferentCallback(self.IPAddress, frameCurr)
+			
+			if self.IsRecoding is True:
+				if (frameDifference < self.RecordingSensetivity):
+					recordingBuffer.append(frameCurr)
+					print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(recordingBuffer)), diff = str(frameDifference), sensitivity = str(self.RecordingSensetivity)))
+					framePrev = frameCurr
+					self.CurrentImageIndex = len(recordingBuffer)
+				
+				if self.FramesPerVideo <= self.CurrentImageIndex:
+					GEncoder.AddOrder({
+						'images': recordingBuffer
+					})
+					logging.debug("recordingBuffer " + str(id(recordingBuffer)))
+					recordingBuffer = []
+					self.CurrentImageIndex = len(recordingBuffer)
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -340,6 +381,7 @@ class Context():
 		self.Cameras 					= []
 		self.ObjCameras					= []
 		self.DeviceScanner 				= EthernetDeviceScanner()
+		self.SecurityEnabled 			= False
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -405,14 +447,14 @@ class Context():
 	def StartSecurityHandler(self, sock, packet):
 		print("StartSecurityHandler")
 		self.DB["security"] = 1
+		self.SecurityEnabled = True
 		cameras = self.DB["cameras"]
 		for item in cameras:
 			item["security"] = 1
 			item["camera_sensetivity_recording"] = 90
 		self.DB["cameras"] = cameras
 		for item in self.ObjCameras:
-			item.UserSensitiviy = item.RecordingSensetivity
-			item.SetRecordingSensetivity(90)
+			item.StartSecurity()
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'STARTED'
@@ -421,12 +463,13 @@ class Context():
 	def StopSecurityHandler(self, sock, packet):
 		print("StopSecurityHandler")
 		self.DB["security"] = 0
+		self.SecurityEnabled = False
 		cameras = self.DB["cameras"]
 		for item in cameras:
 			item["security"] = 0
 			item["camera_sensetivity_recording"] = 96
 		for item in self.ObjCameras:
-			item.SetRecordingSensetivity(item.UserSensitiviy)
+			item.StopSecurity()
 		self.DB["cameras"] = cameras
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
@@ -500,6 +543,11 @@ class Context():
 			'error': 'bad camera'
 		})
 	
+	def OnCameraDiffrentHandler(self, ip, image):
+		logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
+		# Find camera object
+		# Send SMS via service
+	
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
 		command = data['device']['command']
@@ -526,6 +574,10 @@ class Context():
 			os.mkdir("/tmp/video_fs")
 		if not os.path.exists("/tmp/video_fs/videos"):
 			os.mkdir("/tmp/video_fs/videos")
+		
+		# Check if security is ON
+		if self.DB["security"] == 1:
+			self.SecurityEnabled = True
 
 		# Search for cameras and update local database
 		cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
@@ -548,12 +600,17 @@ class Context():
 				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
 					# Update DB with current IP
 					itemCamera["ip"] = ip
+					camera.StartCamera()
 					# Check weither need to start recording
 					if 1 == itemCamera["recording"]:
 						print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
 						camera.StartRecording()
+					# If security is ON we need to get frames
+					if self.SecurityEnabled is True:
+						camera.StartSecurity()
 					camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 					camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
+					camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
 					# Add camera to camera obejct DB
 					self.ObjCameras.append(camera)
 					cameraFound = True
