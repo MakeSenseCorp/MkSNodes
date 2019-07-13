@@ -291,7 +291,7 @@ class ICamera():
 					print("[Camera] Security {diff} {sensitivity}".format(diff = str(frameDifference), sensitivity = str(self.SecuritySensitivity)))
 					framePrev = frameCurr
 					if self.OnImageDifferentCallback is not None:
-						self.OnImageDifferentCallback(self.IPAddress, frameCurr)
+						self.OnImageDifferentCallback(self.IPAddress, None)
 			
 			if self.IsRecoding is True:
 				if (frameDifference < self.RecordingSensetivity):
@@ -304,7 +304,7 @@ class ICamera():
 					GEncoder.AddOrder({
 						'images': recordingBuffer
 					})
-					logging.debug("recordingBuffer " + str(id(recordingBuffer)))
+					logging.debug("Sent recording order " + str(id(recordingBuffer)))
 					recordingBuffer = []
 					self.CurrentImageIndex = len(recordingBuffer)
 
@@ -451,7 +451,6 @@ class Context():
 		cameras = self.DB["cameras"]
 		for item in cameras:
 			item["security"] = 1
-			item["camera_sensetivity_recording"] = 90
 		self.DB["cameras"] = cameras
 		for item in self.ObjCameras:
 			item.StartSecurity()
@@ -467,7 +466,6 @@ class Context():
 		cameras = self.DB["cameras"]
 		for item in cameras:
 			item["security"] = 0
-			item["camera_sensetivity_recording"] = 96
 		for item in self.ObjCameras:
 			item.StopSecurity()
 		self.DB["cameras"] = cameras
@@ -544,7 +542,8 @@ class Context():
 		})
 	
 	def OnCameraDiffrentHandler(self, ip, image):
-		logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
+		pass
+		# logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
 		# Find camera object
 		# Send SMS via service
 	
