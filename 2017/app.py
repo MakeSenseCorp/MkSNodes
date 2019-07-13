@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import os
 import sys
+import gc
 import signal
 import json
 import time
@@ -150,6 +151,7 @@ class VideoCreator():
 			images = []
 			item = None
 			logging.info("[VideoCreator] Start video encoding... DONE")
+			gc.collect()
 
 GEncoder = VideoCreator()
 
@@ -307,6 +309,7 @@ class ICamera():
 					logging.debug("Sent recording order " + str(id(recordingBuffer)))
 					recordingBuffer = []
 					self.CurrentImageIndex = len(recordingBuffer)
+					gc.collect()
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -542,7 +545,23 @@ class Context():
 		})
 	
 	def OnCameraDiffrentHandler(self, ip, image):
-		pass
+		try:
+			payload = json.dumps({	
+							'request': 'task_order',
+							'json': {
+								'number': '0547884156',
+								'message': 'hello' 
+							}
+						})
+			url = "http://{ip}:{port}/set/add_request/{user_id}".format(
+				ip 	 	= str(THIS.Node.LocalServiceNode.MyLocalIP), 
+				port 	= str(8032), 
+				user_id	= str(self.Node.Key))
+			data = urllib2.urlopen(url, payload).read()
+			print (data)
+		except Exception as e:
+			print ("HTTPException on requesting SMS service", e)
+		
 		# logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
 		# Find camera object
 		# Send SMS via service
@@ -560,6 +579,7 @@ class Context():
 
 	def NodeSystemLoadedHandler(self):
 		print ("NodeSystemLoadedHandler")
+		THIS.Node.LocalServiceNode.GetListOfNodeFromGateway()
 		# Loading local database
 		jsonSensorStr = self.Node.GetFileContent("db.json")
 		if jsonSensorStr != "":
