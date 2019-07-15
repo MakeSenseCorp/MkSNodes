@@ -701,6 +701,16 @@ class Context():
 		command = json_data['command']
 		if command in self.CustomResponseHandlers:
 			self.CustomResponseHandlers[command](sock, json_data)
+	
+	def OnGetNodesListHandler(self, uuids):
+		print ("OnGetNodesListHandler", uuids)
+		THIS.Node.LocalServiceNode.GetNodeInfo("ac6de837-9863-72a9-c789-a0aae7e9d020")
+		# TODO - Find SMS service
+		#for uuid in uuids:
+		#	THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
+	
+	def OnGetNodeInfoHandler(self, info):
+		print ("OnGetNodeInfoHandler", info)
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -768,6 +778,9 @@ def main():
 	# TODO - On file upload event.
 	THIS.Node.LocalServiceNode.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
 	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+
+	THIS.Node.LocalServiceNode.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
+	THIS.Node.LocalServiceNode.OnGetNodeInfoCallback				= THIS.OnGetNodeInfoHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")
