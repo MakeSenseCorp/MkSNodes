@@ -704,10 +704,10 @@ class Context():
 	
 	def OnGetNodesListHandler(self, uuids):
 		print ("OnGetNodesListHandler", uuids)
-		THIS.Node.LocalServiceNode.GetNodeInfo("ac6de837-9863-72a9-c789-a0aae7e9d020")
+		# THIS.Node.LocalServiceNode.GetNodeInfo("ac6de837-9863-72a9-c789-a0aae7e9d021")
 		# TODO - Find SMS service
-		#for uuid in uuids:
-		#	THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
+		for uuid in uuids:
+			THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
 	
 	def OnGetNodeInfoHandler(self, info):
 		print ("OnGetNodeInfoHandler", info)
