@@ -41,6 +41,7 @@ class Context():
 			'undefined':				self.UndefindHandler
 		}
 		self.CustomRequestHandlers		= {
+			'send_sms':					self.SendSMSHandler
 		}
 		self.CustomResponseHandlers		= {
 		}
@@ -48,6 +49,9 @@ class Context():
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
+	
+	def SendSMSHandler(self, sock, packet):
+		print ("SendSMSHandler")
 	
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):

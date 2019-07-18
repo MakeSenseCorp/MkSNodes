@@ -385,6 +385,7 @@ class Context():
 		self.ObjCameras					= []
 		self.DeviceScanner 				= EthernetDeviceScanner()
 		self.SecurityEnabled 			= False
+		self.SMSService					= ""
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -392,7 +393,6 @@ class Context():
 	# CustomRequestHandlers
 	def StartRecordingHandler(self, sock, packet):
 		print("StartRecordingHandler")
-		print (packet)
 		# Find camera
 		for item in self.ObjCameras:
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
@@ -545,22 +545,34 @@ class Context():
 		})
 	
 	def OnCameraDiffrentHandler(self, ip, image):
-		try:
-			payload = json.dumps({	
+		if len(self.SMSService) > 0:
+			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.SMSService, "send_sms",
+						{	
 							'request': 'task_order',
 							'json': {
 								'number': '0547884156',
 								'message': 'hello' 
 							}
 						})
-			url = "http://{ip}:{port}/set/add_request/{user_id}".format(
-				ip 	 	= str(THIS.Node.LocalServiceNode.MyLocalIP), 
-				port 	= str(8032), 
-				user_id	= str(self.Node.Key))
-			data = urllib2.urlopen(url, payload).read()
-			print (data)
-		except Exception as e:
-			print ("HTTPException on requesting SMS service", e)
+		else:
+			print("[SMS Service] ERROR")
+		
+		#try:
+		#	payload = json.dumps({	
+		#					'request': 'task_order',
+		#					'json': {
+		#						'number': '0547884156',
+		#						'message': 'hello' 
+		#					}
+		#				})
+		#	url = "http://{ip}:{port}/set/add_request/{user_id}".format(
+		#		ip 	 	= str(THIS.Node.LocalServiceNode.MyLocalIP), 
+		#		port 	= str(8032), 
+		#		user_id	= str(self.Node.Key))
+		#	data = urllib2.urlopen(url, payload).read()
+		#	print (data)
+		#except Exception as e:
+		#	print ("HTTPException on requesting SMS service", e)
 		
 		# logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
 		# Find camera object
@@ -704,13 +716,43 @@ class Context():
 	
 	def OnGetNodesListHandler(self, uuids):
 		print ("OnGetNodesListHandler", uuids)
-		# THIS.Node.LocalServiceNode.GetNodeInfo("ac6de837-9863-72a9-c789-a0aae7e9d021")
 		# TODO - Find SMS service
 		for uuid in uuids:
 			THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
 	
 	def OnGetNodeInfoHandler(self, info):
-		print ("OnGetNodeInfoHandler", info)
+		print ("OnGetNodeInfoHandler")
+		'''
+		{
+			u'direction': u'proxy_response', 
+			u'command': u'get_node_info', u
+			'piggybag': 0, 
+			u'payload': {
+				u'header': {
+					u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
+					u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d021'
+				}, 
+				u'data': {
+					u'isMasterNode': u'False', 
+					u'isHW': u'False', 
+					u'uuid': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
+					u'name': u'HJT', 
+					u'isLocalServerEnabled': u'True', 
+					u'brandname': u'Camera Surveillance', 
+					u'isWebEnabled': u'True', 
+					u'ostype': u'Any', 
+					u'osversion': u'Any', 
+					u'type': 2017, 
+					u'description': u'Camera Surveillance'
+				}
+			}
+		}
+		'''
+		nodeType = info["payload"]["data"]["type"]
+		nodeUUID = info["payload"]["data"]["uuid"]
+		if (101 == nodeType):
+			self.SMSService = nodeUUID
+			print("SMS service found")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
