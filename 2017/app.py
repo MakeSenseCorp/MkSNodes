@@ -578,6 +578,12 @@ class Context():
 		# Find camera object
 		# Send SMS via service
 	
+	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
+		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
+		if (101 == type):
+			self.SMSService = uuid
+			print("[OnMasterAppendNodeHandler]","SMS service found")
+
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
 		command = data['device']['command']
@@ -752,7 +758,7 @@ class Context():
 		nodeUUID = info["payload"]["data"]["uuid"]
 		if (101 == nodeType):
 			self.SMSService = nodeUUID
-			print("SMS service found")
+			print("[OnGetNodeInfoHandler]", "SMS service found")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -823,6 +829,7 @@ def main():
 
 	THIS.Node.LocalServiceNode.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.LocalServiceNode.OnGetNodeInfoCallback				= THIS.OnGetNodeInfoHandler
+	THIS.Node.LocalServiceNode.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")

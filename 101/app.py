@@ -46,12 +46,14 @@ class Context():
 		self.CustomResponseHandlers		= {
 		}
 		self.Orders 					= Queue.Queue()
+		self.NodesDict					= {}
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
 	
 	def SendSMSHandler(self, sock, packet):
-		print ("SendSMSHandler")
+		print ("SendSMSHandler", packet)
+		#uuid = packet[]
 	
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
