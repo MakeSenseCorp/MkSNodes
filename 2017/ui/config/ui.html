@@ -189,32 +189,42 @@
 			var api = MkSAPIBuilder.GetInstance();
 
 			var CameraCell = `
-						<div class="col-lg-6">
-		                    <div class="card">
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">[NAME]</span>
-									</h6>
-									<div class="row">
-										<div class="col-lg-12">
-											<img width="100%" class="rounded" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" id="id_[IPADDRESS]" onLoad="update('[IPADDRESS]');"/>
-										</div>
-				  					</div><br>
-									<div class="row">
-										<div class="col-lg-4">
-											<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
-										</div>
-										<div class="col-lg-4">
-											<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
-										</div>
-										<div class="col-lg-4">
-											<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: green" data-feather="settings"></span></center>
-										</div>
+					<div class="col-lg-6">
+						<div class="card">
+							<div class="card-body">
+								<h6 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">[NAME]</span>
+								</h6>
+								<div class="row">
+									<div class="col-lg-12">
+										<img width="100%" class="rounded" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" id="id_[IPADDRESS]" onLoad="update('[IPADDRESS]');"/>
+									</div>
+								</div><br>
+								<div class="row">
+									<div class="col-lg-4">
+										<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
+									</div>
+									<div class="col-lg-4">
+										<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
+									</div>
+									<div class="col-lg-4">
+										<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: green" data-feather="settings"></span></center>
 									</div>
 								</div>
 							</div>
 						</div>
-		  	`;
+					</div>
+			`;
+			var FileRow = `
+					<li class="list-group-item d-flex justify-content-between lh-condensed">
+						<div>
+						<small class="my-0">[FILE_NAME]</small>
+						</div>
+						<div>
+						<span style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="download"></span>
+						</div>
+					</li>
+          	`;
 		  	var img = new Image();
 			var imgObj;
 
@@ -374,6 +384,18 @@
 					} else {
 						document.getElementById("facedetectState").checked = false;
 					}
+
+					var filesList = res.data.payload.video_list;
+					document.getElementById("files_count_id").innerHTML = filesList.length;
+					var html = `<ul class="list-group mb-3">`;
+					filesList.forEach(function(element) {
+						row = FileRow;
+						row = row.split("[FILE_NAME]").join(element);
+						html = html + row;
+					});
+					html = html + `</ul>`;
+					document.getElementById("files_list_id").innerHTML = html;
+					feather.replace();
 				});
 			}
 

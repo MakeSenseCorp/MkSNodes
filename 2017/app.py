@@ -141,7 +141,7 @@ class VideoCreator():
 			item = self.Orders.get(block=True,timeout=None)
 			logging.info("[VideoCreator] Start video encoding...")
 			images = item["images"]
-			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), '/tmp/video_fs/videos/video'+str(time.time())+'.avi'], stdin=PIPE)
+			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), './videos/video'+str(time.time())+'.avi'], stdin=PIPE)
 			for frame in images:
 				image = Image.open(BytesIO(frame))
 				image.save(recordingProcess.stdin, 'JPEG')
@@ -509,7 +509,8 @@ class Context():
 				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 					'frame_per_video': str(itemCamera["frame_per_video"]),
 					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
-					'face_detect': str(itemCamera["face_detect"])
+					'face_detect': str(itemCamera["face_detect"]),
+					'video_list': ["video_12823462123.avi","video_12823462867.avi"]
 				})
 				return
 		
@@ -607,10 +608,8 @@ class Context():
 					self.Cameras.append(item)
 
 		# Create file system for storing videos
-		if not os.path.exists("/tmp/video_fs"):
-			os.mkdir("/tmp/video_fs")
-		if not os.path.exists("/tmp/video_fs/videos"):
-			os.mkdir("/tmp/video_fs/videos")
+		if not os.path.exists(".videos"):
+			os.mkdir(".videos")
 		
 		# Check if security is ON
 		if self.DB["security"] == 1:
