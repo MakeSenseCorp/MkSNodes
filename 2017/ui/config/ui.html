@@ -221,12 +221,13 @@
 						<small class="my-0">[FILE_NAME]</small>
 						</div>
 						<div>
-						<span style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="download"></span>
+						<span onclick="Download('[FILE_NAME]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="download"></span>
 						</div>
 					</li>
           	`;
 		  	var img = new Image();
 			var imgObj;
+			var LocalWeb = null;
 
 			$('#rangeFramesPerVideo').slider({
 				value : 0,
@@ -276,7 +277,8 @@
 
 				api.GetNodeSensorsInfo(NodeUUID, function(res) {
 					data = res.data.payload;
-					cameras = data.cameras;
+					cameras = data.db.cameras;
+					LocalWeb = data.device;
 					var html = "";
 					var cameraCount = cameras.length;
 					var enabledIndex = 0;
@@ -497,6 +499,10 @@
 						elem.style.color = "green";
 					});
 				}
+			}
+
+			var Download = function(name) {
+				api.Gateway.OpenURL(LocalWeb.webport, "/file/download/" + name);
 			}
 
 			feather.replace();

@@ -36,6 +36,7 @@ from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
 
 from flask import Response, request
+from flask import send_file
 
 class EthernetDeviceScanner():
 	def __init__(self):
@@ -279,7 +280,8 @@ class ICamera():
 		# TODO - Is video creation is on going?
 		# TODO - Each camera must have its own video folder.
 
-		recordingBuffer = []
+		recordingBuffers = [[],[]]
+		recordingBufferIndex = 0
 		self.IsCameraWorking = True
 		while self.IsCameraWorking is True:
 			if self.IsGetFrame is True:
@@ -297,18 +299,24 @@ class ICamera():
 			
 			if self.IsRecoding is True:
 				if (frameDifference < self.RecordingSensetivity):
-					recordingBuffer.append(frameCurr)
-					print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(recordingBuffer)), diff = str(frameDifference), sensitivity = str(self.RecordingSensetivity)))
+					recordingBuffers[recordingBufferIndex].append(frameCurr)
+					print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(recordingBuffers[recordingBufferIndex])), diff = str(frameDifference), sensitivity = str(self.RecordingSensetivity)))
 					framePrev = frameCurr
-					self.CurrentImageIndex = len(recordingBuffer)
+					self.CurrentImageIndex = len(recordingBuffers[recordingBufferIndex])
 				
 				if self.FramesPerVideo <= self.CurrentImageIndex:
 					GEncoder.AddOrder({
-						'images': recordingBuffer
+						'images': recordingBuffers[recordingBufferIndex]
 					})
-					logging.debug("Sent recording order " + str(id(recordingBuffer)))
-					recordingBuffer = []
-					self.CurrentImageIndex = len(recordingBuffer)
+					logging.debug("Sent recording order " + str(id(recordingBuffers[recordingBufferIndex])))
+
+					if 1 == recordingBufferIndex:
+						recordingBufferIndex = 0
+					else:
+						recordingBufferIndex = 1
+					
+					recordingBuffers[recordingBufferIndex] = []
+					self.CurrentImageIndex = len(recordingBuffers[recordingBufferIndex])
 					gc.collect()
 
 class HJTCamera(ICamera):
@@ -506,11 +514,12 @@ class Context():
 		dbCameras = self.DB["cameras"]
 		for itemCamera in dbCameras:
 			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
+				videosList = os.listdir("videos")
 				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 					'frame_per_video': str(itemCamera["frame_per_video"]),
 					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
 					'face_detect': str(itemCamera["face_detect"]),
-					'video_list': ["video_12823462123.avi","video_12823462867.avi"]
+					'video_list': videosList
 				})
 				return
 		
@@ -545,6 +554,25 @@ class Context():
 			'error': 'bad camera'
 		})
 	
+	# Sending SMS via RESTApi of SMS service Node
+	def SendSMSRequest(self):
+		try:
+			payload = json.dumps({	
+							'request': 'task_order',
+							'json': {
+								'number': '0547884156',
+								'message': 'hello' 
+							}
+						})
+			url = "http://{ip}:{port}/set/add_request/{user_id}".format(
+				ip 	 	= str(THIS.Node.LocalServiceNode.MyLocalIP), 
+				port 	= str(8032), 
+				user_id	= str(self.Node.Key))
+			data = urllib2.urlopen(url, payload).read()
+			print (data)
+		except Exception as e:
+			print ("HTTPException on requesting SMS service", e)
+	
 	def OnCameraDiffrentHandler(self, ip, image):
 		if len(self.SMSService) > 0:
 			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.SMSService, "send_sms",
@@ -557,27 +585,6 @@ class Context():
 						})
 		else:
 			print("[SMS Service] ERROR")
-		
-		#try:
-		#	payload = json.dumps({	
-		#					'request': 'task_order',
-		#					'json': {
-		#						'number': '0547884156',
-		#						'message': 'hello' 
-		#					}
-		#				})
-		#	url = "http://{ip}:{port}/set/add_request/{user_id}".format(
-		#		ip 	 	= str(THIS.Node.LocalServiceNode.MyLocalIP), 
-		#		port 	= str(8032), 
-		#		user_id	= str(self.Node.Key))
-		#	data = urllib2.urlopen(url, payload).read()
-		#	print (data)
-		#except Exception as e:
-		#	print ("HTTPException on requesting SMS service", e)
-		
-		# logging.info("[OnCameraDiffrentHandler] SECURITY " + str(ip))
-		# Find camera object
-		# Send SMS via service
 	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
@@ -702,7 +709,14 @@ class Context():
 		print ("OnGetSensorInfoRequestHandler")
 		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
 		# THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
-		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, self.DB)
+		payload = {
+			'db': self.DB,
+			'device': {
+				'ip': THIS.Node.LocalServiceNode.MyLocalIP,
+				'webport': THIS.Node.LocalServiceNode.LocalWebPort
+			}
+		}
+		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, payload)
 
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
 		print ("OnSetSensorInfoRequestHandler")
@@ -778,12 +792,19 @@ class Context():
 		return json.dumps({
 			'response':'OK'
 		})
+	
+	def FileDownloadHandler(self, name):
+		print ("[WEB API] FileDownloadHandler", name)
+
+		FilePath = "/home/ykiveish/mks/nodes/2017/static/files/" + name
+		return send_file(FilePath)
 
 	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 					endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
+		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/file/download/<name>", 						endpoint_name="file_download", 			handler=THIS.FileDownloadHandler)
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
