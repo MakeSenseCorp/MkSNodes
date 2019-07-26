@@ -28,6 +28,8 @@ from PIL import Image
 from PIL import ImageFilter
 from io import BytesIO
 
+import base64
+
 from mksdk import MkSFile
 from mksdk import MkSNode
 from mksdk import MkSSlaveNode
@@ -138,6 +140,7 @@ class VideoCreator():
 		self.IsRunning = True
 
 	def OrdersManagerThread(self):
+		# TODO - Put in TRY CATCH
 		while (self.IsRunning is True):
 			item = self.Orders.get(block=True,timeout=None)
 			logging.info("[VideoCreator] Start video encoding...")
@@ -273,10 +276,7 @@ class ICamera():
 
 		# TODO - Create logging to file system.
 		# TODO - Create common print message format
-		# TODO - Create folder path if there are none
 		# TODO - Each camera has its own folder
-		# TODO - Percentage of threshhold should be managable from UI
-		# TODO - Update record_ticker according to images in folder
 		# TODO - Is video creation is on going?
 		# TODO - Each camera must have its own video folder.
 
@@ -295,7 +295,7 @@ class ICamera():
 					print("[Camera] Security {diff} {sensitivity}".format(diff = str(frameDifference), sensitivity = str(self.SecuritySensitivity)))
 					framePrev = frameCurr
 					if self.OnImageDifferentCallback is not None:
-						self.OnImageDifferentCallback(self.IPAddress, None)
+						self.OnImageDifferentCallback(self.IPAddress, frameCurr)
 			
 			if self.IsRecoding is True:
 				if (frameDifference < self.RecordingSensetivity):
@@ -394,6 +394,9 @@ class Context():
 		self.DeviceScanner 				= EthernetDeviceScanner()
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
+		self.EmailService				= ""
+
+		self.LastTSEmailSent			= 0
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -574,6 +577,23 @@ class Context():
 			print ("HTTPException on requesting SMS service", e)
 	
 	def OnCameraDiffrentHandler(self, ip, image):
+		print("OnCameraDiffrentHandler")
+		if len(self.EmailService) > 0:
+			if (time.time() - self.LastTSEmailSent > 30):
+				#print("OnCameraDiffrentHandler")
+				print(base64.encodebytes(image).decode("utf-8"))
+				THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.EmailService, "send_email",
+							{	
+								'request': 'task_order',
+								'json': {
+									'to': ['yevgeniy.kiveisha@gmail.com'],
+									'subject': 'Test',
+									'body': 'Hello',
+									'type': 'text',
+									'image': base64.encodebytes(image).decode("utf-8")
+								}
+							})
+				self.LastTSEmailSent = time.time()
 		if len(self.SMSService) > 0:
 			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.SMSService, "send_sms",
 						{	
@@ -591,6 +611,9 @@ class Context():
 		if (101 == type):
 			self.SMSService = uuid
 			print("[OnMasterAppendNodeHandler]","SMS service found")
+		if (102 == type):
+			self.EmailService = uuid
+			print("[OnMasterAppendNodeHandler]","Email service found")
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -709,6 +732,7 @@ class Context():
 		print ("OnGetSensorInfoRequestHandler")
 		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
 		# THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
+		# TODO - Get device infro from different method
 		payload = {
 			'db': self.DB,
 			'device': {
@@ -741,6 +765,7 @@ class Context():
 	
 	def OnGetNodeInfoHandler(self, info):
 		print ("OnGetNodeInfoHandler")
+		# TODO - info must be only data of a device, not whole packet
 		'''
 		{
 			u'direction': u'proxy_response', 

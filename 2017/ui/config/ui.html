@@ -278,6 +278,7 @@
 				api.GetNodeSensorsInfo(NodeUUID, function(res) {
 					data = res.data.payload;
 					cameras = data.db.cameras;
+					// TODO - Get device infro from different method
 					LocalWeb = data.device;
 					var html = "";
 					var cameraCount = cameras.length;
@@ -296,6 +297,24 @@
 							row = row.split("[IPADDRESS]").join(camera.ip);
 							row = row.split("[CAMERA_MAC]").join(camera.mac);
 							row = row.split("[CAMERA_UID]").join(camera.uid);
+
+							// TODO - Do a proper authentication.
+							$.ajax({
+								cache: false,
+								type: "GET",
+								url: "http://" + camera.ip + "/tmpfs/auto.jpg?" + (new Date()).getTime(),
+								crossDomain: true,
+								dataType: 'jsonp',
+								username: "admin",
+								password: "admin",
+								headers: {
+									"accept": "application/json",
+									"Access-Control-Allow-Origin":"*"
+								},
+								success: function (){
+									alert('Thanks for your comment!'); 
+								}
+							});
 
 							if (1 == camera.recording) {
 								row = row.split("[RECORDING_COLOR]").join("red");
