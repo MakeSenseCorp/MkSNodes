@@ -41,7 +41,8 @@ class Context():
 			'undefined':				self.UndefindHandler
 		}
 		self.CustomRequestHandlers		= {
-			'send_email':					self.SendEmailHandler
+			'send_email_html':					self.SendEmailHtmlHandler,
+			'send_email_html_with_image':		self.SendEmailHtmlWithImageHandler
 		}
 		self.CustomResponseHandlers		= {
 		}
@@ -54,36 +55,69 @@ class Context():
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
 	
-	def SendEmailHandler(self, sock, packet):
-		print ("SendEmailHandler", packet)
+	# { 
+	# 	u'direction': u'proxy_request', 
+	# 	u'command': u'send_email', 
+	# 	u'piggybag': 0, 
+	# 	u'payload': {
+	# 		u'header': {
+	# 			u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
+	# 			u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d023'
+	# 		}, u'data': {
+	# 			u'json': {
+	# 				u'body': u'Hello', 
+	# 				u'to': [u'yevgeniy.kiveisha@gmail.com'], 
+	# 				u'type': u'text', 
+	# 				u'subject': u'Test'
+	# 			}, 
+	# 			u'request': u'task_order'
+	# 		}
+	# 	}
+	# }
+	
+	def SendEmailHtmlHandler(self, sock, packet):
+		print ("SendEmailHtmlHandler", packet)
+		
+		to 		= packet["payload"]["data"]["json"]["to"]
+		subject = packet["payload"]["data"]["json"]["subject"]
+		body 	= packet["payload"]["data"]["json"]["body"]
 
-		# { 
-		# 	u'direction': u'proxy_request', 
-		# 	u'command': u'send_email', 
-		# 	u'piggybag': 0, 
-		# 	u'payload': {
-		# 		u'header': {
-		# 			u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
-		# 			u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d023'
-		# 		}, u'data': {
-		# 			u'json': {
-		# 				u'body': u'Hello', 
-		# 				u'to': [u'yevgeniy.kiveisha@gmail.com'], 
-		# 				u'type': u'text', 
-		# 				u'subject': u'Test'
-		# 			}, 
-		# 			u'request': u'task_order'
-		# 		}
-		# 	}
-		# }
+		# to = ["yevgeniy.kiveisha@gmail.com"]
+		# subject = "Makesense message"
+		# body = "Hey, \nJust want to let you know security cameras detected motyion."
+		email_text = """\
+			From: %s
+			To: %s
+			Subject: %s
 
-		image = packet["payload"]["data"]["json"]["image"]
+			%s
+			""" % (self.GmailUser, ", ".join(to), subject, body)
 
-		to = "yevgeniy.kiveisha@gmail.com"
+		try:
+			server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+			server.ehlo()
+			server.login(self.GmailUser, self.GmailPassword)
+			server.sendmail(self.GmailUser, to, email_text)
+			server.close()
+
+			print ('Email sent')
+		except Exception as e:
+			print ('Something went wrong...', e)
+	
+	def SendEmailHtmlWithImageHandler(self, sock, packet):
+		print ("SendEmailHtmlHandler", packet)
+
+		to 		= packet["payload"]["data"]["json"]["to"]
+		subject = packet["payload"]["data"]["json"]["subject"]
+		body 	= packet["payload"]["data"]["json"]["body"]
+		image 	= packet["payload"]["data"]["json"]["image"]
+
+		# to = "yevgeniy.kiveisha@gmail.com"
 
 		# Create the root message and fill in the from, to, and subject headers
 		msgRoot = MIMEMultipart('related')
-		msgRoot['Subject'] = 'MakeSense - Security alert from camera'
+		# msgRoot['Subject'] = 'MakeSense - Security alert from camera'
+		msgRoot['Subject'] = subject
 		msgRoot['From'] = self.GmailUser
 		msgRoot['To'] = to
 		msgRoot.preamble = 'This is a multi-part message in MIME format.'
@@ -97,7 +131,8 @@ class Context():
 		msgAlternative.attach(msgText)
 
 		# We reference the image in the IMG SRC attribute by the ID we give it below
-		msgText = MIMEText('<b>Some <i>HTML</i> text</b> and an image.<br><img src="cid:image1"><br>Nifty!', 'html')
+		# msgText = MIMEText('<b>Image taken by camera<br><img src="cid:image1"><br>', 'html')
+		msgText = MIMEText(body, 'html')
 		msgAlternative.attach(msgText)
 
 		# This example assumes the image is in the current directory
@@ -121,29 +156,7 @@ class Context():
 			print ('Something went wrong...', e)
 
 		return
-		
-		to = ["yevgeniy.kiveisha@gmail.com"]
-		subject = "Makesense message"
-		body = "Hey, \nJust want to let you know security cameras detected motyion."
-		email_text = """\
-			From: %s
-			To: %s
-			Subject: %s
 
-			%s
-			""" % (self.GmailUser, ", ".join(to), subject, body)
-
-		try:
-			server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-			server.ehlo()
-			server.login(self.GmailUser, self.GmailPassword)
-			server.sendmail(self.GmailUser, to, email_text)
-			server.close()
-
-			print ('Email sent')
-		except Exception as e:
-			print ('Something went wrong...', e)
-	
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
 		command = data['device']['command']

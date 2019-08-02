@@ -580,20 +580,22 @@ class Context():
 		print("OnCameraDiffrentHandler")
 		if len(self.EmailService) > 0:
 			if (time.time() - self.LastTSEmailSent > 30):
-				#print("OnCameraDiffrentHandler")
-				print(base64.encodebytes(image).decode("utf-8"))
-				THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.EmailService, "send_email",
+				print("Email service exist... Sending request...")
+				THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.EmailService, "send_email_html_with_image",
 							{	
 								'request': 'task_order',
 								'json': {
 									'to': ['yevgeniy.kiveisha@gmail.com'],
-									'subject': 'Test',
-									'body': 'Hello',
+									'subject': 'MakeSense - Security alert from camera',
+									'body': '<b>Image taken by camera<br><img src="cid:image1"><br>',
 									'type': 'text',
 									'image': base64.encodebytes(image).decode("utf-8")
 								}
 							})
 				self.LastTSEmailSent = time.time()
+		else:
+			print("Email service NOT FOUND... Canceling request...")
+		
 		if len(self.SMSService) > 0:
 			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.SMSService, "send_sms",
 						{	
@@ -604,7 +606,7 @@ class Context():
 							}
 						})
 		else:
-			print("[SMS Service] ERROR")
+			print("SMS service NOT FOUND... Canceling request...")
 	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
@@ -614,6 +616,15 @@ class Context():
 		if (102 == type):
 			self.EmailService = uuid
 			print("[OnMasterAppendNodeHandler]","Email service found")
+	
+	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
+		print ("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
+		if (101 == type):
+			self.SMSService = ""
+			print("[OnMasterRemoveNodeHandler]","SMS service REMOVED... Please DON NOT use service!")
+		if (102 == type):
+			self.EmailService = ""
+			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -797,6 +808,9 @@ class Context():
 		if (101 == nodeType):
 			self.SMSService = nodeUUID
 			print("[OnGetNodeInfoHandler]", "SMS service found")
+		if (102 == nodeType):
+			self.EmailService = nodeUUID
+			print("[OnMasterAppendNodeHandler]","Email service found")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -875,6 +889,7 @@ def main():
 	THIS.Node.LocalServiceNode.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.LocalServiceNode.OnGetNodeInfoCallback				= THIS.OnGetNodeInfoHandler
 	THIS.Node.LocalServiceNode.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
+	THIS.Node.LocalServiceNode.OnMasterRemoveNodeCallback			= THIS.OnMasterRemoveNodeHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")
