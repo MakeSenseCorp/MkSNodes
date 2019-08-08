@@ -146,6 +146,9 @@
 					var htmlOffline = "";
 					var onlineIndex = 0;
 					var offlineIndex = 0;
+					var itemsInRow = 2;
+					var currentOfflineItemsInRow = 0;
+					var currentOnlineItemsInRow = 0;
 					
 					for (i = 0; i < switchCount; i++) {
 						sonoff = switches[i];
@@ -153,15 +156,15 @@
 						
 						if (sonoff.enable === 1) {
 							if (sonoff.status === "connected") {
-								if (onlineIndex % 2) {
+								if (currentOnlineItemsInRow % itemsInRow == 0) {
 									htmlOnline += `<div class="row">`;
 								}
-								onlineIndex++;
+								currentOnlineItemsInRow++;
 							} else {
-								if (offlineIndex % 2) {
+								if (currentOfflineItemsInRow % itemsInRow == 0) {
 									htmlOffline += `<div class="row">`;
 								}
-								offlineIndex++;
+								currentOfflineItemsInRow++;
 							}
 
 							row = SwitchCell;
@@ -183,24 +186,22 @@
 							
 							if (sonoff.status === "connected") {
 								htmlOnline += row;
-
-								if (onlineIndex % 2 != 0) {
-									htmlOnline += `</div>`;
+								if (currentOnlineItemsInRow % itemsInRow != 0) {
+									htmlOnline += `</div><br><br>`;
 								}
 							} else {
 								htmlOffline += row;
-
-								if (offlineIndex % 2 != 0) {
-									htmlOffline += `</div>`;
+								if (currentOfflineItemsInRow % itemsInRow == 0) {
+									htmlOffline += `</div><br><br>`;
 								}
 							}
 						}
 					}
 					
-					document.getElementById("switches_count_id").innerHTML = onlineIndex;
-					document.getElementById("switches_list_id").innerHTML = htmlOnline;
-					document.getElementById("offline_switches_count_id").innerHTML = offlineIndex;
-					document.getElementById("offline_switches_list_id").innerHTML = htmlOffline;
+					document.getElementById("switches_count_id").innerHTML 			= currentOnlineItemsInRow;
+					document.getElementById("switches_list_id").innerHTML 			= htmlOnline;
+					document.getElementById("offline_switches_count_id").innerHTML 	= currentOfflineItemsInRow;
+					document.getElementById("offline_switches_list_id").innerHTML 	= htmlOffline;
               		feather.replace();
 				});
 			});
