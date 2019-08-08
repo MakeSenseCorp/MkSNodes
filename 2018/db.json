@@ -1,1 +1,1 @@
-{"switches": [{"ip": "192.168.0.3", "mac": "AA:AA:AA:AA:AA:AA", "enable": 1, "id": "abcdefgh-1111-2222-3333-abcdefgh1050", "name": "Switch_abcdefgh-1111-2222-3333-abcdefgh1050"}]}
+{"switches": [{"status": "connected", "enable": 1, "name": "Switch_abcdefgh-1111-2222-3333-abcdefgh1050", "ip": "192.168.0.3", "mac": "AA:AA:AA:AA:AA:AA", "state": 1, "id": "abcdefgh-1111-2222-3333-abcdefgh1050"}]}

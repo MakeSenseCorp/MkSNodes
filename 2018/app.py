@@ -58,6 +58,7 @@ class EthernetDeviceScanner():
 		self.ThreadCounter 		= 0
 		self.Network		 	= network
 		self.IPCount 			= index[1] - index[0]
+		self.IPList 			= []
 
 		if (self.IPCount < 0):
 			return []
@@ -92,7 +93,6 @@ class SonoffScanner():
 	
 	def RequestThread(self, address):
 		res = self.SendRequest(address)
-		print(res)
 		self.ThreadCounterLock.acquire()
 		if True == res:
 			self.Devices.append(address)
@@ -102,6 +102,7 @@ class SonoffScanner():
 	def Scan(self, addresses):
 		self.ThreadCounter 		= 0
 		self.CamerasCount 		= len(addresses)
+		self.Devices 			= []
 
 		if (self.CamerasCount < 0):
 			return []
@@ -118,6 +119,7 @@ class Sonoff():
 	def __init__(self, ip):
 		self.Address 	= ip
 		self.Id 		= ""
+		self.State 		= 0
 	
 	def SonnofRequest(self, request):
 		try:
@@ -144,10 +146,24 @@ class Sonoff():
 		return self.Address
 	
 	def SetSwitchOn(self):
-		return self.SonnofRequest("on")
+		res = self.SonnofRequest("on")
+		if ("on" in res):
+			self.State = 1
+		
+		return res
 	
 	def SetSwitchOff(self):
-		return self.SonnofRequest("off")
+		res = self.SonnofRequest("off")
+		if ("off" in res):
+			self.State = 0
+		
+		return res
+	
+	def SetState(self, state):
+		self.State = state
+	
+	def GetState(self):
+		return self.State
 
 class Context():
 	def __init__(self, node):
@@ -172,6 +188,9 @@ class Context():
 		self.DeviceScanner 				= EthernetDeviceScanner()
 		self.Switches 					= []
 		self.ObjSwitches				= []
+		self.SensorChange				= 0
+		self.SonoffDetectorTimestamp	= time.time()
+		self.ScanedIPs 					= []
 	
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -182,12 +201,12 @@ class Context():
 		for item in self.ObjSwitches:
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
 				res = item.SetSwitchOn()
-				if ("on" not in res):
-					res = "error"
-				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
-					'return_code': 'on'
-				})
-				return
+				if ("on" in res):
+					self.SensorChange += 1
+					THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+						'return_code': 'on'
+					})
+					return
 		
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'error'
@@ -198,12 +217,12 @@ class Context():
 		for item in self.ObjSwitches:
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
 				res = item.SetSwitchOff()
-				if ("off" not in res):
-					res = "error"
-				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
-					'return_code': 'on'
-				})
-				return
+				if ("off" in res):
+					self.SensorChange += 1
+					THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+						'return_code': 'on'
+					})
+					return
 		
 		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
 			'return_code': 'error'
@@ -234,11 +253,11 @@ class Context():
 		print(devices)
 		
 		scanner = SonoffScanner()
-		ips = scanner.Scan(devices)
-		print(ips)
+		self.ScanedIPs = scanner.Scan(devices)
+		print(self.ScanedIPs)
 		
 		dbSwitches = self.DB["switches"]
-		for ip in ips:
+		for ip in self.ScanedIPs:
 			switch = Sonoff(ip)
 			id = switch.GetSwitchID()
 			print ("[Switch]>", "NodeSystemLoadedHandler", id, ip)
@@ -249,26 +268,38 @@ class Context():
 				if id != "" and id in itemSwitch["id"]:
 					# Update DB with current IP
 					itemSwitch["ip"] = ip
+					switch.SetState(int(itemSwitch["state"]))
+					
+					if (switch.GetState == 0):
+						switch.SetSwitchOff()
+					else:
+						switch.SetSwitchOn()
+					
 					self.ObjSwitches.append(switch)
+					print ("APPEND SWITCH", ip)
 					switchFound = True
 					print ("[Switch]>", "NodeSystemLoadedHandler - Switch UPDATED")
 					break
 			
 			if switchFound is False:
 				print ("[Switch]>", "NodeSystemLoadedHandler - NEW SWITCH")
-				# Append new camera.
+				# Append new switch.
 				dbSwitches.append({
 								'id': str(id),
 								'ip': str(ip),
 								'name': 'Switch_' + str(id),
 								'enable':1,
-								'mac': 'AA:AA:AA:AA:AA:AA'
+								'mac': 'AA:AA:AA:AA:AA:AA',
+								'state': 0,
+								'status': 'connected'
 				})
+				print ("APPEND SWITCH", ip)
 				self.ObjSwitches.append(switch)
 		
 		self.DB["switches"] = dbSwitches
-		# Save new camera to database
+		# Save new switch to database
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
+		self.SonoffDetectorTimestamp = time.time()
 	
 	def OnMasterFoundHandler(self, masters):
 		print ("OnMasterFoundHandler")
@@ -293,9 +324,25 @@ class Context():
 
 	def OnGetSensorInfoRequestHandler(self, packet, sock):
 		print ("OnGetSensorInfoRequestHandler")
+		dbSwitches = self.DB["switches"]
+		
+		for dbSwitch in dbSwitches:
+			switchActive = False
+			for switch in self.ObjSwitches:
+				if (switch.GetIp() in dbSwitch["ip"]):
+					dbSwitch["state"] = switch.GetState()
+					dbSwitch["status"] = "connected"
+					switchActive = True
+					break
+			
+			if (switchActive is False):
+				dbSwitch["status"] = "disconnected"
+		
+		self.DB["switches"] = dbSwitches
 		payload = {
 			'db': self.DB
 		}
+		print (payload)
 		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, payload)
 
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
@@ -339,6 +386,18 @@ class Context():
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
 		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
 
+	def ScanSonoff(self):
+		scanner 	= SonoffScanner()
+		dbSwitches 	= self.DB["switches"]
+		
+		# Scan network
+		devices = self.DeviceScanner.Scan("192.168.0.", [1,64])		
+		ips 	= scanner.Scan(devices)
+		
+		for ip in ips:
+			pass
+		
+	
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
 			print ("WorkingHandler")
@@ -348,7 +407,91 @@ class Context():
 
 			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
-
+			
+			if (self.SensorChange > 0):
+				# Save data to DB
+				print ("Saving sensor data to DB")
+				dbSwitches = self.DB["switches"]
+				for switch in self.ObjSwitches:
+					for dbSwitch in dbSwitches:
+						if (switch.GetIp() in dbSwitch["ip"]):
+							dbSwitch["state"] = switch.GetState()
+							break
+				self.DB["switches"] = dbSwitches
+				# Save new camera to database
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+				self.SensorChange = 0
+		
+		if time.time() - self.SonoffDetectorTimestamp > 60 * 1:
+			# Scan network
+			devices = self.DeviceScanner.Scan("192.168.0.", [1,64])
+			print(devices)
+			
+			scanner 	= SonoffScanner()
+			ips 		= scanner.Scan(devices)
+			dbSwitches 	= self.DB["switches"]
+			
+			# Remove disconnected devices
+			for switch in self.ObjSwitches:
+				if (switch.GetIp() not in ips):
+					# Switch was disconnected
+					print ("DELETED <-------------------------->", switch.GetIp())
+					self.ObjSwitches.remove(switch)
+			
+			switchFound = False
+			saveToDB 	= False
+			# Append new devices
+			for ip in ips:
+				for switch in self.ObjSwitches:
+					if (switch.GetIp() in ip):
+						switchFound = True
+						# Noting to do
+						break
+						
+				if (switchFound is False):
+					# Append switch, but first check if it has record in DB
+					sonoff 	= Sonoff(ip)
+					id 		= sonoff.GetSwitchID()
+					sonoffFound = False
+					for itemSwitch in dbSwitches:
+						if id != "" and id in itemSwitch["id"]:
+							# Update DB with current IP
+							itemSwitch["ip"] = ip
+							sonoff.SetState(int(itemSwitch["state"]))
+							
+							if (sonoff.GetState == 0):
+								sonoff.SetSwitchOff()
+							else:
+								sonoff.SetSwitchOn()
+							
+							self.ObjSwitches.append(sonoff)
+							sonoffFound = True
+							saveToDB = True
+							print ("[Switch]>", "NodeSystemLoadedHandler - Switch UPDATED")
+							break
+					
+					if sonoffFound is False:
+						print ("[Switch]>", "NodeSystemLoadedHandler - NEW SWITCH")
+						# Append new switch.
+						dbSwitches.append({
+										'id': str(id),
+										'ip': str(ip),
+										'name': 'Switch_' + str(id),
+										'enable':1,
+										'mac': 'AA:AA:AA:AA:AA:AA',
+										'state': 0,
+										'status': 'connected'
+						})
+						self.ObjSwitches.append(switch)
+						saveToDB = True
+			
+			if (saveToDB is True):
+				self.DB["switches"] = dbSwitches
+				# Save new switch to database
+				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+			
+			self.SonoffDetectorTimestamp = time.time()
+			
 Service = MkSSlaveNode.SlaveNode()
 Node 	= MkSNode.Node("Sonoff Manager", Service)
 THIS 	= Context(Node)
