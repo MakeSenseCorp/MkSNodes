@@ -1,0 +1,548 @@
+2019-07-22 00:22:01.270 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 00:22:22.522 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-22 00:22:22.526 DEBUG app - CameraThread: Sent recording order 140293970522552
+2019-07-22 00:22:23.285 DEBUG app - OrdersManagerThread: [VideoCreator] 140293970522552 140293970194792
+2019-07-22 00:22:23.285 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-22 00:23:23.755 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 00:23:43.251 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-22 00:23:43.251 DEBUG app - CameraThread: Sent recording order 140269008910312
+2019-07-22 00:23:44.085 DEBUG app - OrdersManagerThread: [VideoCreator] 140269008910312 140269008054264
+2019-07-22 00:23:44.086 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-22 00:38:04.651 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 00:39:58.240 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 13:26:37.332 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 13:27:33.098 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 13:46:45.127 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 13:48:09.740 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 13:48:54.817 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 14:08:23.298 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 14:13:45.088 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 14:14:01.614 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 794, in FileDownloadHandler
+    jsonData 	= json.loads(fields[0])
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python2.7/json/decoder.py", line 382, in raw_decode
+    raise ValueError("No JSON object could be decoded")
+ValueError: No JSON object could be decoded
+2019-07-22 14:14:01.630 INFO _internal - _log: 192.168.0.101 - - [22/Jul/2019 14:14:01] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-22 14:15:47.746 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 14:16:07.560 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 794, in FileDownloadHandler
+    jsonData 	= json.loads(fields[0])
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python2.7/json/decoder.py", line 382, in raw_decode
+    raise ValueError("No JSON object could be decoded")
+ValueError: No JSON object could be decoded
+2019-07-22 14:16:07.578 INFO _internal - _log: 192.168.0.101 - - [22/Jul/2019 14:16:07] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-22 14:18:49.173 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-22 14:19:05.764 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 795, in FileDownloadHandler
+    jsonData 	= json.loads(fields[0])
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python2.7/json/decoder.py", line 382, in raw_decode
+    raise ValueError("No JSON object could be decoded")
+ValueError: No JSON object could be decoded
+2019-07-22 14:19:05.779 INFO _internal - _log: 192.168.0.101 - - [22/Jul/2019 14:19:05] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:09:58.993 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:10:19.369 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 795, in FileDownloadHandler
+    jsonData 	= json.loads(fields[0])
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python2.7/json/decoder.py", line 382, in raw_decode
+    raise ValueError("No JSON object could be decoded")
+ValueError: No JSON object could be decoded
+2019-07-23 13:10:19.411 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:10:19] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:11:47.183 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:12:02.589 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 795, in FileDownloadHandler
+    jsonData 	= json.loads(fields[0])
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/usr/lib/python2.7/json/decoder.py", line 382, in raw_decode
+    raise ValueError("No JSON object could be decoded")
+ValueError: No JSON object could be decoded
+2019-07-23 13:12:02.614 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:12:02] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:14:36.954 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:14:51.351 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 795, in FileDownloadHandler
+    jsonData 	= json.loads(fields)
+  File "/usr/lib/python2.7/json/__init__.py", line 339, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 364, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+TypeError: expected string or buffer
+2019-07-23 13:14:51.378 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:14:51] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:17:22.711 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:17:51.354 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file(FilePAth, as_attachment=True)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: u'/files/video_12823462123.avi'
+2019-07-23 13:17:51.380 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:17:51] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:19:02.890 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:19:17.307 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file(FilePAth, as_attachment=True)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: u'/files/video_12823462123.avi'
+2019-07-23 13:19:17.333 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:19:17] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:20:28.637 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:20:44.485 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:20:44] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 13:28:04.176 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:28:21.584 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_from_directory(directory="/home/ykiveish/mks/nodes/2017/static/files", filename=name)
+NameError: global name 'send_from_directory' is not defined
+2019-07-23 13:28:21.612 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:28:21] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:31:54.837 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:32:09.493 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [POST]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file(FilePAth, as_attachment=True)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: u'/home/ykiveish/mks/nodes/2017/static/filesvideo_12823462123.avi'
+2019-07-23 13:32:09.518 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:32:09] "POST /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:32:42.604 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:32:56.786 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:32:56] "POST /file/download/video_12823462867.avi HTTP/1.1" 200 -
+2019-07-23 13:37:01.899 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:37:30.006 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:37:30] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 13:38:56.369 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:39:17.733 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:39:17] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 13:42:48.767 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:43:04.629 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:43:04] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 13:43:47.872 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:43:59.482 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:43:59] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 13:45:21.473 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:45:34.815 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:45:34] "POST /file/download/video_12823462867.avi HTTP/1.1" 200 -
+2019-07-23 13:51:46.927 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:52:03.387 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:52:03] "POST /file/download/video_12823462123.avi HTTP/1.1" 404 -
+2019-07-23 13:53:27.312 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:54:33.327 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:54:33] "GET /file/download/1.txt HTTP/1.1" 404 -
+2019-07-23 13:54:33.374 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:54:33] "GET /favicon.ico HTTP/1.1" 404 -
+2019-07-23 13:55:06.895 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:55:06] "GET /file/download/video_12823462123.avi HTTP/1.1" 404 -
+2019-07-23 13:55:19.279 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:55:19] "GET /file/download/video_12823462123.avi HTTP/1.1" 404 -
+2019-07-23 13:56:56.107 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:57:00.762 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 804, in FileDownloadHandler
+    file = open(FilePAth,'r')
+NameError: global name 'FilePAth' is not defined
+2019-07-23 13:57:00.833 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:57:00] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:57:12.479 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 804, in FileDownloadHandler
+    file = open(FilePAth,'r')
+NameError: global name 'FilePAth' is not defined
+2019-07-23 13:57:12.486 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:57:12] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 13:57:35.732 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 13:57:47.493 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 13:57:47] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:19:42.338 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:19:46.350 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:19:46] "GET /files/video_12823462123.avi HTTP/1.1" 404 -
+2019-07-23 22:19:51.541 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:19:51] "GET /files/video_12823462123.avi HTTP/1.1" 404 -
+2019-07-23 22:27:54.588 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:28:01.059 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 804, in FileDownloadHandler
+    return send_file(FilePath)
+NameError: global name 'send_file' is not defined
+2019-07-23 22:28:01.085 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:28:01] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 22:29:59.040 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:30:02.102 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file("/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi")
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: '/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi'
+2019-07-23 22:30:02.217 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:30:02] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 22:30:02.255 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:30:02] "GET /favicon.ico HTTP/1.1" 404 -
+2019-07-23 22:30:03.380 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file("/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi")
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: '/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi'
+2019-07-23 22:30:03.386 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:30:03] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 22:30:05.815 ERROR app - log_exception: Exception on /file/download/video_12823462123.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2311, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1834, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask_cors/extension.py", line 161, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1737, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1832, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1818, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 805, in FileDownloadHandler
+    return send_file("/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi")
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 595, in send_file
+    file = open(filename, 'rb')
+IOError: [Errno 2] No such file or directory: '/home/ykiveish/mks/nodes/2017/static/ideo_12823462123.avi'
+2019-07-23 22:30:05.821 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:30:05] "GET /file/download/video_12823462123.avi HTTP/1.1" 500 -
+2019-07-23 22:30:37.266 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:30:46.426 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:30:46] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:31:19.879 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:31:22.818 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:31:22] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:32:00.969 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:32:11.265 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:32:11] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:47:29.205 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:47:29] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:48:38.686 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-23 22:48:46.158 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:48:46] "GET /file/download/video_12823462123.avi HTTP/1.1" 405 -
+2019-07-23 22:48:47.770 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:48:47] "GET /file/download/video_12823462123.avi HTTP/1.1" 405 -
+2019-07-23 22:49:34.793 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:49:34] "POST /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:59:20.895 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 22:59:34.627 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:59:34] "GET /file/download/video_12823462123.avi HTTP/1.1" 200 -
+2019-07-23 22:59:44.627 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 22:59:44] "GET /file/download/video_12823462867.avi HTTP/1.1" 200 -
+2019-07-23 23:04:16.725 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:05:41.530 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:05:41.530 DEBUG app - CameraThread: Sent recording order 140398292787568
+2019-07-23 23:05:41.607 DEBUG Image - init: Importing BmpImagePlugin
+2019-07-23 23:05:41.608 DEBUG Image - init: Importing BufrStubImagePlugin
+2019-07-23 23:05:41.609 DEBUG Image - init: Importing CurImagePlugin
+2019-07-23 23:05:41.610 DEBUG Image - init: Importing DcxImagePlugin
+2019-07-23 23:05:41.611 DEBUG Image - init: Importing EpsImagePlugin
+2019-07-23 23:05:41.614 DEBUG Image - init: Importing FitsStubImagePlugin
+2019-07-23 23:05:41.614 DEBUG Image - init: Importing FliImagePlugin
+2019-07-23 23:05:41.615 DEBUG Image - init: Importing FpxImagePlugin
+2019-07-23 23:05:41.619 DEBUG Image - init: Importing GbrImagePlugin
+2019-07-23 23:05:41.620 DEBUG Image - init: Importing GifImagePlugin
+2019-07-23 23:05:41.620 DEBUG Image - init: Importing GribStubImagePlugin
+2019-07-23 23:05:41.620 DEBUG Image - init: Importing Hdf5StubImagePlugin
+2019-07-23 23:05:41.621 DEBUG Image - init: Importing IcnsImagePlugin
+2019-07-23 23:05:41.622 DEBUG Image - init: Importing IcoImagePlugin
+2019-07-23 23:05:41.623 DEBUG Image - init: Importing ImImagePlugin
+2019-07-23 23:05:41.625 DEBUG Image - init: Importing ImtImagePlugin
+2019-07-23 23:05:41.626 DEBUG Image - init: Importing IptcImagePlugin
+2019-07-23 23:05:41.627 DEBUG Image - init: Importing JpegImagePlugin
+2019-07-23 23:05:41.627 DEBUG Image - init: Importing Jpeg2KImagePlugin
+2019-07-23 23:05:41.628 DEBUG Image - init: Importing McIdasImagePlugin
+2019-07-23 23:05:41.629 DEBUG Image - init: Importing MicImagePlugin
+2019-07-23 23:05:41.629 DEBUG Image - init: Importing MpegImagePlugin
+2019-07-23 23:05:41.630 DEBUG Image - init: Importing MpoImagePlugin
+2019-07-23 23:05:41.631 DEBUG Image - init: Importing MspImagePlugin
+2019-07-23 23:05:41.631 DEBUG Image - init: Importing PalmImagePlugin
+2019-07-23 23:05:41.634 DEBUG Image - init: Importing PcdImagePlugin
+2019-07-23 23:05:41.634 DEBUG Image - init: Importing PcxImagePlugin
+2019-07-23 23:05:41.635 DEBUG Image - init: Importing PdfImagePlugin
+2019-07-23 23:05:41.635 DEBUG Image - init: Importing PixarImagePlugin
+2019-07-23 23:05:41.636 DEBUG Image - init: Importing PngImagePlugin
+2019-07-23 23:05:41.636 DEBUG Image - init: Importing PpmImagePlugin
+2019-07-23 23:05:41.636 DEBUG Image - init: Importing PsdImagePlugin
+2019-07-23 23:05:41.637 DEBUG Image - init: Importing SgiImagePlugin
+2019-07-23 23:05:41.637 DEBUG Image - init: Importing SpiderImagePlugin
+2019-07-23 23:05:41.638 DEBUG Image - init: Importing SunImagePlugin
+2019-07-23 23:05:41.639 DEBUG Image - init: Importing TgaImagePlugin
+2019-07-23 23:05:41.639 DEBUG Image - init: Importing TiffImagePlugin
+2019-07-23 23:05:41.639 DEBUG Image - init: Importing WebPImagePlugin
+2019-07-23 23:05:41.641 DEBUG Image - init: Importing WmfImagePlugin
+2019-07-23 23:05:41.642 DEBUG Image - init: Importing XbmImagePlugin
+2019-07-23 23:05:41.646 DEBUG Image - init: Importing XpmImagePlugin
+2019-07-23 23:05:41.647 DEBUG Image - init: Importing XVThumbImagePlugin
+2019-07-23 23:09:09.786 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:09:53.542 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:09:53.542 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:53.862 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:54.176 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:54.500 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:54.820 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:55.141 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:55.339 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854919576
+2019-07-23 23:09:55.340 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:09:55.367 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:09:55.525 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:55.859 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:56.214 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:56.580 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:56.920 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:57.088 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854890064
+2019-07-23 23:09:57.089 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:09:57.116 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:09:57.226 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:57.541 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:57.860 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:58.186 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:58.498 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:58.825 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:59.017 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854700912
+2019-07-23 23:09:59.017 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:09:59.045 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:09:59.154 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:59.380 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:59.702 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:09:59.965 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:00.343 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:00.664 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:00.985 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:01.011 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854744848
+2019-07-23 23:10:01.012 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:10:01.037 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:10:01.304 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:01.540 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:01.811 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:02.142 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:02.436 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:02.741 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:02.953 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854743728
+2019-07-23 23:10:02.954 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:10:02.981 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:10:03.128 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:03.467 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:03.814 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:04.104 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:04.423 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:04.741 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:10:04.821 DEBUG app - OrdersManagerThread: [VideoCreator] 139921897025336 139921854745408
+2019-07-23 23:10:04.821 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:10:04.849 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:10:05.066 DEBUG app - CameraThread: Sent recording order 139921897025336
+2019-07-23 23:15:36.147 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:16:27.717 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:17:18.701 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:17:18.705 DEBUG app - CameraThread: Sent recording order 139854050768440
+2019-07-23 23:17:20.139 DEBUG app - OrdersManagerThread: [VideoCreator] 139854050768440 139853868055640
+2019-07-23 23:17:20.139 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:18:04.056 DEBUG app - CameraThread: Sent recording order 139853868225456
+2019-07-23 23:18:04.084 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-23 23:18:05.502 DEBUG app - OrdersManagerThread: [VideoCreator] 139853868225456 139853868211288
+2019-07-23 23:18:05.502 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-23 23:20:43.867 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:24:42.690 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:25:47.235 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:26:08.585 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-07-23 23:26:38.016 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 23:26:38] "GET /file/download/video1563913038.7.avi HTTP/1.1" 200 -
+2019-07-23 23:27:41.480 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 23:27:41] "GET /file/download/out_201906091537 HTTP/1.1" 200 -
+2019-07-23 23:27:43.604 INFO _internal - _log: 192.168.0.101 - - [23/Jul/2019 23:27:43] "GET /favicon.ico HTTP/1.1" 404 -
+2019-07-25 16:12:16.986 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-25 17:09:36.061 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-25 21:30:49.458 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-25 22:17:11.925 DEBUG app - CameraThread: Sent recording order 140132280964808
+2019-07-25 22:17:11.926 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2019-07-25 22:17:13.592 DEBUG app - OrdersManagerThread: [VideoCreator] 140132280964808 140132280558488
+2019-07-25 22:17:13.593 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2019-07-25 22:17:24.146 INFO _internal - _log: 192.168.0.101 - - [25/Jul/2019 22:17:24] "GET /file/download/video1563913038.7.avi HTTP/1.1" 200 -
+2019-07-25 22:17:57.912 INFO _internal - _log: 192.168.0.101 - - [25/Jul/2019 22:17:57] "GET /file/download/video1564082231.95.avi HTTP/1.1" 200 -
+2019-07-25 22:18:24.711 INFO _internal - _log: 192.168.0.101 - - [25/Jul/2019 22:18:24] "GET /file/download/video1563913084.08.avi HTTP/1.1" 200 -
+2019-07-25 22:18:53.870 INFO _internal - _log: 192.168.0.101 - - [25/Jul/2019 22:18:53] "GET /file/download/out_201906091537 HTTP/1.1" 200 -
+2019-07-25 22:18:55.972 INFO _internal - _log: 192.168.0.101 - - [25/Jul/2019 22:18:55] "GET /favicon.ico HTTP/1.1" 404 -
+2019-07-26 08:38:24.385 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-26 08:39:42.151 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-26 08:40:29.785 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-26 08:41:20.285 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-26 08:42:12.633 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-27 00:57:08.409 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-27 00:58:31.174 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-27 01:01:09.957 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-07-27 01:02:45.997 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 01:05:19.617 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 01:07:08.439 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:07:53.840 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:11:14.784 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:13:19.804 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:14:34.522 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:16:27.615 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-07-27 14:17:16.099 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)

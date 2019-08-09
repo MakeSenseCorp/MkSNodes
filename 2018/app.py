@@ -249,7 +249,7 @@ class Context():
 				for item in self.DB["switches"]:
 					self.Switches.append(item)
 		
-		devices = self.DeviceScanner.Scan("192.168.0.", [1,64])
+		devices = self.DeviceScanner.Scan("192.168.0.", [1,200])
 		print(devices)
 		
 		scanner = SonoffScanner()
@@ -424,7 +424,7 @@ class Context():
 		
 		if time.time() - self.SonoffDetectorTimestamp > 60 * 1:
 			# Scan network
-			devices = self.DeviceScanner.Scan("192.168.0.", [1,64])
+			devices = self.DeviceScanner.Scan("192.168.0.", [1,200])
 			print(devices)
 			
 			scanner 	= SonoffScanner()

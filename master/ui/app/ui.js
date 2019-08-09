@@ -1,1 +1,1 @@
-alert("Hello from Node config");
+console.log("Hello from Node config");
