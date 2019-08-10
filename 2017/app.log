@@ -547,3 +547,50 @@ IOError: [Errno 2] No such file or directory: '/home/ykiveish/mks/nodes/2017/sta
 2019-07-27 14:16:27.615 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
 2019-07-27 14:17:16.099 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
 2019-08-10 00:58:29.319 INFO _internal - _log:  * Running on http://0.0.0.0:8029/ (Press CTRL+C to quit)
+2019-08-10 20:14:06.019 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2019-08-10 20:15:42.516 INFO _internal - _log:  * Running on http://0.0.0.0:8029/ (Press CTRL+C to quit)
+2019-08-10 20:18:00.654 INFO _internal - _log:  * Running on http://0.0.0.0:8029/ (Press CTRL+C to quit)
+2019-08-10 23:31:24.005 DEBUG Image - init: Importing BmpImagePlugin
+2019-08-10 23:31:24.034 DEBUG Image - init: Importing BufrStubImagePlugin
+2019-08-10 23:31:24.044 DEBUG Image - init: Image: failed to import BufrStubImagePlugin: No module named BufrStubImagePlugin
+2019-08-10 23:31:24.060 DEBUG Image - init: Importing CurImagePlugin
+2019-08-10 23:31:24.061 DEBUG Image - init: Importing DcxImagePlugin
+2019-08-10 23:31:24.072 DEBUG Image - init: Importing EpsImagePlugin
+2019-08-10 23:31:24.109 DEBUG Image - init: Importing FitsStubImagePlugin
+2019-08-10 23:31:24.120 DEBUG Image - init: Importing FliImagePlugin
+2019-08-10 23:31:24.132 DEBUG Image - init: Importing FpxImagePlugin
+2019-08-10 23:31:24.160 DEBUG Image - init: Image: failed to import FpxImagePlugin: No module named FpxImagePlugin
+2019-08-10 23:31:24.200 DEBUG Image - init: Importing GbrImagePlugin
+2019-08-10 23:31:24.227 DEBUG Image - init: Importing GifImagePlugin
+2019-08-10 23:31:24.250 DEBUG Image - init: Importing GribStubImagePlugin
+2019-08-10 23:31:24.325 DEBUG Image - init: Importing Hdf5StubImagePlugin
+2019-08-10 23:31:24.326 DEBUG Image - init: Importing IcnsImagePlugin
+2019-08-10 23:31:24.354 DEBUG Image - init: Importing IcoImagePlugin
+2019-08-10 23:31:24.367 DEBUG Image - init: Importing ImImagePlugin
+2019-08-10 23:31:24.407 DEBUG Image - init: Importing ImtImagePlugin
+2019-08-10 23:31:24.419 DEBUG Image - init: Importing IptcImagePlugin
+2019-08-10 23:31:24.427 DEBUG Image - init: Importing JpegImagePlugin
+2019-08-10 23:31:24.446 DEBUG Image - init: Importing Jpeg2KImagePlugin
+2019-08-10 23:31:24.455 DEBUG Image - init: Importing McIdasImagePlugin
+2019-08-10 23:31:24.481 DEBUG Image - init: Importing MicImagePlugin
+2019-08-10 23:31:24.655 DEBUG Image - init: Importing MpegImagePlugin
+2019-08-10 23:31:24.656 DEBUG Image - init: Importing MpoImagePlugin
+2019-08-10 23:31:24.786 DEBUG Image - init: Importing MspImagePlugin
+2019-08-10 23:31:24.869 DEBUG Image - init: Importing PalmImagePlugin
+2019-08-10 23:31:24.994 DEBUG Image - init: Importing PcdImagePlugin
+2019-08-10 23:31:25.118 DEBUG Image - init: Importing PcxImagePlugin
+2019-08-10 23:31:25.118 DEBUG Image - init: Importing PdfImagePlugin
+2019-08-10 23:31:25.131 DEBUG Image - init: Importing PixarImagePlugin
+2019-08-10 23:31:25.185 DEBUG Image - init: Importing PngImagePlugin
+2019-08-10 23:31:25.222 DEBUG Image - init: Importing PpmImagePlugin
+2019-08-10 23:31:25.222 DEBUG Image - init: Importing PsdImagePlugin
+2019-08-10 23:31:25.231 DEBUG Image - init: Importing SgiImagePlugin
+2019-08-10 23:31:25.327 DEBUG Image - init: Importing SpiderImagePlugin
+2019-08-10 23:31:25.383 DEBUG Image - init: Importing SunImagePlugin
+2019-08-10 23:31:25.563 DEBUG Image - init: Importing TgaImagePlugin
+2019-08-10 23:31:25.603 DEBUG Image - init: Importing TiffImagePlugin
+2019-08-10 23:31:25.706 DEBUG Image - init: Importing WebPImagePlugin
+2019-08-10 23:31:25.766 DEBUG Image - init: Importing WmfImagePlugin
+2019-08-10 23:31:25.825 DEBUG Image - init: Importing XbmImagePlugin
+2019-08-10 23:31:25.841 DEBUG Image - init: Importing XpmImagePlugin
+2019-08-10 23:31:25.856 DEBUG Image - init: Importing XVThumbImagePlugin

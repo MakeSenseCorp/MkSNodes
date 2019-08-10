@@ -201,6 +201,7 @@ class ICamera():
 		self.SecuritySensitivity 		= 92
 		self.CurrentImageIndex 			= 0
 		self.OnImageDifferentCallback	= None
+		self.State 						= 0
 
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
@@ -234,6 +235,12 @@ class ICamera():
 		command = self.GetFrame()
 		frame, error = self.GetRequest(self.Address + command)
 		return frame
+	
+	def SetState(self, state):
+		self.State = state
+	
+	def GetState(self):
+		return self.State
 
 	def StartSecurity(self):
 		self.IsSecurity = True
@@ -397,6 +404,7 @@ class Context():
 		self.EmailService				= ""
 
 		self.LastTSEmailSent			= 0
+		self.HJTDetectorTimestamp 		= time.time()
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -677,6 +685,7 @@ class Context():
 				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
 					# Update DB with current IP
 					itemCamera["ip"] = ip
+					# Start camera thread
 					camera.StartCamera()
 					# Check weither need to start recording
 					if 1 == itemCamera["recording"]:
@@ -708,7 +717,8 @@ class Context():
 								"recording": 0,
 								"face_detect": 0,
 								"security": 0,
-								"motion_detection": 0
+								"motion_detection": 0,
+								"status": "disconnected"
 				})
 				camera.SetFramesPerVideo(2000)
 				camera.SetRecordingSensetivity(95)
@@ -717,6 +727,7 @@ class Context():
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
+		self.HJTDetectorTimestamp = time.time()
 	
 	def OnMasterFoundHandler(self, masters):
 		print ("OnMasterFoundHandler")
@@ -854,6 +865,80 @@ class Context():
 
 			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+			
+		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
+			# Search for cameras and update local database
+			cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
+			HJTScanner = HJTCameraScanner()
+			ips = HJTScanner.Scan(cameras)
+			# Foreach camera,
+			#	1. Get UID and MAC.
+			#	2. Check DB if MAC and UID exist, is so save found IP.
+			#	3. If camera does not exist, save it.
+			dbCameras = self.DB["cameras"]
+
+			# Remove disconnected devices
+			for camera in self.ObjCameras:
+				if (camera.GetIp() not in ips):
+					# Camera was disconnected
+					print ("DELETED <-------------------------->", camera.GetIp())
+					self.ObjCameras.remove(camera)
+			
+			return
+			for ip in ips:
+				camera = HJTCamera(ip)
+				mac = camera.GetMACAddress()
+				uid = camera.GetUID()
+				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac, uid, ip)
+
+				cameraFound = False
+				# Update camera IP (if it was changed)
+				for itemCamera in dbCameras:
+					if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
+						# Update DB with current IP
+						itemCamera["ip"] = ip
+						camera.SetState(int(itemCamera["state"]))
+						camera.StartCamera()
+						# Check weither need to start recording
+						if 1 == itemCamera["recording"]:
+							print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
+							camera.StartRecording()
+						# If security is ON we need to get frames
+						if self.SecurityEnabled is True:
+							camera.StartSecurity()
+						camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
+						camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
+						camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
+						# Add camera to camera obejct DB
+						self.ObjCameras.append(camera)
+						cameraFound = True
+						print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - True")
+						break
+				
+				if cameraFound is False:
+					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
+					# Append new camera.
+					dbCameras.append({
+									'mac': str(mac),
+									'uid': str(uid),
+									'ip': str(ip),
+									'name': 'Camera_' + str(uid),
+									'enable':1,
+									"frame_per_video": 2000,
+									"camera_sensetivity_recording": 95,
+									"recording": 0,
+									"face_detect": 0,
+									"security": 0,
+									"motion_detection": 0,
+									"status": "disconnected"
+					})
+					camera.SetFramesPerVideo(2000)
+					camera.SetRecordingSensetivity(95)
+					# Add camera to camera obejct DB
+					self.ObjCameras.append(camera)
+			self.DB["cameras"] = dbCameras
+			# Save new camera to database
+			self.Node.SetFileContent("db.json", json.dumps(self.DB))
 
 Service = MkSSlaveNode.SlaveNode()
 Node 	= MkSNode.Node("Camera Surveillance", Service)
