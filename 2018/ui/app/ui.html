@@ -110,26 +110,10 @@
 						<div class="col-lg-6">
 		                    <div class="card">
 								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Name</span>
-										<span class="text-muted" id="macAddress">[NAME]'</span>
-									</h6>
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Device ID</span>
-										<span class="text-muted" id="macAddress">[SWITCH_ID]'</span>
-									</h6>
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">IP Adrress</span>
-										<span class="text-muted" id="ipAddress">[IPADDRESS]</span>
-									</h6>
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">MAC Address</span>
-										<span class="text-muted" id="macAddress">[SWITCH_MAC]</span>
-									</h6>
-									<div class="custom-control custom-switch">
-										<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="SwitchChanged(this, '[SWITCH_ID]', '[IPADDRESS]')" id="switch_id_[SWITCH_ID]">
-										<label class="custom-control-label" for="switch_id_[SWITCH_ID]">Switch Status</label>
-									</div>
+									<center><h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted" id="switchName">[NAME]'</span>
+									</h6></center>
+									<center><span onclick="SwitchChanged(this, '[SWITCH_ID]', '[IPADDRESS]')" style="width: 100px; height: 100px; cursor: pointer;color: [COLOR_STATE]" data-feather="sun"></span></center>
 								</div>
 							</div>
 						</div>
@@ -175,24 +159,23 @@
 							
 							if (sonoff.status === "connected") {
 								if (sonoff.state == 1) {
-									row = row.split("[STATE]").join("checked");
+									row = row.split("[COLOR_STATE]").join("red");
 								} else {
-									row = row.split("[STATE]").join("");
+									row = row.split("[COLOR_STATE]").join("green");
 								}
-								row = row.split("[DISABLED]").join("");
 							} else {
-								row = row.split("[DISABLED]").join("disabled");
+								row = row.split("[COLOR_STATE]").join("gray");
 							}
 							
 							if (sonoff.status === "connected") {
 								htmlOnline += row;
 								if (currentOnlineItemsInRow % itemsInRow != 0) {
-									htmlOnline += `</div><br><br>`;
+									htmlOnline += `</div><br>`;
 								}
 							} else {
 								htmlOffline += row;
 								if (currentOfflineItemsInRow % itemsInRow == 0) {
-									htmlOffline += `</div><br><br>`;
+									htmlOffline += `</div><br>`;
 								}
 							}
 						}
@@ -207,14 +190,16 @@
 			});
 			
 			var SwitchChanged = function(elem, id, ip) {
-				if (elem.checked) {
+				if (elem.style.color === "green") {
+					elem.style.color = "red";
 					api.SendCustomCommand(NodeUUID, "switch_on", {
 						ip: ip,
 						id: id
 					}, function(res) {
 						
 					});
-				} else {
+				} else if (elem.style.color === "red"){
+					elem.style.color = "green";
 					api.SendCustomCommand(NodeUUID, "switch_off", {
 						ip: ip,
 						id: id
@@ -222,9 +207,8 @@
 						
 					});
 				}
+				// feather.replace();
 			};
-
-			feather.replace();
         </script>
     </body>
 </html>

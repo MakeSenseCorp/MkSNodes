@@ -186,7 +186,7 @@
 							
 							if (sonoff.status === "connected") {
 								htmlOnline += row;
-								if (currentOnlineItemsInRow % itemsInRow != 0) {
+								if (currentOnlineItemsInRow % itemsInRow == 0) {
 									htmlOnline += `</div><br><br>`;
 								}
 							} else {

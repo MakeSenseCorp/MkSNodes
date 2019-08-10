@@ -197,7 +197,7 @@
 								</h6>
 								<div class="row">
 									<div class="col-lg-12">
-										<img width="100%" class="rounded" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" id="id_[IPADDRESS]" onLoad="update('[IPADDRESS]');"/>
+										<img width="100%" height="250px" class="rounded" src="http://[IPADDRESS]/tmpfs/auto.jpg?t=" id="id_[IPADDRESS]" onLoad="update('[IPADDRESS]');"/>
 									</div>
 								</div><br>
 								<div class="row">
@@ -287,7 +287,7 @@
 						camera = cameras[i];
 
 						if (camera.enable === 1) {
-							if (enabledIndex % 2) {
+							if (enabledIndex % 2 == 0) {
 								html += `<div class="row">`;
 							}
 							enabledIndex++;
@@ -318,7 +318,7 @@
 							
 							html += row;
 
-							if (i % 2 != 0) {
+							if (enabledIndex % 2 == 0) {
 								html += `</div>`;
 							}
 
