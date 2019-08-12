@@ -77,32 +77,24 @@
 											<div class="card">
 												<div class="card-body">
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">IP Adrress</span>
-														<span class="text-muted" id="ipAddress">10.0.0.23</span>
-													</h6>
-													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">MAC Address</span>
-														<span class="text-muted" id="macAddress">28:45:f4:87:89</span>
-													</h6>
-													<h6 class="d-flex justify-content-between align-items-center mb-3">
 														<span class="text-muted">CPU Type</span>
-														<span class="text-muted" id="macAddress">ARM Cortex M4 64Bit</span>
+														<span class="text-muted" id="master_cpu_type">n/a</span>
 													</h6>
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
 														<span class="text-muted">CPU Usage</span>
-														<span class="text-muted" id="master_cpu_usage">97%</span>
+														<span class="text-muted" id="master_cpu_usage">n/a</span>
 													</h6>
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
 														<span class="text-muted">CPU Temperature</span>
-														<span class="text-muted" id="master_cpu_temperature">40C</span>
+														<span class="text-muted" id="master_cpu_temperature">n/a</span>
 													</h6>
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
 														<span class="text-muted">Board Type</span>
-														<span class="text-muted" id="macAddress">Orange Pi</span>
+														<span class="text-muted" id="master_board_type">n/a</span>
 													</h6>
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
 														<span class="text-muted">OS Type</span>
-														<span class="text-muted" id="macAddress">Linux Debian 7 64Bit</span>
+														<span class="text-muted" id="master_os_type">n/a</span>
 													</h6>
 												</div>
 											</div>
@@ -114,24 +106,24 @@
 														<div class="row">
 															<div class="col-lg-5">
 																<h6 class="d-flex justify-content-between align-items-center mb-3">
-																	<span class="text-muted">HD Usage (<a id="master_hd_total">16Gb</a>)</span>
+																	<span class="text-muted">HD Usage (<a id="master_hd_total">n/a</a>)</span>
 																</h6>
 															</div>
 															<div class="col-lg-7">
 																<div class="progress">
-																	<div id="master_hd_used" class="progress-bar" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">25%</div>
+																	<div id="master_hd_used" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
 																</div>
 															</div>
 														</div>
 														<div class="row">
 															<div class="col-lg-5">
 																<h6 class="d-flex justify-content-between align-items-center mb-3">
-																	<span class="text-muted">RAM Usage (<a id="master_ram_total">512Mb</a>)</span>
+																	<span class="text-muted">RAM Usage (<a id="master_ram_total">n/a</a>)</span>
 																</h6>
 															</div>
 															<div class="col-lg-7">
 																<div class="progress">
-																	<div id="master_ram_used" class="progress-bar" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">15%</div>
+																	<div id="master_ram_used" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
 																</div>
 															</div>
 														</div>
@@ -148,7 +140,7 @@
 							<div class="card-header" id="headingTwo">
 								<h2 class="mb-0">
 									<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-										Network & Nodes
+										Network & Connections
 									</button>
 								</h2>
 							</div>
@@ -156,10 +148,38 @@
 							<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
 								<div class="card-body">
 									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">IP Adrress</span>
+										<span class="text-muted" id="ipAddress">n/a</span>
+									</h6>
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">MAC Address</span>
+										<span class="text-muted" id="macAddress">n/a</span>
+									</h6>
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
 										<span class="text-muted">Connections List (<a href="#" onclick="GetConnectionsList()">Refresh</a>)</span>
 										<span class="badge badge-secondary badge-pill" id="connections_count_id">0</span>
 									</h6>
 									<div id="connections_list_id"></div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="card">
+							<div class="card-header" id="headingThree">
+								<h2 class="mb-0">
+									<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+										Nodes
+									</button>
+								</h2>
+							</div>
+							
+							<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+								<div class="card-body">
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">Nodes List (<a href="#" onclick="">Refresh</a>)</span>
+										<span class="badge badge-secondary badge-pill" id="online_nodes_count_id">0</span>
+									</h6>
+									<div id="online_nodes_list_id"></div>
 								</div>
 							</div>
 						</div>
@@ -281,6 +301,10 @@
 					document.getElementById("master_hd_used").style.width = hdUsage + "%";
 					document.getElementById("master_hd_used").setAttribute("aria-valuenow", hdUsage);
 					document.getElementById("master_hd_used").innerHTML = hdUsage + "%";
+					
+					document.getElementById("master_os_type").innerHTML = payload.os_type;
+					document.getElementById("master_cpu_type").innerHTML = payload.cpu_type;
+					document.getElementById("master_board_type").innerHTML = payload.board_type;
 				});
 			}
           

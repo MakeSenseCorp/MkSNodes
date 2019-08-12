@@ -76,6 +76,9 @@ class Context():
 		hdTotal 		= 0
 		hdUsed 			= 0
 		hdAvailable 	= 0
+		osType 			= ""
+		boardType 		= ""
+		cpuType			= ""
 		shell = MkSShellExecutor.ShellExecutor()
 		
 		# Get CPU usage
@@ -109,6 +112,15 @@ class Context():
 				hdTotal 		= int(cols[1]) / (1023 * 1023)
 				hdUsed 			= int(cols[2]) / (1023 * 1023)
 				hdAvailable 	= int(cols[3]) / (1023 * 1023)
+				break
+		
+		# Get OS info
+		data = shell.ExecuteCommand("uname -a")
+		data = re.sub(' +', ' ', data)
+		col = data.split(" ")
+		osType 		= col[0]
+		boardType 	= col[1]
+		cpuType		= col[11]
 		
 		payload = {
 			'cpu_usage': str(cpuUsage),
@@ -119,6 +131,9 @@ class Context():
 			'hd_total': str(hdTotal),
 			'hd_used': str(hdUsed),
 			'hd_available': str(hdAvailable),
+			'os_type': str(osType),
+			'board_type': str(boardType),
+			'cpu_type': str(cpuType),
 		}
 		message = THIS.Node.Network.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
