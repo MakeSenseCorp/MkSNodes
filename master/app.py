@@ -6,6 +6,7 @@ import json
 import time
 import thread
 import threading
+import re
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
@@ -26,6 +27,7 @@ class Context():
 		self.Handlers					= {
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
+			'get_master_public_info':		self.GetMasterPublicInfoHandler,
 			'undefined':					self.UndefindHandler
 		}
 		# Handlers for local module (socket)
@@ -59,6 +61,67 @@ class Context():
 
 	def GetInstalledNodesListRequestHandler(self, packet):
 		print ("GetInstalledNodesListRequestHandler")
+	
+	def GetMasterPublicInfoHandler(self, packet):
+		print ("GetMasterPublicInfoHandler")
+		# Read
+		# 	Temperature						cat /sys/class/thermal/thermal_zone0/temp
+		#	CPU/RAM Usage, 10 Tasks List	top -n 1
+		#									ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10
+		#
+		cpuUsage 		= 0
+		temperature 	= 0
+		ramTotal 		= 0
+		ramUsed 		= 0
+		hdTotal 		= 0
+		hdUsed 			= 0
+		hdAvailable 	= 0
+		shell = MkSShellExecutor.ShellExecutor()
+		
+		# Get CPU usage
+		data = shell.ExecuteCommand("ps -eo pcpu,pid,user,args | sort -k 1 -r | head -20")
+		data = re.sub(' +', ' ', data)
+		cmdRows = data.split("\n")
+		for row in cmdRows[1:-1]:
+			cols = row.split(" ")
+			cpuUsage += float(cols[1])
+		
+		# Get CPU temperature
+		data = shell.ExecuteCommand("cat /sys/class/thermal/thermal_zone0/temp")
+		temperature = float(float(data[:-3]) / 10.0)
+		
+		# Get RAM free space
+		data = shell.ExecuteCommand("free")
+		data = re.sub(' +', ' ', data)
+		cmdRows = data.split("\n")
+		col = cmdRows[1].split(" ")
+		ramTotal = int(col[1]) / 1023
+		ramUsed  = int(col[2]) / 1023
+		ramAvailable = ramTotal - ramUsed
+		
+		# Get CPU usage
+		data = shell.ExecuteCommand("df")
+		data = re.sub(' +', ' ', data)
+		cmdRows = data.split("\n")
+		for row in cmdRows[1:-1]:
+			cols = row.split(" ")
+			if (cols[5] == "/"):
+				hdTotal 		= int(cols[1]) / (1023 * 1023)
+				hdUsed 			= int(cols[2]) / (1023 * 1023)
+				hdAvailable 	= int(cols[3]) / (1023 * 1023)
+		
+		payload = {
+			'cpu_usage': str(cpuUsage),
+			'cpu_temperature': str(temperature),
+			'ram_total': str(ramTotal),
+			'ram_used': str(ramUsed),
+			'ram_available': str(ramAvailable),
+			'hd_total': str(hdTotal),
+			'hd_used': str(hdUsed),
+			'hd_available': str(hdAvailable),
+		}
+		message = THIS.Node.Network.BuildResponse(packet, payload)
+		THIS.Node.Network.SendWebSocket(message)
 	
 	def OnCustomCommandRequestHandler(self, sock, packet):
 		print ("OnCustomCommandRequestHandler")
@@ -100,6 +163,7 @@ class Context():
 	
 	# Websockets
 	def WSDataArrivedHandler(self, packet):
+		print ("WSDataArrivedHandler")
 		command = packet['data']['header']['command']
 		self.Handlers[command](packet)
 	
