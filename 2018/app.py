@@ -423,6 +423,7 @@ class Context():
 				self.SensorChange = 0
 		
 		if time.time() - self.SonoffDetectorTimestamp > 60 * 1:
+			return
 			# Scan network
 			devices = self.DeviceScanner.Scan("192.168.0.", [1,200])
 			print(devices)

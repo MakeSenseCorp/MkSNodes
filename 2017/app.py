@@ -393,6 +393,7 @@ class Context():
 			'set_misc_information':						self.SetMiscInformationHandler,
 		}
 		self.CustomResponseHandlers				= {
+			'get_online_devices':		self.GetOnlineDevicesHandler
 		}
 
 		self.DB							= None
@@ -402,6 +403,7 @@ class Context():
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
+		self.IPScannerService			= ""
 
 		self.LastTSEmailSent			= 0
 		self.HJTDetectorTimestamp 		= time.time()
@@ -410,6 +412,9 @@ class Context():
 		print ("UndefindHandler")
 
 	# CustomRequestHandlers
+	def GetOnlineDevicesHandler(self, sock, packet):
+		print ("GetOnlineDevicesHandler", packet)
+	
 	def StartRecordingHandler(self, sock, packet):
 		print("StartRecordingHandler")
 		# Find camera
@@ -624,6 +629,9 @@ class Context():
 		if (102 == type):
 			self.EmailService = uuid
 			print("[OnMasterAppendNodeHandler]","Email service found")
+		if (103 == type):
+			self.IPScannerService = uuid
+			print("[OnMasterAppendNodeHandler]","IP Scanner service found")
 	
 	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
@@ -633,6 +641,9 @@ class Context():
 		if (102 == type):
 			self.EmailService = ""
 			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
+		if (103 == type):
+			self.IPScannerService = ""
+			print("[OnMasterRemoveNodeHandler]","IP Scanner service REMOVED... Please DON NOT use service!")
 
 	# Websockets
 	def WSDataArrivedHandler(self, message_type, source, data):
@@ -728,6 +739,8 @@ class Context():
 		# Save new camera to database
 		self.Node.SetFileContent("db.json", json.dumps(self.DB))
 		self.HJTDetectorTimestamp = time.time()
+
+		THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.IPScannerService, "get_online_devices", { })
 	
 	def OnMasterFoundHandler(self, masters):
 		print ("OnMasterFoundHandler")
@@ -822,6 +835,9 @@ class Context():
 		if (102 == nodeType):
 			self.EmailService = nodeUUID
 			print("[OnMasterAppendNodeHandler]","Email service found")
+		if (103 == nodeType):
+			self.IPScannerService = nodeUUID
+			print("[OnMasterAppendNodeHandler]","IP Scanner service found")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -867,78 +883,8 @@ class Context():
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
-			# Search for cameras and update local database
-			cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
-			HJTScanner = HJTCameraScanner()
-			ips = HJTScanner.Scan(cameras)
-			# Foreach camera,
-			#	1. Get UID and MAC.
-			#	2. Check DB if MAC and UID exist, is so save found IP.
-			#	3. If camera does not exist, save it.
-			dbCameras = self.DB["cameras"]
-
-			# Remove disconnected devices
-			for camera in self.ObjCameras:
-				if (camera.GetIp() not in ips):
-					# Camera was disconnected
-					print ("DELETED <-------------------------->", camera.GetIp())
-					self.ObjCameras.remove(camera)
-			
-			return
-			for ip in ips:
-				camera = HJTCamera(ip)
-				mac = camera.GetMACAddress()
-				uid = camera.GetUID()
-				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac, uid, ip)
-
-				cameraFound = False
-				# Update camera IP (if it was changed)
-				for itemCamera in dbCameras:
-					if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
-						# Update DB with current IP
-						itemCamera["ip"] = ip
-						camera.SetState(int(itemCamera["state"]))
-						camera.StartCamera()
-						# Check weither need to start recording
-						if 1 == itemCamera["recording"]:
-							print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
-							camera.StartRecording()
-						# If security is ON we need to get frames
-						if self.SecurityEnabled is True:
-							camera.StartSecurity()
-						camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
-						camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
-						camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
-						# Add camera to camera obejct DB
-						self.ObjCameras.append(camera)
-						cameraFound = True
-						print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - True")
-						break
-				
-				if cameraFound is False:
-					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
-					# Append new camera.
-					dbCameras.append({
-									'mac': str(mac),
-									'uid': str(uid),
-									'ip': str(ip),
-									'name': 'Camera_' + str(uid),
-									'enable':1,
-									"frame_per_video": 2000,
-									"camera_sensetivity_recording": 95,
-									"recording": 0,
-									"face_detect": 0,
-									"security": 0,
-									"motion_detection": 0,
-									"status": "disconnected"
-					})
-					camera.SetFramesPerVideo(2000)
-					camera.SetRecordingSensetivity(95)
-					# Add camera to camera obejct DB
-					self.ObjCameras.append(camera)
-			self.DB["cameras"] = dbCameras
-			# Save new camera to database
-			self.Node.SetFileContent("db.json", json.dumps(self.DB))
+			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.IPScannerService, "get_online_devices", { })
+			self.HJTDetectorTimestamp = time.time()
 
 Service = MkSSlaveNode.SlaveNode()
 Node 	= MkSNode.Node("Camera Surveillance", Service)

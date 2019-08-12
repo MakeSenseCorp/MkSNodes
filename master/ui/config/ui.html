@@ -147,14 +147,33 @@
 							
 							<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
 								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">IP Adrress</span>
-										<span class="text-muted" id="ipAddress">n/a</span>
-									</h6>
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">MAC Address</span>
-										<span class="text-muted" id="macAddress">n/a</span>
-									</h6>
+									<div class="row">
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">Machine Name</span>
+														<span class="text-muted" id="master_machine_name">n/a</span>
+													</h6>
+												</div>
+											</div>
+										</div>
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">IP Adrress</span>
+														<span class="text-muted" id="ipAddress">n/a</span>
+													</h6>
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">MAC Address</span>
+														<span class="text-muted" id="macAddress">n/a</span>
+													</h6>
+												</div>
+											</div>
+										</div>
+									</div>
+									<br>
 									<h6 class="d-flex justify-content-between align-items-center mb-3">
 										<span class="text-muted">Connections List (<a href="#" onclick="GetConnectionsList()">Refresh</a>)</span>
 										<span class="badge badge-secondary badge-pill" id="connections_count_id">0</span>
@@ -305,6 +324,7 @@
 					document.getElementById("master_os_type").innerHTML = payload.os_type;
 					document.getElementById("master_cpu_type").innerHTML = payload.cpu_type;
 					document.getElementById("master_board_type").innerHTML = payload.board_type;
+					document.getElementById("master_machine_name").innerHTML = payload.machine_name;
 				});
 			}
           

@@ -87,7 +87,10 @@ class Context():
 		cmdRows = data.split("\n")
 		for row in cmdRows[1:-1]:
 			cols = row.split(" ")
-			cpuUsage += float(cols[1])
+			if (cols[0] != ""):
+				cpuUsage += float(cols[0])
+			else:
+				cpuUsage += float(cols[1])
 		
 		# Get CPU temperature
 		data = shell.ExecuteCommand("cat /sys/class/thermal/thermal_zone0/temp")
@@ -119,7 +122,7 @@ class Context():
 		data = re.sub(' +', ' ', data)
 		col = data.split(" ")
 		osType 		= col[0]
-		boardType 	= col[1]
+		machineName = col[1]
 		cpuType		= col[11]
 		
 		payload = {
@@ -132,8 +135,9 @@ class Context():
 			'hd_used': str(hdUsed),
 			'hd_available': str(hdAvailable),
 			'os_type': str(osType),
-			'board_type': str(boardType),
+			'board_type': str("n/a"),
 			'cpu_type': str(cpuType),
+			'machine_name': str(machineName),
 		}
 		message = THIS.Node.Network.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)

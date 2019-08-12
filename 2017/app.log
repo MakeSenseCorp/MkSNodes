@@ -594,3 +594,12 @@ IOError: [Errno 2] No such file or directory: '/home/ykiveish/mks/nodes/2017/sta
 2019-08-10 23:31:25.825 DEBUG Image - init: Importing XbmImagePlugin
 2019-08-10 23:31:25.841 DEBUG Image - init: Importing XpmImagePlugin
 2019-08-10 23:31:25.856 DEBUG Image - init: Importing XVThumbImagePlugin
+2019-08-11 00:12:05.394 INFO _internal - _log:  * Running on http://0.0.0.0:8029/ (Press CTRL+C to quit)
+2019-08-12 19:47:28.958 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-08-12 19:52:27.610 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-08-12 20:42:48.768 INFO _internal - _log:  * Running on http://0.0.0.0:8030/ (Press CTRL+C to quit)
+2019-08-13 00:12:17.437 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-08-13 00:17:03.707 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-08-13 00:22:22.559 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-08-13 00:23:49.536 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2019-08-13 00:54:56.694 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
