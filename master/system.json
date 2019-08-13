@@ -16,7 +16,8 @@
 		"description":"Master Node",
         "isMasterNode":"True",
         "isLocalServerEnabled":"True",
-        "isWebEnabled":"True"
+        "isWebEnabled":"True",
+		"boardType": "OrangePI Zero"
 	},
 	"user":
 	{

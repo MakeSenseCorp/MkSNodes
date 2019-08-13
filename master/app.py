@@ -10,12 +10,11 @@ import re
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
-from mksdk import MkSUSBAdaptor
-from mksdk import MkSProtocol
-from mksdk import MkSConnectorArduino
 from mksdk import MkSNode
 from mksdk import MkSMasterNode
 from mksdk import MkSShellExecutor
+from mksdk import MkSExternalProcess
+from mksdk import MkSUtils
 
 class Context():
 	def __init__(self, node):
@@ -28,6 +27,8 @@ class Context():
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
 			'get_master_public_info':		self.GetMasterPublicInfoHandler,
+			'get_services_info': 			self.GetServicesInfoHandler,
+			'set_service_info': 			self.SetServiceInfoHandler,
 			'undefined':					self.UndefindHandler
 		}
 		# Handlers for local module (socket)
@@ -37,6 +38,8 @@ class Context():
 		}
 		self.CustomResponseHandlers				= {
 		}
+		self.ServicesDB 		= None
+		self.RunningServices	= []
 
 	def UndefindHandler(self, packet):
 		print ("UndefindHandler")
@@ -125,6 +128,18 @@ class Context():
 		machineName = col[1]
 		cpuType		= col[11]
 		
+		# Get network data
+		interfaces = []
+		self.Utilities = MkSUtils.Utils()
+		items = self.Utilities.GetSystemIPs()
+		for item in items:
+			if ("127.0.0" not in item[0]):
+				interfaces.append(item)
+				
+		network = {
+			'interfaces': interfaces
+		}
+		
 		payload = {
 			'cpu_usage': str(cpuUsage),
 			'cpu_temperature': str(temperature),
@@ -135,13 +150,42 @@ class Context():
 			'hd_used': str(hdUsed),
 			'hd_available': str(hdAvailable),
 			'os_type': str(osType),
-			'board_type': str("n/a"),
+			'board_type': str(THIS.Node.BoardType),
 			'cpu_type': str(cpuType),
 			'machine_name': str(machineName),
+			'network': network,
+			'on_boot_services': self.ServicesDB["on_boot_services"],
 		}
 		message = THIS.Node.Network.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
 	
+	def GetServicesInfoHandler(self, packet):
+		print ("GetServicesInfoHandler")
+		payload = {
+			'on_boot_services': self.ServicesDB["on_boot_services"],
+		}
+		message = THIS.Node.Network.BuildResponse(packet, payload)
+		THIS.Node.Network.SendWebSocket(message)
+	
+	def SetServiceInfoHandler(self, packet):
+		print ("SetServiceInfoHandler", packet)
+		uuid 	= packet["data"]["payload"]["uuid"]
+		enabled = packet["data"]["payload"]["enabled"]
+		
+		dbOnBootServices = self.ServicesDB["on_boot_services"]
+		for item in dbOnBootServices:
+			if (item["uuid"] == uuid):
+				item["enabled"] = enabled
+				break
+		
+		self.ServicesDB["on_boot_services"] = dbOnBootServices
+		# Save new switch to database
+		self.Node.SetFileContent("services.json", json.dumps(self.ServicesDB))
+		
+		payload = { 'error': 'ok' }
+		message = THIS.Node.Network.BuildResponse(packet, payload)
+		THIS.Node.Network.SendWebSocket(message)
+		
 	def OnCustomCommandRequestHandler(self, sock, packet):
 		print ("OnCustomCommandRequestHandler")
 		command = packet['command']
@@ -195,6 +239,19 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		print ("NodeSystemLoadedHandler")
 		self.SystemLoaded = True
+		
+		# Loading on master boot service database
+		jsonStr = self.Node.GetFileContent("services.json")
+		if jsonStr != "":
+			self.ServicesDB = json.loads(jsonStr)
+			if (self.ServicesDB is not None):
+				services = self.ServicesDB["on_boot_services"]
+				for service in services:
+					if (service["enabled"] == 1):
+						print("START SERVCE", service["name"])
+						node = MkSExternalProcess.ExternalProcess()
+						self.RunningServices.append(node)
+						node.CallProcess("python app.py", "../" + str(service["type"]), "")
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
@@ -209,6 +266,10 @@ Node 	= MkSNode.Node("MASTER", Service)
 THIS 	= Context(Node)
 
 def signal_handler(signal, frame):
+	for service in THIS.RunningServices:
+		print("[Master] Stop service")
+		service.KillProcess()
+		time.sleep(2)
 	THIS.Node.Stop()
 
 def main():

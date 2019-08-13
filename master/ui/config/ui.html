@@ -162,13 +162,10 @@
 											<div class="card">
 												<div class="card-body">
 													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">IP Adrress</span>
-														<span class="text-muted" id="ipAddress">n/a</span>
+														<span class="text-muted"> Interfaces </span>
+														<span class="badge badge-secondary badge-pill" id="network_interfaces_count_id">0</span>
 													</h6>
-													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">MAC Address</span>
-														<span class="text-muted" id="macAddress">n/a</span>
-													</h6>
+													<div id="network_interfaces_list_id"></div>
 												</div>
 											</div>
 										</div>
@@ -202,6 +199,35 @@
 								</div>
 							</div>
 						</div>
+						
+						<div class="card">
+							<div class="card-header" id="headingServices">
+								<h2 class="mb-0">
+									<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseServices" aria-expanded="false" aria-controls="collapseServices">
+										Service
+									</button>
+								</h2>
+							</div>
+							
+							<div id="collapseServices" class="collapse" aria-labelledby="headingServices" data-parent="#accordionExample">
+								<div class="card-body">
+									<div class="row">
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">Service List</span>
+														<span class="badge badge-secondary badge-pill" id="on_boot_services_count_id">0</span>
+													</h6>
+													<div id="on_boot_services_list_id"></div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
 					</dix>
         	    </div>
         	</div>
@@ -260,6 +286,37 @@
 					</li>
 			`;
 			
+			var NetworkInterfacesRow = `
+				<div class="row">
+					<div class="col-lg-5">
+						<small class="my-0">[IP]</small>
+					</div>
+					<div class="col-lg-5">
+						<small class="my-0">[MAC]</small>
+					</div>
+					<div class="col-lg-2">
+						<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>
+					</div>
+				</div>
+			`;
+			
+			var OnBootServicesRow = `
+				<div class="row">
+					<div class="col-lg-3">
+						<small class="my-0">[NAME]</small>
+					</div>
+					<div class="col-lg-7">
+						<small class="my-0">[UUID]</small>
+					</div>
+					<div class="col-lg-2">
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="SwitchChanged(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					</div>
+				</div>
+			`;
+			
 			var masterPublicInfoIntervakHndl = 0;
 
 			var GetConnectionsList = function() {
@@ -298,7 +355,45 @@
 				
 				GetMiscInfo();
 				masterPublicInfoIntervakHndl = setInterval(GetMiscInfo, 5000);
+				
+				api.SendCustomCommand(NodeUUID, "get_services_info", {
+				}, function(res) {
+					console.log(res);
+					payload = res.data.payload;
+					var on_boot_services = payload.on_boot_services;
+					document.getElementById("on_boot_services_count_id").innerHTML = on_boot_services.length;
+					var html = `<div class="card"><div class="card-body">`;
+					on_boot_services.forEach(function(element) {
+						row = OnBootServicesRow;
+						row = row.split("[NAME]").join(element.name);
+						row = row.split("[UUID]").join(element.uuid);
+						row = row.split("[DISABLED]").join("");
+						if (element.enabled == 1) {
+							row = row.split("[STATE]").join("checked");
+						} else {
+							row = row.split("[STATE]").join("");
+						}
+						html = html + row;
+					});
+				
+					html = html + `</div></div>`;
+					document.getElementById("on_boot_services_list_id").innerHTML = html;
+				});
 			});
+			
+			var SwitchChanged = function(elem, uuid) {
+				if (elem.checked) {
+					api.SendCustomCommand(NodeUUID, "set_service_info", {
+						uuid: uuid,
+						enabled: 1
+					}, function(res) { });
+				} else {
+					api.SendCustomCommand(NodeUUID, "set_service_info", {
+						uuid: uuid,
+						enabled: 0
+					}, function(res) { });
+				}
+			};
 		  
 			function GetMiscInfo () {
 				api.SendCustomCommand(NodeUUID, "get_master_public_info", {
@@ -325,6 +420,21 @@
 					document.getElementById("master_cpu_type").innerHTML = payload.cpu_type;
 					document.getElementById("master_board_type").innerHTML = payload.board_type;
 					document.getElementById("master_machine_name").innerHTML = payload.machine_name;
+					
+					var interfaces = payload.network.interfaces;
+					document.getElementById("network_interfaces_count_id").innerHTML = interfaces.length;
+					var html = `<div class="card"><div class="card-body">`;
+					interfaces.forEach(function(element) {
+						row = NetworkInterfacesRow;
+						row = row.split("[IP]").join(element[0]);
+						row = row.split("[MAC]").join(element[1]);
+						html = html + row;
+					});
+				
+					html = html + `</div></div>`;
+					document.getElementById("network_interfaces_list_id").innerHTML = html;
+					
+					feather.replace();
 				});
 			}
           
