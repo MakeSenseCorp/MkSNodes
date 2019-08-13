@@ -140,6 +140,10 @@ class Context():
 			'interfaces': interfaces
 		}
 		
+		onBootServices = []
+		if (self.ServicesDB is not None):
+			onBootServices = self.ServicesDB["on_boot_services"]
+
 		payload = {
 			'cpu_usage': str(cpuUsage),
 			'cpu_temperature': str(temperature),
@@ -154,7 +158,7 @@ class Context():
 			'cpu_type': str(cpuType),
 			'machine_name': str(machineName),
 			'network': network,
-			'on_boot_services': self.ServicesDB["on_boot_services"],
+			'on_boot_services': onBootServices,
 		}
 		message = THIS.Node.Network.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
