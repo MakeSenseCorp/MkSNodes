@@ -1,0 +1,1 @@
+{"on_boot_services": [{"enabled": 1, "type": 103, "name": "IP Scanner", "uuid": "ac6de837-9863-72a9-c789-a0aae7e9d024"}, {"enabled": 0, "type": 102, "name": "EMail", "uuid": "ac6de837-9863-72a9-c789-a0aae7e9d023"}, {"enabled": 0, "type": 101, "name": "SMS", "uuid": "ac6de837-9863-72a9-c789-a0aae7e9d022"}]}
