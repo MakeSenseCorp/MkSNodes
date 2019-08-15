@@ -11,7 +11,8 @@
 		"description":"Email Service",
         "isMasterNode":"False",
         "isLocalServerEnabled":"True",
-        "isWebEnabled":"True"
+        "isWebEnabled":"True",
+		"is_application_ui_enabled": "False"
 	},
 	"user":
 	{

@@ -11,7 +11,8 @@
 		"description":"Camera Surveillance",
         "isMasterNode":"False",
         "isLocalServerEnabled":"True",
-        "isWebEnabled":"True"
+        "isWebEnabled":"True",
+		"is_application_ui_enabled": "True"
 	},
 	"user":
 	{
