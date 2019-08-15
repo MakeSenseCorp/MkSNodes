@@ -101,10 +101,12 @@
         <script src="mksdk-js/MkSWebface.js"></script>
 
         <script>
-          	var NodeUUID = "ac6de837-9863-72a9-c789-a0aae7e9d025";
+          	var GatewayIP = "[GATEWAY_IP]";
+			var NodeUUID  = "[NODE_UUID]";
 			
 			// Gey makesense api instanse.
 			var api = MkSAPIBuilder.GetInstance();
+			api.SetGlobalGatewayIP(GatewayIP);
 
 			var SwitchCell = `
 						<div class="col-lg-6">

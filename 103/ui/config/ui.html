@@ -85,7 +85,13 @@
         <script src="mksdk-js/MkSWebface.js"></script>
 
         <script>
-          var NodeUUID = "ac6de837-9863-72a9-c789-a0aae7e9d024";
+			var GatewayIP = "[GATEWAY_IP]";
+			var NodeUUID  = "[NODE_UUID]";
+			
+			// Gey makesense api instanse.
+			var api = MkSAPIBuilder.GetInstance();
+			api.SetGlobalGatewayIP(GatewayIP);
+		  
           var MAchineIPRow = `
             <li class="list-group-item d-flex justify-content-between lh-condensed">
               <div>

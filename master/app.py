@@ -184,7 +184,8 @@ class Context():
 		
 		self.ServicesDB["on_boot_services"] = dbOnBootServices
 		# Save new switch to database
-		self.Node.SetFileContent("services.json", json.dumps(self.ServicesDB))
+		MKS_PATH = os.environ['HOME'] + "/mks/"
+		self.Node.SetFileContent(MKS_PATH + "services.json", json.dumps(self.ServicesDB))
 		
 		payload = { 'error': 'ok' }
 		message = THIS.Node.Network.BuildResponse(packet, payload)
@@ -245,7 +246,8 @@ class Context():
 		self.SystemLoaded = True
 		
 		# Loading on master boot service database
-		jsonStr = self.Node.GetFileContent("services.json")
+		MKS_PATH = os.environ['HOME'] + "/mks/"
+		jsonStr = self.Node.GetFileContent(MKS_PATH + "services.json")
 		if jsonStr != "":
 			self.ServicesDB = json.loads(jsonStr)
 			if (self.ServicesDB is not None):

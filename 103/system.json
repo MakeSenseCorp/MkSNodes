@@ -1,9 +1,4 @@
 {
-	"key":"ac6de837-7863-72a9-c789-a0aae7e9d93e",
-	"username":"ykiveish",
-	"password":"1234",
-	"apiurl":"http://192.168.0.100/",
-	"wsurl":"ws://192.168.0.100:8181/",
 	"node":
 	{
 		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d024",

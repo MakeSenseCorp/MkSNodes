@@ -16,6 +16,7 @@ from mksdk import MkSSlaveNode
 from mksdk import MkSLocalHWConnector
 from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
+from mksdk import MkSUtils
 
 from flask import Response, request
 
@@ -38,13 +39,21 @@ class Context():
 		}
 
 		# TODO - Find these networks automaticaly
-		self.Networks					= ["10.0.0.", "192.168.0."]
+		self.Networks					= []
 		self.OnlineDevices 				= {}
 		self.ThreadWorking 				= True
 		self.ThreadLock					= threading.Lock()
+		
+		self.Utilities = MkSUtils.Utils()
+		items = self.Utilities.GetSystemIPs()
+		for item in items:
+			if ("127.0.0" not in item[0]):
+				net = ".".join(item[0].split('.')[0:-1]) + '.'
+				self.Networks.append(net)
 
 		for network in self.Networks:
-			thread.start_new_thread(self.PingDevicesThread, (network,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(1,100), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(101,200), ))
 	
 	def Ping(self, address):
 		response = subprocess.call("ping -c 1 %s" % address,
@@ -57,9 +66,9 @@ class Context():
 		else:
 			return False
 
-	def PingDevicesThread(self, network):
+	def PingDevicesThread(self, network, range):
 		while (self.ThreadWorking is True):
-			for client in range(1,253):
+			for client in range:
 				if (self.ThreadWorking is False):
 					return
 				ip = network + str(client)
