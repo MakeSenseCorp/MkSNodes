@@ -192,7 +192,7 @@
 							<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
 								<div class="card-body">
 									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Nodes List (<a href="#" onclick="">Refresh</a>)</span>
+										<span class="text-muted">Nodes List</span>
 										<span class="badge badge-secondary badge-pill" id="online_nodes_count_id">0</span>
 									</h6>
 									<div id="online_nodes_list_id"></div>
@@ -320,6 +320,29 @@
 				</div>
 			`;
 			
+			var InstalledNodeRow = `
+				<div class="row">
+					<div class="col-lg-3">
+						<small class="my-0">[NAME]</small>
+					</div>
+					<div class="col-lg-5">
+						<small class="my-0">[UUID]</small>
+					</div>
+					<div class="col-lg-1">
+						<span onClick="" style="width: 20px; height: 20px; cursor: pointer;color: green" data-feather="play-circle"></span>
+					</div>
+					<div class="col-lg-1">
+						<span onClick="" style="width: 20px; height: 20px; cursor: pointer;color: red" data-feather="stop-circle"></span>
+					</div>
+					<div class="col-lg-2">
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="SwitchChanged(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					</div>
+				</div>
+			`;
+			
 			var masterPublicInfoIntervakHndl = 0;
 
 			var GetConnectionsList = function() {
@@ -381,6 +404,31 @@
 				
 					html = html + `</div></div>`;
 					document.getElementById("on_boot_services_list_id").innerHTML = html;
+				});
+				
+				api.SendCustomCommand(NodeUUID, "get_installed_nodes_list", {
+				}, function(res) {
+					console.log(res);
+					payload = res.data.payload;
+					var installed_nodes = payload.installed_nodes;
+					document.getElementById("online_nodes_count_id").innerHTML = installed_nodes.length;
+					console.log(installed_nodes);
+					var html = `<div class="card"><div class="card-body">`;
+					installed_nodes.forEach(function(element) {
+						row = InstalledNodeRow;
+						row = row.split("[NAME]").join(element.name);
+						row = row.split("[UUID]").join(element.uuid);
+						row = row.split("[DISABLED]").join("");
+						if (element.enabled == 1) {
+							row = row.split("[STATE]").join("checked");
+						} else {
+							row = row.split("[STATE]").join("");
+						}
+						html = html + row;
+					});
+				
+					html = html + `</div></div>`;
+					document.getElementById("online_nodes_list_id").innerHTML = html;
 				});
 			});
 			

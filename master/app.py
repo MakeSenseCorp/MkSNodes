@@ -38,6 +38,7 @@ class Context():
 		}
 		self.CustomResponseHandlers				= {
 		}
+		self.InstalledNodesDB	= None
 		self.ServicesDB 		= None
 		self.RunningServices	= []
 
@@ -64,6 +65,11 @@ class Context():
 
 	def GetInstalledNodesListRequestHandler(self, packet):
 		print ("GetInstalledNodesListRequestHandler")
+		payload = {
+			'installed_nodes': self.InstalledNodesDB["installed_nodes"],
+		}
+		message = THIS.Node.Network.BuildResponse(packet, payload)
+		THIS.Node.Network.SendWebSocket(message)
 	
 	def GetMasterPublicInfoHandler(self, packet):
 		print ("GetMasterPublicInfoHandler")
@@ -258,6 +264,11 @@ class Context():
 						node = MkSExternalProcess.ExternalProcess()
 						self.RunningServices.append(node)
 						node.CallProcess("python app.py", "../" + str(service["type"]), "")
+		
+		# Load all installed nodes
+		jsonStr = self.Node.GetFileContent(MKS_PATH + "nodes.json")
+		if jsonStr != "":
+			self.InstalledNodesDB = json.loads(jsonStr)
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			

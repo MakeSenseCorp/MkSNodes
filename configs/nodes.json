@@ -1,0 +1,16 @@
+{
+  "installed_nodes": [
+    {
+      "enabled": 0,
+      "type": 2017,
+      "name": "HJT Cameras Manager",
+      "uuid": "ac6de837-9863-72a9-c789-a0aae7e9d021"
+    },
+    {
+      "enabled": 1,
+      "type": 2018,
+      "name": "Sonoff Switches Manager (MKS)",
+      "uuid": "ac6de837-9863-72a9-c789-a0aae7e9d025"
+    }
+  ]
+}
