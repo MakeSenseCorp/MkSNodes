@@ -23,7 +23,7 @@ class Context():
 		self.Node				= node
 		self.SystemLoaded		= False
 		# Handlers for remote module (websocket)
-		self.Handlers					= {
+		self.GatewayRequestHandlers					= {
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
 			'get_master_public_info':		self.GetMasterPublicInfoHandler,
@@ -32,11 +32,11 @@ class Context():
 			'undefined':					self.UndefindHandler
 		}
 		# Handlers for local module (socket)
-		self.CustomRequestHandlers				= {
+		self.SocketRequestHandlers				= {
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
 		}
-		self.CustomResponseHandlers				= {
+		self.SocketResponseHandlers				= {
 		}
 		self.InstalledNodesDB	= None
 		self.ServicesDB 		= None
@@ -200,14 +200,14 @@ class Context():
 	def OnCustomCommandRequestHandler(self, sock, packet):
 		print ("OnCustomCommandRequestHandler")
 		command = packet['command']
-		if command in self.CustomRequestHandlers:
-			self.CustomRequestHandlers[command](sock, packet)
+		if command in self.SocketRequestHandlers:
+			self.SocketRequestHandlers[command](sock, packet)
 
 	def OnCustomCommandResponseHandler(self, sock, packet):
 		print ("OnCustomCommandResponseHandler")
 		command = packet['command']
-		if command in self.CustomResponseHandlers:
-			self.CustomResponseHandlers[command](sock, packet)
+		if command in self.SocketResponseHandlers:
+			self.SocketResponseHandlers[command](sock, packet)
 
 	'''
 		{
@@ -233,26 +233,31 @@ class Context():
 			'additional': {				
 			}
 		}
-		'''
+	'''
 	
 	# Websockets
 	def WSDataArrivedHandler(self, packet):
-		print ("WSDataArrivedHandler")
+		print ("(Master Appplication)# [Gateway] Data arrived.")
 		command = packet['data']['header']['command']
-		self.Handlers[command](packet)
+		self.GatewayRequestHandlers[command](packet)
 	
 	def WSConnectedHandler(self):
-		print ("WSConnectedHandler")
+		print ("(Master Appplication)# Connection to Gateway was established.")
 
 	def WSConnectionClosedHandler(self):
-		print ("WSConnectionClosedHandler")
+		print ("(Master Appplication)# Connection to Gateway was lost.")
 
 	def NodeSystemLoadedHandler(self):
-		print ("NodeSystemLoadedHandler")
+		print ("(Master Appplication)# Node system was succesfully loaded.")
 		self.SystemLoaded = True
 		
 		# Loading on master boot service database
-		MKS_PATH = os.environ['HOME'] + "/mks/"
+		if MkSGlobals.OS_TYPE in ["linux", "linux2"]:
+			MKS_PATH = os.environ['HOME'] + "/mks/"
+		else:
+			MKS_PATH = "C:\\mks\\"
+		
+		print ("(Master Appplication)# Loading on master boot service database.")
 		jsonStr = self.Node.GetFileContent(MKS_PATH + "services.json")
 		if jsonStr != "":
 			self.ServicesDB = json.loads(jsonStr)
@@ -260,15 +265,23 @@ class Context():
 				services = self.ServicesDB["on_boot_services"]
 				for service in services:
 					if (service["enabled"] == 1):
-						print("START SERVCE", service["name"])
+						print("(Master Appplication)# Start service name ", service["name"])
 						node = MkSExternalProcess.ExternalProcess()
 						self.RunningServices.append(node)
-						node.CallProcess("python app.py", "../" + str(service["type"]), "")
+						if MkSGlobals.OS_TYPE in ["linux", "linux2"]:
+							node.CallProcess("python app.py", "../" + str(service["type"]), "")
+						else:
+							node.CallProcess("python app.py", "..\\" + str(service["type"]), "")
+		else:
+			print("(Master Appplication)# ERROR - Cannot find service.json or it is empty.")
 		
 		# Load all installed nodes
+		print ("(Master Appplication)# Load all installed nodes.")
 		jsonStr = self.Node.GetFileContent(MKS_PATH + "nodes.json")
 		if jsonStr != "":
 			self.InstalledNodesDB = json.loads(jsonStr)
+		else:
+			print("(Master Appplication)# ERROR - Cannot find nodes.json or it is empty.")
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
@@ -284,7 +297,7 @@ THIS 	= Context(Node)
 
 def signal_handler(signal, frame):
 	for service in THIS.RunningServices:
-		print("[Master] Stop service")
+		print("(Master Appplication)# Stop service.")
 		service.KillProcess()
 		time.sleep(2)
 	THIS.Node.Stop()
@@ -292,7 +305,7 @@ def signal_handler(signal, frame):
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
 
-	THIS.Node.SetLocalServerStatus(True)
+	THIS.Node.SetLocalServerStatus(False)
 	THIS.Node.SetWebServiceStatus(True)
 
 	# Node callbacks
@@ -306,9 +319,10 @@ def main():
 	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
 
 	# Run Node
+	print("(Master Application)# Start Node ...")
 	THIS.Node.Run(THIS.OnNodeWorkTick)
 	
-	print ("Exit Node ...")
+	print("(Master Application)# Exit Node ...")
 
 if __name__ == "__main__":
 	main()
