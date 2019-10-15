@@ -23,7 +23,7 @@ class Context():
 		self.Node				= node
 		self.SystemLoaded		= False
 		# Handlers for remote module (websocket)
-		self.GatewayRequestHandlers					= {
+		self.GatewayRequestHandlers				= {
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
 			'get_master_public_info':		self.GetMasterPublicInfoHandler,
@@ -38,9 +38,9 @@ class Context():
 		}
 		self.SocketResponseHandlers				= {
 		}
-		self.InstalledNodesDB	= None
-		self.ServicesDB 		= None
-		self.RunningServices	= []
+		self.InstalledNodesDB					= None
+		self.ServicesDB 						= None
+		self.RunningServices					= []
 
 	def UndefindHandler(self, packet):
 		print ("UndefindHandler")
@@ -60,7 +60,7 @@ class Context():
 			payload = {
 				'connections': connections
 			}
-			message = THIS.Node.Network.BuildResponse(packet, payload)
+			message = THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 			THIS.Node.Network.SendWebSocket(message)
 
 	def GetInstalledNodesListRequestHandler(self, packet):
@@ -68,7 +68,7 @@ class Context():
 		payload = {
 			'installed_nodes': self.InstalledNodesDB["installed_nodes"],
 		}
-		message = THIS.Node.Network.BuildResponse(packet, payload)
+		message = THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
 	
 	def GetMasterPublicInfoHandler(self, packet):
@@ -166,7 +166,7 @@ class Context():
 			'network': network,
 			'on_boot_services': onBootServices,
 		}
-		message = THIS.Node.Network.BuildResponse(packet, payload)
+		message = THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
 	
 	def GetServicesInfoHandler(self, packet):
@@ -174,7 +174,7 @@ class Context():
 		payload = {
 			'on_boot_services': self.ServicesDB["on_boot_services"],
 		}
-		message = THIS.Node.Network.BuildResponse(packet, payload)
+		message = THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
 	
 	def SetServiceInfoHandler(self, packet):
@@ -194,7 +194,7 @@ class Context():
 		self.Node.SetFileContent(MKS_PATH + "services.json", json.dumps(self.ServicesDB))
 		
 		payload = { 'error': 'ok' }
-		message = THIS.Node.Network.BuildResponse(packet, payload)
+		message = THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		THIS.Node.Network.SendWebSocket(message)
 		
 	def OnCustomCommandRequestHandler(self, sock, packet):
