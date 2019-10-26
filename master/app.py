@@ -18,8 +18,10 @@ from mksdk import MkSUtils
 
 class Context():
 	def __init__(self, node):
+		self.ClassName 						= "Master Application"
 		self.Interval						= 10
 		self.CurrentTimestamp 				= time.time()
+		self.File 							= MkSFile.File()
 		self.Node							= node
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
@@ -39,11 +41,10 @@ class Context():
 	def UndefindHandler(self, packet):
 		print ("UndefindHandler")
 	
-	def GetConnectionsListRequestHandler(self, packet):
-		print ("GetConnectionsListRequestHandler")
+	def GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
 			connections = []
-			for item in THIS.Node.LocalServiceNode.GetConnections():
+			for item in THIS.Node.GetConnections():
 				connections.append({
 					'local_type':	item.LocalType,
 					'uuid':			item.UUID,
@@ -57,16 +58,18 @@ class Context():
 
 			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 
-	def GetInstalledNodesListRequestHandler(self, packet):
-		print ("GetInstalledNodesListRequestHandler")
+	def GetInstalledNodesListRequestHandler(self, sock, packet):
+		if self.InstalledNodesDB is None:
+			installed = []
+		else:
+			installed = self.InstalledNodesDB["installed_nodes"]
 		payload = {
-			'installed_nodes': self.InstalledNodesDB["installed_nodes"],
+			'installed_nodes': installed,
 		}
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def GetMasterPublicInfoHandler(self, packet):
-		print ("(Master Appplication)# GetMasterPublicInfoHandler")
+	def GetMasterPublicInfoHandler(self, sock, packet):
 		# Read
 		# 	Temperature						cat /sys/class/thermal/thermal_zone0/temp
 		#	CPU/RAM Usage, 10 Tasks List	top -n 1
@@ -163,15 +166,18 @@ class Context():
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def GetServicesInfoHandler(self, packet):
-		print ("GetServicesInfoHandler")
+	def GetServicesInfoHandler(self, sock, packet):
+		if self.ServicesDB is None:
+			installed = []
+		else:
+			installed = self.ServicesDB["on_boot_services"]
 		payload = {
-			'on_boot_services': self.ServicesDB["on_boot_services"],
+			'installed_nodes': installed,
 		}
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def SetServiceInfoHandler(self, packet):
+	def SetServiceInfoHandler(self, sock, packet):
 		print ("SetServiceInfoHandler", packet)
 		uuid 	= packet["data"]["payload"]["uuid"]
 		enabled = packet["data"]["payload"]["enabled"]
@@ -203,11 +209,16 @@ class Context():
 			self.ResponseHandlers[command](sock, packet)
 	
 	# Websockets
-	def WSDataArrivedHandler(self, packet):
-		print ("(Master Appplication)# [Gateway] Data arrived.")
-		command = packet['data']['header']['command']
-		message = self.RequestHandlers[command](packet)
-		THIS.Node.Network.SendWebSocket(message)
+	def WSDataArrivedHandler(self, sock, packet):
+		try:
+			#print ("(Master Appplication)# [Gateway] Data arrived.")
+			command = packet['data']['header']['command']
+			message = self.RequestHandlers[command](sock, packet)
+			THIS.Node.Network.SendWebSocket(message)
+		except Exception as e:
+			print("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
+						classname=self.ClassName,
+						error=str(e)))
 	
 	def WSConnectedHandler(self):
 		print ("(Master Appplication)# Connection to Gateway was established.")
@@ -226,7 +237,7 @@ class Context():
 			MKS_PATH = "C:\\mks\\"
 		
 		print ("(Master Appplication)# Loading on master boot service database.")
-		jsonStr = self.Node.GetFileContent(MKS_PATH + "services.json")
+		jsonStr = self.File.Load(MKS_PATH + "services.json")
 		if jsonStr != "":
 			self.ServicesDB = json.loads(jsonStr)
 			if (self.ServicesDB is not None):
@@ -245,7 +256,7 @@ class Context():
 		
 		# Load all installed nodes
 		print ("(Master Appplication)# Load all installed nodes.")
-		jsonStr = self.Node.GetFileContent(MKS_PATH + "nodes.json")
+		jsonStr = self.File.Load(MKS_PATH + "nodes.json")
 		if jsonStr != "":
 			self.InstalledNodesDB = json.loads(jsonStr)
 		else:
@@ -256,7 +267,7 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
+			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 
 Node 	= MkSMasterNode.MasterNode()
@@ -276,10 +287,10 @@ def main():
 	THIS.Node.SetWebServiceStatus(True)
 
 	# Node callbacks
-	THIS.Node.OnWSDataArrived				= THIS.WSDataArrivedHandler
+	THIS.Node.GatewayDataArrivedCallback	= THIS.WSDataArrivedHandler
 	THIS.Node.GatewayConnectedCallback 		= THIS.WSConnectedHandler
 	THIS.Node.OnWSConnectionClosed 			= THIS.WSConnectionClosedHandler
-	THIS.Node.OnNodeSystemLoaded			= THIS.NodeSystemLoadedHandler
+	THIS.Node.NodeSystemLoadedCallback		= THIS.NodeSystemLoadedHandler
 
 	# Local service callbacks (TODO - please bubble these callbacks via Node)
 	THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
