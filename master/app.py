@@ -87,8 +87,8 @@ class Context():
 		cpuType			= ""
 		shell = MkSShellExecutor.ShellExecutor()
 		
-		# Get CPU usage
-		data = shell.ExecuteCommand("ps -eo pcpu,pid,user,args | sort -k 1 -r | head -20")
+		# Get CPU usage (TODO - Not returning correct CPU values)
+		data = shell.ExecuteCommand("ps -eo pcpu,pid | sort -k 1 -r | head -20")
 		data = re.sub(' +', ' ', data)
 		cmdRows = data.split("\n")
 		for row in cmdRows[1:-1]:
@@ -179,8 +179,9 @@ class Context():
 	
 	def SetServiceInfoHandler(self, sock, packet):
 		print ("SetServiceInfoHandler", packet)
-		uuid 	= packet["data"]["payload"]["uuid"]
-		enabled = packet["data"]["payload"]["enabled"]
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		uuid 	= payload["uuid"]
+		enabled = payload["enabled"]
 		
 		dbOnBootServices = self.ServicesDB["on_boot_services"]
 		for item in dbOnBootServices:
@@ -196,17 +197,17 @@ class Context():
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		
-	def OnCustomCommandRequestHandler(self, sock, packet):
-		print ("(Master Appplication)# OnCustomCommandRequestHandler")
-		command = packet['command']
-		if command in self.RequestHandlers:
-			self.RequestHandlers[command](sock, packet)
+	#def OnCustomCommandRequestHandler(self, sock, packet):
+	#	print ("(Master Appplication)# OnCustomCommandRequestHandler")
+	#	command = packet['command']
+	#	if command in self.RequestHandlers:
+	#		self.RequestHandlers[command](sock, packet)
 
-	def OnCustomCommandResponseHandler(self, sock, packet):
-		print ("(Master Appplication)# OnCustomCommandResponseHandler")
-		command = packet['command']
-		if command in self.ResponseHandlers:
-			self.ResponseHandlers[command](sock, packet)
+	#def OnCustomCommandResponseHandler(self, sock, packet):
+	#	print ("(Master Appplication)# OnCustomCommandResponseHandler")
+	#	command = packet['command']
+	#	if command in self.ResponseHandlers:
+	#		self.ResponseHandlers[command](sock, packet)
 	
 	# Websockets
 	def WSDataArrivedHandler(self, sock, packet):
@@ -270,8 +271,8 @@ class Context():
 			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 
-Node 	= MkSMasterNode.MasterNode()
-THIS 	= Context(Node)
+Node = MkSMasterNode.MasterNode()
+THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	for service in THIS.RunningServices:
@@ -287,14 +288,12 @@ def main():
 	THIS.Node.SetWebServiceStatus(True)
 
 	# Node callbacks
-	THIS.Node.GatewayDataArrivedCallback	= THIS.WSDataArrivedHandler
-	THIS.Node.GatewayConnectedCallback 		= THIS.WSConnectedHandler
-	THIS.Node.OnWSConnectionClosed 			= THIS.WSConnectionClosedHandler
-	THIS.Node.NodeSystemLoadedCallback		= THIS.NodeSystemLoadedHandler
-
-	# Local service callbacks (TODO - please bubble these callbacks via Node)
-	THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	THIS.Node.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+	THIS.Node.GatewayDataArrivedCallback			= THIS.WSDataArrivedHandler
+	THIS.Node.GatewayConnectedCallback 				= THIS.WSConnectedHandler
+	THIS.Node.OnWSConnectionClosed 					= THIS.WSConnectionClosedHandler
+	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
+	#THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
+	#THIS.Node.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
 
 	# Run Node
 	print("(Master Application)# Start Node ...")

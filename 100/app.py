@@ -7,6 +7,13 @@ import time
 import thread
 import threading
 
+#logging.basicConfig(
+#	 filename='app.log',
+#	 level=logging.DEBUG,
+#    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+#    datefmt='%Y-%m-%d %H:%M:%S',
+#)
+
 from mksdk import MkSFile
 from mksdk import MkSNode
 from mksdk import MkSSlaveNode
@@ -18,6 +25,7 @@ from flask import Response, request
 
 class Context():
 	def __init__(self, node):
+		self.ClassName 					= "Node Application"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
@@ -25,55 +33,59 @@ class Context():
 		self.States = {
 		}
 		# Handlers
-		self.Handlers					= {
+		self.RequestHandlers			= {
 			'undefined':				self.UndefindHandler
 		}
+		self.ResponseHandlers			= {
+			'undefined':				self.UndefindHandler
+		}
+	
+	def OnCustomCommandRequestHandler(self, sock, packet):
+		print ("({classname})# REQUEST".format(classname=self.ClassName))
+		command = packet['command']
+		if command in self.RequestHandlers:
+			self.RequestHandlers[command](sock, packet)
 
-	def UndefindHandler(self, message_type, source, data):
-		print "UndefindHandler"
+	def OnCustomCommandResponseHandler(self, sock, packet):
+		print ("({classname})# RESPONSE".format(classname=self.ClassName))
+		command = packet['command']
+		if command in self.ResponseHandlers:
+			self.ResponseHandlers[command](sock, packet)
 
-	# Websockets
-	def WSDataArrivedHandler(self, message_type, source, data):
-		command = data['device']['command']
-		self.Handlers[command](message_type, source, data)
-
-	def WSConnectedHandler(self):
-		print "WSConnectedHandler"
-
-	def WSConnectionClosedHandler(self):
-		print "WSConnectionClosedHandler"
+	def UndefindHandler(self, sock, packet):
+		print ("UndefindHandler")
 
 	def NodeSystemLoadedHandler(self):
-		print "NodeSystemLoadedHandler"
+		print ("NodeSystemLoadedHandler")
 
 	def OnMasterFoundHandler(self, masters):
-		print "OnMasterFoundHandler"
+		print ("OnMasterFoundHandler")
 
 	def OnMasterSearchHandler(self):
-		print "OnMasterSearchHandler"
+		print ("OnMasterSearchHandler")
 
 	def OnMasterDisconnectedHandler(self):
-		print "OnMasterDisconnectedHandler"
+		print ("OnMasterDisconnectedHandler")
 
 	def OnDeviceConnectedHandler(self):
-		print "OnDeviceConnectedHandler"
+		print ("OnDeviceConnectedHandler")
 
 	def OnLocalServerStartedHandler(self):
-		print "OnLocalServerStartedHandler"
+		print ("({classname})# OnLocalServerStartedHandler".format(classname=self.ClassName))
 
 	def OnAceptNewConnectionHandler(self, sock):
-		print "OnAceptNewConnectionHandler"
+		print ("OnAceptNewConnectionHandler")
 
 	def OnTerminateConnectionHandler(self, sock):
-		print "OnTerminateConnectionHandler"
+		print ("OnTerminateConnectionHandler")
 
 	# Request from local network.
 	def OnGetSensorInfoRequestHandler(self, packet, sock):
-		print "OnGetSensorInfoRequestHandler"
+		print ("OnGetSensorInfoRequestHandler")
 
 	# Request from local network.
 	def OnSetSensorInfoRequestHandler(self, packet, sock):
-		print "OnSetSensorInfoRequestHandler"
+		print ("OnSetSensorInfoRequestHandler")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -103,17 +115,16 @@ class Context():
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
-			print "WorkingHandler"
+			print ("({classname})# WorkingHandler".format(classname=self.ClassName))
 
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
-				print "  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type
+			for idx, item in enumerate(THIS.Node.GetConnections()):
+				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 
-Service = MkSSlaveNode.SlaveNode()
-Node 	= MkSNode.Node("[NAME OF YOUR NODE]", Service)
-THIS 	= Context(Node)
+Node = MkSSlaveNode.SlaveNode()
+THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	THIS.Node.Stop()
@@ -123,24 +134,23 @@ def main():
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.OnWSDataArrived 										= THIS.WSDataArrivedHandler
-	THIS.Node.OnWSConnected 										= THIS.WSConnectedHandler
-	THIS.Node.OnWSConnectionClosed 									= THIS.WSConnectionClosedHandler
-	THIS.Node.OnNodeSystemLoaded									= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnDeviceConnected										= THIS.OnDeviceConnectedHandler
-	# Local service callbacks (TODO - please bubble these callbacks via Node)
-	THIS.Node.LocalServiceNode.OnMasterFoundCallback				= THIS.OnMasterFoundHandler
-	THIS.Node.LocalServiceNode.OnMasterSearchCallback				= THIS.OnMasterSearchHandler
-	THIS.Node.LocalServiceNode.OnMasterDisconnectedCallback			= THIS.OnMasterDisconnectedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerStartedCallback			= THIS.OnLocalServerStartedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerListenerStartedCallback = THIS.OnLocalServerListenerStartedHandler
-	THIS.Node.LocalServiceNode.OnAceptNewConnectionCallback			= THIS.OnAceptNewConnectionHandler
-	THIS.Node.LocalServiceNode.OnTerminateConnectionCallback 		= THIS.OnTerminateConnectionHandler
-	THIS.Node.LocalServiceNode.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
-	THIS.Node.LocalServiceNode.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
+	THIS.Node.OnNodeSystemLoaded					= THIS.NodeSystemLoadedHandler
+	THIS.Node.OnDeviceConnected						= THIS.OnDeviceConnectedHandler
+	THIS.Node.OnMasterFoundCallback					= THIS.OnMasterFoundHandler
+	THIS.Node.OnMasterSearchCallback				= THIS.OnMasterSearchHandler
+	THIS.Node.OnMasterDisconnectedCallback			= THIS.OnMasterDisconnectedHandler
+	THIS.Node.OnLocalServerStartedCallback			= THIS.OnLocalServerStartedHandler
+	THIS.Node.OnLocalServerListenerStartedCallback 	= THIS.OnLocalServerListenerStartedHandler
+	THIS.Node.OnAceptNewConnectionCallback			= THIS.OnAceptNewConnectionHandler
+	THIS.Node.OnTerminateConnectionCallback 		= THIS.OnTerminateConnectionHandler
+	THIS.Node.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
+	THIS.Node.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
+
+	THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
+	THIS.Node.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
-	print "Exit Node ..."
+	print ("Exit Node ...")
 
 if __name__ == "__main__":
     main()
