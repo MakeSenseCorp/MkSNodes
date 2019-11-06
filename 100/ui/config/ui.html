@@ -63,31 +63,79 @@
         <main role="main" class="container">
           <br><br>
           <div class="row">
-              <div class="col-lg-2">
-              </div>
-              <div class="col-lg-8">
-                  <div class="card" >
-                      <div class="card-body" id="idConfig"></div>
+              <div class="col-lg-12">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-lg-5">
+                        <h6 class="d-flex justify-content-between align-items-center mb-3">
+                          <span class="text-muted">Simple Progress Bar (Polling Mode)</span>
+                        </h6>
+                      </div>
+                      <div class="col-lg-7">
+                        <div class="progress">
+                          <div id="prg_bar_poll_value" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-lg-5">
+                        <h6 class="d-flex justify-content-between align-items-center mb-3">
+                          <span class="text-muted">Simple Progress Bar (Event Mode)</span>
+                        </h6>
+                      </div>
+                      <div class="col-lg-7">
+                        <div class="progress">
+                          <div id="prg_bar_event_value" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-              </div>
-              <div class="col-lg-2">
+                </div>
               </div>
           </div>
         </main>
-        <div id="idModalSection"></div>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.19.0/feather.min.js"></script>
-
-        <script src="mksdkjs/MkSAPI.js"></script>
-        <script src="mksdkjs/MkSCommon.js"></script>
-        <script src="mksdkjs/MkSGateway.js"></script>
-        <script src="mksdkjs/MkSWebface.js"></script>
+        <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
+        <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
+		    <script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+		    <script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
+        <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
+        <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+        
+        <script src="mksdk-js/MkSAPI.js"></script>
+        <script src="mksdk-js/MkSCommon.js"></script>
+        <script src="mksdk-js/MkSGateway.js"></script>
+        <script src="mksdk-js/MkSWebface.js"></script>
 
         <script>
-          var NodeUUID = "ac6de837-7863-72a9-c789-a0aae7e9d610";
+          var GatewayIP = "[GATEWAY_IP]";
+          var NodeUUID  = "[NODE_UUID]";
+
+          console.log("Gateway IP address - " + GatewayIP);
+          
+          // Gey makesense api instanse.
+          var api = MkSAPIBuilder.GetInstance();
+          api.SetGlobalGatewayIP(GatewayIP);
+
+          api.ConnectGateway(function() {
+            console.log("Connection to Gateway was established.");
+            GetMiscInfo();
+				    hndl = setInterval(GetMiscInfo, 1000);
+          });
+
+          var hndl = 0;
+          function GetMiscInfo () {
+            api.SendCustomCommand(NodeUUID, "get_misc_info", {
+            }, function(res) {
+              console.log(res);
+              payload = res.data.payload;
+					    usage = ((payload.progress_bar_counter / 100) * 100).toFixed(1)
+              document.getElementById("prg_bar_poll_value").style.width = usage + "%";
+              document.getElementById("prg_bar_poll_value").setAttribute("aria-valuenow", usage);
+              document.getElementById("prg_bar_poll_value").innerHTML = usage + "%";
+            });
+          }
         </script>
     </body>
 </html>

@@ -34,15 +34,18 @@ class Context():
 		}
 		# Handlers
 		self.RequestHandlers			= {
+			'get_misc_info': 			self.GetMiscInfoHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers			= {
 			'undefined':				self.UndefindHandler
 		}
+		# Application variables
+		self.ProgressBarCounter 		= 0
 	
 	def OnCustomCommandRequestHandler(self, sock, packet):
 		print ("({classname})# REQUEST".format(classname=self.ClassName))
-		command = packet['command']
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
 
@@ -54,6 +57,16 @@ class Context():
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
+	
+	def GetMiscInfoHandler(self, sock, packet):
+		print ("GetMiscInfoHandler")
+		self.ProgressBarCounter += 1
+		if self.ProgressBarCounter > 100:
+			self.ProgressBarCounter = 1
+		payload = {
+			'progress_bar_counter': self.ProgressBarCounter,
+		}
+		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
 
 	def NodeSystemLoadedHandler(self):
 		print ("NodeSystemLoadedHandler")
