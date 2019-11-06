@@ -44,7 +44,7 @@ class Context():
 		print ("({classname})# REQUEST".format(classname=self.ClassName))
 		command = packet['command']
 		if command in self.RequestHandlers:
-			self.RequestHandlers[command](sock, packet)
+			return self.RequestHandlers[command](sock, packet)
 
 	def OnCustomCommandResponseHandler(self, sock, packet):
 		print ("({classname})# RESPONSE".format(classname=self.ClassName))
@@ -146,8 +146,8 @@ def main():
 	THIS.Node.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
 	THIS.Node.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
 
-	THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	THIS.Node.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+	THIS.Node.OnApplicationRequestCallback			= THIS.OnCustomCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback			= THIS.OnCustomCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")
