@@ -51,7 +51,7 @@ class Context():
 
 	def OnCustomCommandResponseHandler(self, sock, packet):
 		print ("({classname})# RESPONSE".format(classname=self.ClassName))
-		command = packet['command']
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 
