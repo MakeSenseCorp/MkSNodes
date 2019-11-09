@@ -87,7 +87,7 @@ class Context():
 		cpuType			= ""
 		shell = MkSShellExecutor.ShellExecutor()
 		
-		# Get CPU usage (TODO - Not returning correct CPU values)
+		# Get CPU usage (TODO - Not returning correct CPU values use this "top -b -d 1 -n 1")
 		data = shell.ExecuteCommand("ps -eo pcpu,pid | sort -k 1 -r | head -20")
 		data = re.sub(' +', ' ', data)
 		cmdRows = data.split("\n")
@@ -197,19 +197,18 @@ class Context():
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		
-	#def OnCustomCommandRequestHandler(self, sock, packet):
-	#	print ("(Master Appplication)# OnCustomCommandRequestHandler")
-	#	command = packet['command']
-	#	if command in self.RequestHandlers:
-	#		self.RequestHandlers[command](sock, packet)
+	def OnCustomCommandRequestHandler(self, sock, packet):
+		print ("({classname})# REQUEST".format(classname=self.ClassName))
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.RequestHandlers:
+			return self.RequestHandlers[command](sock, packet)
 
-	#def OnCustomCommandResponseHandler(self, sock, packet):
-	#	print ("(Master Appplication)# OnCustomCommandResponseHandler")
-	#	command = packet['command']
-	#	if command in self.ResponseHandlers:
-	#		self.ResponseHandlers[command](sock, packet)
+	def OnCustomCommandResponseHandler(self, sock, packet):
+		print ("({classname})# RESPONSE".format(classname=self.ClassName))
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.ResponseHandlers:
+			self.ResponseHandlers[command](sock, packet)
 	
-	# Websockets
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
 			#print ("(Master Appplication)# [Gateway] Data arrived.")
@@ -292,8 +291,8 @@ def main():
 	THIS.Node.GatewayConnectedCallback 				= THIS.WSConnectedHandler
 	THIS.Node.OnWSConnectionClosed 					= THIS.WSConnectionClosedHandler
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
-	#THIS.Node.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	#THIS.Node.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+	THIS.Node.OnApplicationRequestCallback			= THIS.OnCustomCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback			= THIS.OnCustomCommandResponseHandler
 
 	# Run Node
 	print("(Master Application)# Start Node ...")
