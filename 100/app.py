@@ -147,7 +147,7 @@ def main():
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.OnNodeSystemLoaded					= THIS.NodeSystemLoadedHandler
+	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
 	THIS.Node.OnDeviceConnected						= THIS.OnDeviceConnectedHandler
 	THIS.Node.OnMasterFoundCallback					= THIS.OnMasterFoundHandler
 	THIS.Node.OnMasterSearchCallback				= THIS.OnMasterSearchHandler

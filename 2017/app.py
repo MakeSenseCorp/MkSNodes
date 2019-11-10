@@ -169,6 +169,7 @@ class MkSImageProcessing():
 			return 0
 		
 		try:
+			return 100
 			emboss_img_one = Image.open(BytesIO(img_one)).filter(ImageFilter.EMBOSS)
 			emboss_img_two = Image.open(BytesIO(img_two)).filter(ImageFilter.EMBOSS)
 
@@ -202,6 +203,7 @@ class ICamera():
 		self.CurrentImageIndex 			= 0
 		self.OnImageDifferentCallback	= None
 		self.State 						= 0
+		self.FrameCount  				= 0
 
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
@@ -233,6 +235,8 @@ class ICamera():
 
 	def Frame(self):
 		command = self.GetFrame()
+		self.FrameCount +=  1
+		print("Get frame ... " + str(self.FrameCount))
 		frame, error = self.GetRequest(self.Address + command)
 		return frame
 	
@@ -290,8 +294,11 @@ class ICamera():
 		recordingBuffers = [[],[]]
 		recordingBufferIndex = 0
 		self.IsCameraWorking = True
+		self.IsGetFrame = True
+		# self.IsSecurity = False
 		while self.IsCameraWorking is True:
 			if self.IsGetFrame is True:
+				time.sleep(0.5)
 				frameCurr = self.Frame()
 				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
 			else:
@@ -367,6 +374,7 @@ class HJTCamera(ICamera):
 
 class Context():
 	def __init__(self, node):
+		self.ClassName					= "Apllication"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
@@ -374,27 +382,27 @@ class Context():
 		self.States = {
 		}
 		# Handlers
-		self.Handlers					= {
+		self.RequestHandlers		= {
+			'get_sensor_info':			self.GetSensorInfoHandler,
+			'start_recording': 			self.StartRecordingHandler,
+			'stop_recording': 			self.StopRecordingHandler,
+			'start_motion_detection': 	self.StartMotionDetectionHandler,
+			'stop_motion_detection': 	self.StopMotionDetectionHandler,
+			'start_security': 			self.StartSecurityHandler,
+			'stop_security': 			self.StopSecurityHandler,
+			'set_camera_name': 			self.SetCameraNameHandler,
+			'get_capture_progress':		self.GetCaptureProgressHandler,
+			'set_face_detection':		self.SetFaceDetectionHandler,
+			'set_camera_sensetivity':	self.SetCameraSensetivityHandler,
+			'get_videos_list':			self.GetVideosListHandler,
+			'get_misc_information':		self.GetMiscInformationHandler,
+			'set_misc_information':		self.SetMiscInformationHandler,
 			'undefined':				self.UndefindHandler
 		}
-		self.CustomRequestHandlers				= {
-			'start_recording': 							self.StartRecordingHandler,
-			'stop_recording': 							self.StopRecordingHandler,
-			'start_motion_detection': 					self.StartMotionDetectionHandler,
-			'stop_motion_detection': 					self.StopMotionDetectionHandler,
-			'start_security': 							self.StartSecurityHandler,
-			'stop_security': 							self.StopSecurityHandler,
-			'set_camera_name': 							self.SetCameraNameHandler,
-			'get_capture_progress':						self.GetCaptureProgressHandler,
-			'set_face_detection':						self.SetFaceDetectionHandler,
-			'set_camera_sensetivity':					self.SetCameraSensetivityHandler,
-			'get_videos_list':							self.GetVideosListHandler,
-			'get_misc_information':						self.GetMiscInformationHandler,
-			'set_misc_information':						self.SetMiscInformationHandler,
+		self.ResponseHandlers		= {
+			'undefined':				self.UndefindHandler
 		}
-		self.CustomResponseHandlers				= {
-		}
-
+		# Application variables
 		self.DB							= None
 		self.Cameras 					= []
 		self.ObjCameras					= []
@@ -410,6 +418,19 @@ class Context():
 		print ("UndefindHandler")
 
 	# CustomRequestHandlers
+	def GetSensorInfoHandler(self, sock, packet):
+		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
+		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
+		payload = {
+			'db': self.DB,
+			'device': {
+				'ip': THIS.Node.MyLocalIP,
+				'webport': THIS.Node.LocalWebPort
+			}
+		}
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+	
 	def StartRecordingHandler(self, sock, packet):
 		print("StartRecordingHandler")
 		# Find camera
@@ -421,9 +442,9 @@ class Context():
 				for item in cameras:
 					if (item["ip"] in packet["payload"]["data"]["ip"]):
 						item["recording"] = 1
-						self.Node.SetFileContent("db.json", json.dumps(self.DB))
-				
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+						self.File.Save("db.json", json.dumps(self.DB))
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STARTED'
 		})
 
@@ -438,9 +459,9 @@ class Context():
 				for item in cameras:
 					if (item["ip"] in packet["payload"]["data"]["ip"]):
 						item["recording"] = 0
-						self.Node.SetFileContent("db.json", json.dumps(self.DB))
+						self.File.Save("db.json", json.dumps(self.DB))
 		
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STOPPED'
 		})
 
@@ -450,8 +471,9 @@ class Context():
 		for item in cameras:
 			if (item["ip"] in packet["payload"]["data"]["ip"]):
 				item["motion_detection"] = 1
-				self.Node.SetFileContent("db.json", json.dumps(self.DB))
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+				self.File.Save("db.json", json.dumps(self.DB))
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STARTED'
 		})
 
@@ -461,8 +483,9 @@ class Context():
 		for item in cameras:
 			if (item["ip"] in packet["payload"]["data"]["ip"]):
 				item["motion_detection"] = 0
-				self.Node.SetFileContent("db.json", json.dumps(self.DB))
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+				self.File.Save("db.json", json.dumps(self.DB))
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STOPPED'
 		})
 
@@ -476,8 +499,9 @@ class Context():
 		self.DB["cameras"] = cameras
 		for item in self.ObjCameras:
 			item.StartSecurity()
-		self.Node.SetFileContent("db.json", json.dumps(self.DB))
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		self.File.Save("db.json", json.dumps(self.DB))
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STARTED'
 		})
 
@@ -491,8 +515,9 @@ class Context():
 		for item in self.ObjCameras:
 			item.StopSecurity()
 		self.DB["cameras"] = cameras
-		self.Node.SetFileContent("db.json", json.dumps(self.DB))
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		self.File.Save("db.json", json.dumps(self.DB))
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STOPPED'
 		})
 
@@ -506,8 +531,8 @@ class Context():
 			if (item.GetIp() in packet["payload"]["data"]["ip"]):
 				ret = item.GetCapturingProcess()
 				break
-				
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'progress': str(ret)
 		})
 
@@ -526,15 +551,14 @@ class Context():
 		for itemCamera in dbCameras:
 			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
 				videosList = os.listdir("videos")
-				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 					'frame_per_video': str(itemCamera["frame_per_video"]),
 					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
 					'face_detect': str(itemCamera["face_detect"]),
 					'video_list': videosList
 				})
-				return
 		
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'error': 'bad camera'
 		})
 
@@ -549,19 +573,18 @@ class Context():
 
 				self.DB["cameras"] = dbCameras
 				# Save new camera to database
-				self.Node.SetFileContent("db.json", json.dumps(self.DB))
+				self.File.Save("db.json", json.dumps(self.DB))
 
 				for item in self.ObjCameras:
 					if (item.GetIp() in packet["payload"]["data"]["ip"]):
 						item.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
-		
-				THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+
+				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 					'error': 'success'
 				})
-				return
 		
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'error': 'bad camera'
 		})
 	
@@ -586,6 +609,7 @@ class Context():
 	
 	def OnCameraDiffrentHandler(self, ip, image):
 		print("OnCameraDiffrentHandler")
+		"""
 		if len(self.EmailService) > 0:
 			if (time.time() - self.LastTSEmailSent > 30):
 				print("Email service exist... Sending request...")
@@ -615,6 +639,7 @@ class Context():
 						})
 		else:
 			print("SMS service NOT FOUND... Canceling request...")
+		"""
 	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
@@ -634,22 +659,12 @@ class Context():
 			self.EmailService = ""
 			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
-	# Websockets
-	def WSDataArrivedHandler(self, message_type, source, data):
-		command = data['device']['command']
-		self.Handlers[command](message_type, source, data)
-
-	def WSConnectedHandler(self):
-		print ("WSConnectedHandler")
-
-	def WSConnectionClosedHandler(self):
-		print ("WSConnectionClosedHandler")
-
 	def NodeSystemLoadedHandler(self):
 		print ("NodeSystemLoadedHandler")
-		THIS.Node.LocalServiceNode.GetListOfNodeFromGateway()
+		objFile = MkSFile.File()
+		## THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
-		jsonSensorStr = self.Node.GetFileContent("db.json")
+		jsonSensorStr = objFile.Load("db.json")
 		if jsonSensorStr != "":
 			self.DB = json.loads(jsonSensorStr)
 			if self.DB is not None:
@@ -665,7 +680,7 @@ class Context():
 			self.SecurityEnabled = True
 
 		# Search for cameras and update local database
-		cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
+		cameras = self.DeviceScanner.Scan("10.0.0.", [1,253])
 		HJTScanner = HJTCameraScanner()
 		ips = HJTScanner.Scan(cameras)
 		# Foreach camera,
@@ -726,64 +741,26 @@ class Context():
 				self.ObjCameras.append(camera)
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
-		self.Node.SetFileContent("db.json", json.dumps(self.DB))
+		objFile.Save("db.json", json.dumps(self.DB))
 		self.HJTDetectorTimestamp = time.time()
 	
-	def OnMasterFoundHandler(self, masters):
-		print ("OnMasterFoundHandler")
+	def OnCustomCommandRequestHandler(self, sock, packet):
+		print ("({classname})# REQUEST".format(classname=self.ClassName))
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.RequestHandlers:
+			return self.RequestHandlers[command](sock, packet)
 
-	def OnMasterSearchHandler(self):
-		print ("OnMasterSearchHandler")
-
-	def OnMasterDisconnectedHandler(self):
-		print ("OnMasterDisconnectedHandler")
-
-	def OnDeviceConnectedHandler(self):
-		print ("OnDeviceConnectedHandler")
-
-	def OnLocalServerStartedHandler(self):
-		print ("OnLocalServerStartedHandler")
-
-	def OnAceptNewConnectionHandler(self, sock):
-		print ("OnAceptNewConnectionHandler")
-
-	def OnTerminateConnectionHandler(self, sock):
-		print ("OnTerminateConnectionHandler")
-
-	def OnGetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnGetSensorInfoRequestHandler")
-		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
-		# THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, enabledCameras)
-		# TODO - Get device infro from different method
-		payload = {
-			'db': self.DB,
-			'device': {
-				'ip': THIS.Node.LocalServiceNode.MyLocalIP,
-				'webport': THIS.Node.LocalServiceNode.LocalWebPort
-			}
-		}
-		THIS.Node.LocalServiceNode.SendSensorInfoResponse(sock, packet, payload)
-
-	def OnSetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnSetSensorInfoRequestHandler")
-	
-	def OnCustomCommandRequestHandler(self, sock, json_data):
-		print ("OnCustomCommandRequestHandler")
-		command = json_data['command']
-		if command in self.CustomRequestHandlers:
-			self.CustomRequestHandlers[command](sock, json_data)
-
-	def OnCustomCommandResponseHandler(self, sock, json_data):
-		print ("OnCustomCommandResponseHandler")
-		command = json_data['command']
-		if command in self.CustomResponseHandlers:
-			self.CustomResponseHandlers[command](sock, json_data)
+	def OnCustomCommandResponseHandler(self, sock, packet):
+		print ("({classname})# RESPONSE".format(classname=self.ClassName))
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.ResponseHandlers:
+			self.ResponseHandlers[command](sock, packet)
 	
 	def OnGetNodesListHandler(self, uuids):
-		print ("OnGetNodesListHandler", uuids)
+		print (" ?????????????????????? OnGetNodesListHandler", uuids)
 		# TODO - Find SMS service
-		for uuid in uuids:
-			THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
+		#for uuid in uuids:
+		#	THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
 	
 	def OnGetNodeInfoHandler(self, info):
 		print ("OnGetNodeInfoHandler")
@@ -850,11 +827,11 @@ class Context():
 		return send_file(FilePath)
 
 	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 					endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/file/download/<name>", 						endpoint_name="file_download", 			handler=THIS.FileDownloadHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 				endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
+		THIS.Node.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/file/download/<name>", 					endpoint_name="file_download", 			handler=THIS.FileDownloadHandler)
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
@@ -863,7 +840,7 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
+			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
@@ -889,7 +866,7 @@ class Context():
 				camera = HJTCamera(ip)
 				mac = camera.GetMACAddress()
 				uid = camera.GetUID()
-				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler", mac, uid, ip)
+				print ("[Camera Surveillance]>", "WorkingHandler", mac, uid, ip)
 
 				cameraFound = False
 				# Update camera IP (if it was changed)
@@ -938,11 +915,10 @@ class Context():
 					self.ObjCameras.append(camera)
 			self.DB["cameras"] = dbCameras
 			# Save new camera to database
-			self.Node.SetFileContent("db.json", json.dumps(self.DB))
+			self.File.Save("db.json", json.dumps(self.DB))
 
-Service = MkSSlaveNode.SlaveNode()
-Node 	= MkSNode.Node("Camera Surveillance", Service)
-THIS 	= Context(Node)
+Node = MkSSlaveNode.SlaveNode()
+THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	THIS.Node.Stop()
@@ -952,29 +928,14 @@ def main():
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.OnWSDataArrived 										= THIS.WSDataArrivedHandler
-	THIS.Node.OnWSConnected 										= THIS.WSConnectedHandler
-	THIS.Node.OnWSConnectionClosed 									= THIS.WSConnectionClosedHandler
-	THIS.Node.OnNodeSystemLoaded									= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnDeviceConnected										= THIS.OnDeviceConnectedHandler
-	# Local service callbacks (TODO - please bubble these callbacks via Node)
-	THIS.Node.LocalServiceNode.OnMasterFoundCallback				= THIS.OnMasterFoundHandler
-	THIS.Node.LocalServiceNode.OnMasterSearchCallback				= THIS.OnMasterSearchHandler
-	THIS.Node.LocalServiceNode.OnMasterDisconnectedCallback			= THIS.OnMasterDisconnectedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerStartedCallback			= THIS.OnLocalServerStartedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerListenerStartedCallback = THIS.OnLocalServerListenerStartedHandler
-	THIS.Node.LocalServiceNode.OnAceptNewConnectionCallback			= THIS.OnAceptNewConnectionHandler
-	THIS.Node.LocalServiceNode.OnTerminateConnectionCallback 		= THIS.OnTerminateConnectionHandler
-	THIS.Node.LocalServiceNode.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
-	THIS.Node.LocalServiceNode.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
-	# TODO - On file upload event.
-	THIS.Node.LocalServiceNode.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
-
-	THIS.Node.LocalServiceNode.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
-	THIS.Node.LocalServiceNode.OnGetNodeInfoCallback				= THIS.OnGetNodeInfoHandler
-	THIS.Node.LocalServiceNode.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
-	THIS.Node.LocalServiceNode.OnMasterRemoveNodeCallback			= THIS.OnMasterRemoveNodeHandler
+	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
+	THIS.Node.OnLocalServerListenerStartedCallback 	= THIS.OnLocalServerListenerStartedHandler
+	THIS.Node.OnApplicationRequestCallback			= THIS.OnCustomCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback			= THIS.OnCustomCommandResponseHandler
+	THIS.Node.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
+	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
+	THIS.Node.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
+	THIS.Node.OnMasterRemoveNodeCallback			= THIS.OnMasterRemoveNodeHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")
