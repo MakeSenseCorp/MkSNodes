@@ -236,7 +236,6 @@ class ICamera():
 	def Frame(self):
 		command = self.GetFrame()
 		self.FrameCount +=  1
-		print("Get frame ... " + str(self.FrameCount))
 		frame, error = self.GetRequest(self.Address + command)
 		return frame
 	
@@ -298,8 +297,14 @@ class ICamera():
 		# self.IsSecurity = False
 		while self.IsCameraWorking is True:
 			if self.IsGetFrame is True:
-				time.sleep(0.5)
+				time.sleep(2)
 				frameCurr = self.Frame()
+				print("Get frame ... ({0}) ({1})".format(str(self.FrameCount),str(len(frameCurr))))
+				THIS.Node.EmitOnNodeChange({
+								'camera_ip': str(self.IPAddress),
+								'event': "new_frame", 
+								'frame': base64.encodebytes(frameCurr)
+							})
 				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
 			else:
 				time.sleep(0.5)
