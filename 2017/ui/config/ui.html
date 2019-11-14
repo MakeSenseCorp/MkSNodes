@@ -138,14 +138,14 @@
 												<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
 											</h6>
 											<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
-										</div>
+										</div> <!--
 										<div class="card-body">
 											<h6 class="d-flex justify-content-between align-items-center mb-3">
 												<span class="text-muted">Frames Second</span>
 												<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
 											</h6>
 											<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="30" data-slider-step="1" id="rangeFramesPerSecond">
-										</div>
+										</div> -->
 									</div>
 								</div>
 								<div class="col-lg-6">
@@ -251,9 +251,9 @@
 			$('#rangeFramesPerVideo').slider().on('slide', function(ev) {
 				document.getElementById("rangeFramesPerVideoValue").innerHTML = ev.value;
 			});
-			$('#rangeFramesPerSecond').slider().on('slide', function(ev) {
-				document.getElementById("rangeFramesPerSecondValue").innerHTML = ev.value;
-			});
+			//$('#rangeFramesPerSecond').slider().on('slide', function(ev) {
+			//	document.getElementById("rangeFramesPerSecondValue").innerHTML = ev.value;
+			//});
 			$('#rangeCameraSensetivity').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValue").innerHTML = ev.value;
 			});
@@ -328,29 +328,20 @@
 								html += `</div>`;
 							}
 
-							// TODO - Do a proper authentication.
-							/* $.ajax({
-								cache: false,
-								type: "GET",
-								url: "http://" + camera.ip + "/tmpfs/auto.jpg?" + (new Date()).getTime(),
-								crossDomain: true,
-								dataType: 'jsonp',
-								username: "admin",
-								password: "admin",
-								headers: {
-									"accept": "application/json",
-									"Access-Control-Allow-Origin":"*"
-								},
-								success: function (){
-									alert('Thanks for your comment!'); 
-								}
-							});
-
-							img.src = "http://" + camera.ip + "/tmpfs/auto.jpg?" + new Date; */
-
 							api.RegisterOnNodeChange(NodeUUID, function(res) {
 								console.log("REGISTERED", res);
 							});
+
+							api.SendCustomCommand(NodeUUID, "get_frame", {
+								ip: camera.ip
+							}, function(res) {
+								var payload = res.data.payload;
+								ip 			= payload.camera_ip;
+								imgObj 		= document.getElementById("id_" + ip);
+								frame 		= payload.frame
+								imgObj.src = "data:image/jpg;base64,"+frame;
+							});
+							
 						}
 					}
 

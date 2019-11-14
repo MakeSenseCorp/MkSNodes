@@ -70,6 +70,7 @@ class EthernetDeviceScanner():
 		self.ThreadCounter 		= 0
 		self.Network		 	= network
 		self.IPCount 			= index[1] - index[0]
+		self.IPList 			= []
 
 		if (self.IPCount < 0):
 			return []
@@ -112,6 +113,7 @@ class HJTCameraScanner():
 	def Scan(self, addresses):
 		self.ThreadCounter 		= 0
 		self.CamerasCount 		= len(addresses)
+		self.Cameras 			= []
 
 		if (self.CamerasCount < 0):
 			return []
@@ -169,7 +171,6 @@ class MkSImageProcessing():
 			return 0
 		
 		try:
-			return 100
 			emboss_img_one = Image.open(BytesIO(img_one)).filter(ImageFilter.EMBOSS)
 			emboss_img_two = Image.open(BytesIO(img_two)).filter(ImageFilter.EMBOSS)
 
@@ -181,8 +182,10 @@ class MkSImageProcessing():
 				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
 				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
 			diff_precentage = (float(self.MAX_DIFF - (np.abs(im[0] - im[1]).sum())) / self.MAX_DIFF) * 100
+			
 			if (diff_precentage < 0):
 				return 0
+			
 			return diff_precentage
 		except Exception as e:
 			print ("[MkSImageProcessing] Exception", e)
@@ -282,6 +285,7 @@ class ICamera():
 		
 		frameCurr 		= None
 		framePrev 		= None
+		ts 				= time.time()
 		frameDifference = 0
 
 		# TODO - Create logging to file system.
@@ -290,24 +294,32 @@ class ICamera():
 		# TODO - Is video creation is on going?
 		# TODO - Each camera must have its own video folder.
 
+		# TODO - Enable/Disable camera - self.IsGetFrame(T/F)
+
 		recordingBuffers = [[],[]]
 		recordingBufferIndex = 0
 		self.IsCameraWorking = True
 		self.IsGetFrame = True
-		# self.IsSecurity = False
 		while self.IsCameraWorking is True:
 			if self.IsGetFrame is True:
-				time.sleep(2)
 				frameCurr = self.Frame()
-				print("Get frame ... ({0}) ({1})".format(str(self.FrameCount),str(len(frameCurr))))
-				THIS.Node.EmitOnNodeChange({
+				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
+				framePrev = frameCurr
+
+				print("Get frame ... ({0}) ({1}) (diff={diff}) (fps={fps})".format(	str(self.FrameCount),
+																					str(len(frameCurr)),
+																					diff=str(frameDifference),
+																					fps=str(1.0 / float(time.time()-ts))))
+				ts = time.time()
+				if (frameDifference < self.SecuritySensitivity):
+					THIS.Node.EmitOnNodeChange({
 								'camera_ip': str(self.IPAddress),
 								'event': "new_frame", 
 								'frame': base64.encodebytes(frameCurr)
 							})
-				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
-			else:
 				time.sleep(0.5)
+			else:
+				time.sleep(1)
 			
 			if self.IsSecurity is True:
 				if (frameDifference < self.SecuritySensitivity):
@@ -382,12 +394,14 @@ class Context():
 		self.ClassName					= "Apllication"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
+		self.File 						= MkSFile.File()
 		self.Node						= node
 		# States
 		self.States = {
 		}
 		# Handlers
 		self.RequestHandlers		= {
+			'get_frame':				self.GetFrameHandler,
 			'get_sensor_info':			self.GetSensorInfoHandler,
 			'start_recording': 			self.StartRecordingHandler,
 			'stop_recording': 			self.StopRecordingHandler,
@@ -436,16 +450,33 @@ class Context():
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
 	
-	def StartRecordingHandler(self, sock, packet):
-		print("StartRecordingHandler")
+	def GetFrameHandler(self, sock, packet):
+		print ("({classname})# GetFrameHandler ...".format(classname=self.ClassName))
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
 		for item in self.ObjCameras:
-			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+			if (item.GetIp() in payload["ip"]):
+				frame = item.Frame()
+				return THIS.Node.BasicProtocol.BuildResponse(packet, {
+								'camera_ip': str(item.GetIp()),
+								'frame': base64.encodebytes(frame)
+				})
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'return_code': 'no_frame'
+		})
+
+
+	def StartRecordingHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		# Find camera
+		for item in self.ObjCameras:
+			if (item.GetIp() in payload["ip"]):
 				# TODO - Each camera must have its own directory
 				item.StartRecording()
 				cameras = self.DB["cameras"]
 				for item in cameras:
-					if (item["ip"] in packet["payload"]["data"]["ip"]):
+					if (item["ip"] in payload["ip"]):
 						item["recording"] = 1
 						self.File.Save("db.json", json.dumps(self.DB))
 
@@ -454,15 +485,15 @@ class Context():
 		})
 
 	def StopRecordingHandler(self, sock, packet):
-		print("StopRecordingHandler")
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
 		for item in self.ObjCameras:
-			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+			if (item.GetIp() in payload["ip"]):
 				# TODO - Each camera must have its own directory
 				item.StopRecording()
 				cameras = self.DB["cameras"]
 				for item in cameras:
-					if (item["ip"] in packet["payload"]["data"]["ip"]):
+					if (item["ip"] in payload["ip"]):
 						item["recording"] = 0
 						self.File.Save("db.json", json.dumps(self.DB))
 		
@@ -471,10 +502,10 @@ class Context():
 		})
 
 	def StartMotionDetectionHandler(self, sock, packet):
-		print("StartMotionDetectionHandler")
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		cameras = self.DB["cameras"]
 		for item in cameras:
-			if (item["ip"] in packet["payload"]["data"]["ip"]):
+			if (item["ip"] in payload["ip"]):
 				item["motion_detection"] = 1
 				self.File.Save("db.json", json.dumps(self.DB))
 		
@@ -483,10 +514,10 @@ class Context():
 		})
 
 	def StopMotionDetectionHandler(self, sock, packet):
-		print("StopMotionDetectionHandler")
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		cameras = self.DB["cameras"]
 		for item in cameras:
-			if (item["ip"] in packet["payload"]["data"]["ip"]):
+			if (item["ip"] in payload["ip"]):
 				item["motion_detection"] = 0
 				self.File.Save("db.json", json.dumps(self.DB))
 
@@ -495,7 +526,6 @@ class Context():
 		})
 
 	def StartSecurityHandler(self, sock, packet):
-		print("StartSecurityHandler")
 		self.DB["security"] = 1
 		self.SecurityEnabled = True
 		cameras = self.DB["cameras"]
@@ -511,7 +541,6 @@ class Context():
 		})
 
 	def StopSecurityHandler(self, sock, packet):
-		print("StopSecurityHandler")
 		self.DB["security"] = 0
 		self.SecurityEnabled = False
 		cameras = self.DB["cameras"]
@@ -530,10 +559,11 @@ class Context():
 		print("SetCameraNameHandler")
 	
 	def GetCaptureProgressHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
 		ret = 0
 		for item in self.ObjCameras:
-			if (item.GetIp() in packet["payload"]["data"]["ip"]):
+			if (item.GetIp() in payload["ip"]):
 				ret = item.GetCapturingProcess()
 				break
 
@@ -551,10 +581,10 @@ class Context():
 		print("GetVideosListHandler")
 	
 	def GetMiscInformationHandler(self, sock, packet):
-		print ("GetMiscInformationHandler")
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		dbCameras = self.DB["cameras"]
 		for itemCamera in dbCameras:
-			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
+			if itemCamera["ip"] in payload["ip"]:
 				videosList = os.listdir("videos")
 				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 					'frame_per_video': str(itemCamera["frame_per_video"]),
@@ -568,20 +598,20 @@ class Context():
 		})
 
 	def SetMiscInformationHandler(self, sock, packet):
-		print ("SetMiscInformationHandler")
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		dbCameras = self.DB["cameras"]
 		for itemCamera in dbCameras:
-			if itemCamera["ip"] in packet["payload"]["data"]["ip"]:
-				itemCamera["frame_per_video"] = packet["payload"]["data"]["frame_per_video"]
-				itemCamera["camera_sensetivity_recording"] = packet["payload"]["data"]["camera_sensetivity_recording"]
-				itemCamera["face_detect"] = packet["payload"]["data"]["face_detect"]
+			if itemCamera["ip"] in payload["ip"]:
+				itemCamera["frame_per_video"] 				= payload["frame_per_video"]
+				itemCamera["camera_sensetivity_recording"] 	= payload["camera_sensetivity_recording"]
+				itemCamera["face_detect"] 					= payload["face_detect"]
 
 				self.DB["cameras"] = dbCameras
 				# Save new camera to database
 				self.File.Save("db.json", json.dumps(self.DB))
 
 				for item in self.ObjCameras:
-					if (item.GetIp() in packet["payload"]["data"]["ip"]):
+					if (item.GetIp() in payload["ip"]):
 						item.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
 
@@ -665,7 +695,6 @@ class Context():
 			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
 	def NodeSystemLoadedHandler(self):
-		print ("NodeSystemLoadedHandler")
 		objFile = MkSFile.File()
 		## THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
@@ -685,7 +714,7 @@ class Context():
 			self.SecurityEnabled = True
 
 		# Search for cameras and update local database
-		cameras = self.DeviceScanner.Scan("10.0.0.", [1,253])
+		cameras = self.DeviceScanner.Scan("10.0.0.", [1,32])
 		HJTScanner = HJTCameraScanner()
 		ips = HJTScanner.Scan(cameras)
 		# Foreach camera,
@@ -828,7 +857,7 @@ class Context():
 	def FileDownloadHandler(self, name):
 		print ("[WEB API] FileDownloadHandler", name)
 
-		FilePath = "/home/ykiveish/mks/nodes/2017/static/files/" + name
+		FilePath = "./videos/" + name
 		return send_file(FilePath)
 
 	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
@@ -840,8 +869,6 @@ class Context():
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
-			print ("WorkingHandler")
-
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
@@ -850,7 +877,8 @@ class Context():
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
 			# Search for cameras and update local database
-			cameras = self.DeviceScanner.Scan("192.168.0.", [1,253])
+			print ("({classname})# Seraching for cameras ...".format(classname=self.ClassName))
+			cameras = self.DeviceScanner.Scan("10.0.0.", [1,32])
 			HJTScanner = HJTCameraScanner()
 			ips = HJTScanner.Scan(cameras)
 			# Foreach camera,
@@ -863,16 +891,20 @@ class Context():
 			for camera in self.ObjCameras:
 				if (camera.GetIp() not in ips):
 					# Camera was disconnected
-					print ("DELETED <-------------------------->", camera.GetIp())
+					print ("({classname})# Deleting camera ({ip}) ...".format(classname=self.ClassName, ip=camera.GetIp()))
 					self.ObjCameras.remove(camera)
 			
-			return
 			for ip in ips:
 				camera = HJTCamera(ip)
 				mac = camera.GetMACAddress()
 				uid = camera.GetUID()
-				print ("[Camera Surveillance]>", "WorkingHandler", mac, uid, ip)
-
+				print ("({classname})# Found camera (ip={ip}, mac={mac}, uid={uid}) ...".format(classname=self.ClassName,
+													ip=ip,mac=mac,uid=uid))
+			
+			self.HJTDetectorTimestamp = time.time()
+			ips = []
+			return
+			"""
 				cameraFound = False
 				# Update camera IP (if it was changed)
 				for itemCamera in dbCameras:
@@ -921,6 +953,7 @@ class Context():
 			self.DB["cameras"] = dbCameras
 			# Save new camera to database
 			self.File.Save("db.json", json.dumps(self.DB))
+			"""
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
