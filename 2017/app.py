@@ -254,8 +254,6 @@ class ICamera():
 
 	def StopSecurity(self):
 		self.IsSecurity = False
-		if self.IsRecoding is False:
-			self.IsGetFrame = False
 	
 	def StartGettingFrames(self):
 		self.IsGetFrame = True
@@ -269,8 +267,6 @@ class ICamera():
 
 	def StopRecording(self):
 		self.IsRecoding = False
-		if self.IsSecurity is False:
-			self.IsGetFrame = False
 
 	def StartCamera(self):
 		if (self.IsCameraWorking is False):
@@ -288,13 +284,10 @@ class ICamera():
 		ts 				= time.time()
 		frameDifference = 0
 
-		# TODO - Create logging to file system.
-		# TODO - Create common print message format
-		# TODO - Each camera has its own folder
 		# TODO - Is video creation is on going?
 		# TODO - Each camera must have its own video folder.
-
 		# TODO - Enable/Disable camera - self.IsGetFrame(T/F)
+		# TODO - Stop recording will not kill this thread
 
 		recordingBuffers = [[],[]]
 		recordingBufferIndex = 0

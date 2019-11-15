@@ -11,6 +11,8 @@
 
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css" crossorigin="anonymous">
 		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap-slider.css" crossorigin="anonymous">
+		<link rel="stylesheet" href="/static/lib/fontawesome-5.11.2/css/all.min.css">
+		<link rel="stylesheet" href="/static/lib/bootstrap4-editable/css/bootstrap-editable.css">
      
         <style>
             body {
@@ -99,63 +101,155 @@
 						</div>
 						<div class="modal-body">
 							<div class="row">
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">IP Adrress</span>
-												<span class="text-muted" id="ipAddress">10.0.0.23</span>
-											</h6>
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">MAC Address</span>
-												<span class="text-muted" id="macAddress">28:45:f4:87:89</span>
-											</h6>
-										</div>
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">Precentage till next video creation</span>
-											</h6>
-											<div class="progress">
-												<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-											</div>
-										</div>
-										<div class="card-body">
-											<div class="custom-control custom-switch">
-												<input type="checkbox" class="custom-control-input" id="facedetectState">
-												<label class="custom-control-label" for="facedetectState">Face detection (Enable/Disable)</label>
-											</div>
-										</div>
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">Camera sensetivity</span>
-												<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
-											</h6>
-											<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
-										</div>
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">Frames Per Video</span>
-												<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
-											</h6>
-											<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
-										</div> <!--
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">Frames Second</span>
-												<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
-											</h6>
-											<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="30" data-slider-step="1" id="rangeFramesPerSecond">
-										</div> -->
+								<div class="col-2">
+									<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+									<a class="nav-link active" id="v-pills-info-tab" data-toggle="pill" href="#v-pills-info" role="tab" aria-controls="v-pills-info" aria-selected="true">Information</a>
+									<a class="nav-link" id="v-pills-rec-tab" data-toggle="pill" href="#v-pills-rec" role="tab" aria-controls="v-pills-rec" aria-selected="false">Recording</a>
+									<a class="nav-link" id="v-pills-files-tab" data-toggle="pill" href="#v-pills-files" role="tab" aria-controls="v-pills-files" aria-selected="false">Files</a>
+									<a class="nav-link" id="v-pills-image-tab" data-toggle="pill" href="#v-pills-image" role="tab" aria-controls="v-pills-image" aria-selected="false">Image Settings</a>
 									</div>
 								</div>
-								<div class="col-lg-6">
-									<div class="card">
-										<div class="card-body">
-											<h6 class="d-flex justify-content-between align-items-center mb-3">
-												<span class="text-muted">Video Files</span>
-												<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
-											</h6>
-											<div id="files_list_id"></div>
+								<div class="col-10">
+									<div class="tab-content" id="v-pills-tabContent">
+										<div class="tab-pane fade show active" id="v-pills-info" role="tabpanel" aria-labelledby="v-pills-info-tab">
+											<div class="row">
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">IP Adrress</span>
+																<span class="text-muted" id="ipAddress">0.0.0.0</span>
+															</h7>
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">MAC Address</span>
+																<span class="text-muted" id="macAddress">00:00:00:00:00</span>
+															</h7>
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Current FPS</span>
+																<span class="text-muted" id="fps">1.6 fps</span>
+															</h7>
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Name</span>
+																<a href="#" id="txt_name">No Name</a>
+															</h7>
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">eMail</span>
+																<a href="#" id="txt_mail">mail@gmail.com</a>
+															</h7>
+															<h7 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Phone (SMS)</span>
+																<a href="#" id="txt_sms">+97254123456</a>
+															</h7>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Precentage till next video creation</span>
+															</h6>
+															<div class="progress">
+																<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+															</div>
+														</div>
+														<div class="card-body">
+															<div class="custom-control custom-switch">
+																<input type="checkbox" class="custom-control-input" id="accesswww">
+																<label class="custom-control-label" for="accesswww">Access camera from anywere</label>
+															</div>
+															<div class="custom-control custom-switch">
+																<input type="checkbox" class="custom-control-input" id="motion_detection">
+																<label class="custom-control-label" for="motion_detection">Motion Detection</label>
+															</div>
+															<div class="custom-control custom-switch">
+																<input type="checkbox" class="custom-control-input" id="camera_recording">
+																<label class="custom-control-label" for="camera_recording">Recording</label>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="tab-pane fade" id="v-pills-rec" role="tabpanel" aria-labelledby="v-pills-rec-tab">
+											<div class="row">
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Camera Sensetivity</span>
+																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
+															</h6>
+															<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
+														</div>
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Difference Sensetivity</span>
+																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValueRaw">0</span>
+															</h6>
+															<input style="width: 100%" type="text" data-slider-min="1000" data-slider-max="10000" data-slider-step="1" id="rangeCameraSensetivityRaw">
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Frames Per Video</span>
+																<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
+															</h6>
+															<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
+														</div>
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Seconds Per Frame</span>
+																<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
+															</h6>
+															<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="30" data-slider-step="1" id="rangeFramesPerSecond">
+														</div> 
+													</div>
+												</div> 
+											</div>
+										</div>
+										<div class="tab-pane fade" id="v-pills-files" role="tabpanel" aria-labelledby="v-pills-files-tab">
+											<div class="row">
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Video Files</span>
+																<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
+															</h6>
+															<div id="files_list_id"></div>
+														</div>
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Storage Devices List</span>
+																<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
+															</h6>
+															<div id="devices_list_id"></div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="tab-pane fade" id="v-pills-image" role="tabpanel" aria-labelledby="v-pills-image-tab">
+											<div class="row">
+												<div class="col-lg-6">
+													<div class="card">
+														<div class="card-body">
+															<div class="custom-control custom-switch">
+																<input type="checkbox" class="custom-control-input" id="facedetectState">
+																<label class="custom-control-label" for="facedetectState">Face detection (Enable/Disable)</label>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -175,7 +269,8 @@
 		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
 		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
         <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
-        <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/static/lib/bootstrap4-editable/js/bootstrap-editable.min.js"></script>
         
         <script src="mksdk-js/MkSAPI.js"></script>
         <script src="mksdk-js/MkSCommon.js"></script>
@@ -204,13 +299,13 @@
 								</div><br>
 								<div class="row">
 									<div class="col-lg-4">
-										<center><span onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [RECORDING_COLOR]" data-feather="circle"></span></center>
+										<center><span class="fas fa-video" onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [RECORDING_COLOR]"></span></center>
 									</div>
 									<div class="col-lg-4">
-										<center><span onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: [MOTION_COLOR]" data-feather="users"></span></center>
+										<center><span class="fas fa-walking" onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [MOTION_COLOR]"></span></center>
 									</div>
 									<div class="col-lg-4">
-										<center><span onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="width: 20px; height: 20px; cursor: pointer;color: green" data-feather="settings"></span></center>
+										<center><span class="fas fa-cogs" onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: black"></span></center>
 									</div>
 								</div>
 							</div>
@@ -230,6 +325,25 @@
 			  
 			var LocalWeb = null;
 
+			$(function(){
+				$.fn.editable.defaults.mode = 'inline';
+				$('#txt_mail').editable({
+							type:  'text',
+							name:  'email',
+							title: 'eMail'
+				});
+				$('#txt_sms').editable({
+							type:  'text',
+							name:  'sms',
+							title: 'SMS'
+				});
+				$('#txt_name').editable({
+							type:  'text',
+							name:  'name',
+							title: 'Name'
+				});
+			});
+
 			$('#rangeFramesPerVideo').slider({
 				value : 0,
 				formatter: function(value) {
@@ -248,14 +362,23 @@
 					return 'Current value: ' + value;
 				}
 			});
+			$('#rangeCameraSensetivityRaw').slider({
+				value : 0,
+				formatter: function(value) {
+					return 'Current value: ' + value;
+				}
+			});
 			$('#rangeFramesPerVideo').slider().on('slide', function(ev) {
 				document.getElementById("rangeFramesPerVideoValue").innerHTML = ev.value;
 			});
-			//$('#rangeFramesPerSecond').slider().on('slide', function(ev) {
-			//	document.getElementById("rangeFramesPerSecondValue").innerHTML = ev.value;
-			//});
+			$('#rangeFramesPerSecond').slider().on('slide', function(ev) {
+				document.getElementById("rangeFramesPerSecondValue").innerHTML = ev.value;
+			});
 			$('#rangeCameraSensetivity').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValue").innerHTML = ev.value;
+			});
+			$('#rangeCameraSensetivityRaw').slider().on('slide', function(ev) {
+				document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = ev.value;
 			});
 
 			var ConvertHEXtoString = function(hexx) {
