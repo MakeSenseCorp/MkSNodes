@@ -164,7 +164,7 @@ GEncoder = VideoCreator()
 class MkSImageProcessing():
 	def __init__(self):
 		self.ObjName 	= "ImageProcessing"
-		self.MAX_DIFF	= 5000 # MAX = 261120
+		self.HighDiff	= 5000 # MAX = 261120
 	
 	def CompareJpegImages(self, img_one, img_two):
 		if (img_one is None or img_two is None):
@@ -181,7 +181,7 @@ class MkSImageProcessing():
 				.convert('L')            					# convert to grayscale using PIL
 				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
 				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
-			diff_precentage = (float(self.MAX_DIFF - (np.abs(im[0] - im[1]).sum())) / self.MAX_DIFF) * 100
+			diff_precentage = (float(self.HighDiff - (np.abs(im[0] - im[1]).sum())) / self.HighDiff) * 100
 			
 			if (diff_precentage < 0):
 				return 0
@@ -207,6 +207,7 @@ class ICamera():
 		self.OnImageDifferentCallback	= None
 		self.State 						= 0
 		self.FrameCount  				= 0
+		self.FPS 						= 0.0
 
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
@@ -235,6 +236,9 @@ class ICamera():
 
 	def GetCapturingProcess(self):
 		return int((float(self.CurrentImageIndex) / float(self.FramesPerVideo)) * 100.0)
+	
+	def GetFPS(self):
+		return self.FPS
 
 	def Frame(self):
 		command = self.GetFrame()
@@ -299,10 +303,11 @@ class ICamera():
 				frameDifference = self.ImP.CompareJpegImages(frameCurr, framePrev)
 				framePrev = frameCurr
 
+				self.FPS = 1.0 / float(time.time()-ts)
 				print("Get frame ... ({0}) ({1}) (diff={diff}) (fps={fps})".format(	str(self.FrameCount),
 																					str(len(frameCurr)),
 																					diff=str(frameDifference),
-																					fps=str(1.0 / float(time.time()-ts))))
+																					fps=str(self.FPS)))
 				ts = time.time()
 				if (frameDifference < self.SecuritySensitivity):
 					THIS.Node.EmitOnNodeChange({
@@ -403,7 +408,7 @@ class Context():
 			'start_security': 			self.StartSecurityHandler,
 			'stop_security': 			self.StopSecurityHandler,
 			'set_camera_name': 			self.SetCameraNameHandler,
-			'get_capture_progress':		self.GetCaptureProgressHandler,
+			'get_changed_misc_info':	self.GetChangedMiscInfoHandler,
 			'set_face_detection':		self.SetFaceDetectionHandler,
 			'set_camera_sensetivity':	self.SetCameraSensetivityHandler,
 			'get_videos_list':			self.GetVideosListHandler,
@@ -458,7 +463,6 @@ class Context():
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'no_frame'
 		})
-
 
 	def StartRecordingHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
@@ -551,18 +555,27 @@ class Context():
 	def SetCameraNameHandler(self, sock, packet):
 		print("SetCameraNameHandler")
 	
-	def GetCaptureProgressHandler(self, sock, packet):
+	def GetChangedMiscInfoHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
-		ret = 0
+		camera = None
 		for item in self.ObjCameras:
 			if (item.GetIp() in payload["ip"]):
-				ret = item.GetCapturingProcess()
+				camera = item
 				break
-
+		
+		if camera is not None:
+			process = camera.GetCapturingProcess()
+			fps 	= camera.GetFPS()
+			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				'progress': str(process),
+				'fps': str(fps),
+				'storage_device_list': ['/mnt/usb']
+			})
+		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
-			'progress': str(ret)
-		})
+				'error': 'error'
+			})
 
 	def SetFaceDetectionHandler(self, sock, packet):
 		print("SetFaceDetectionHandler")
@@ -580,10 +593,18 @@ class Context():
 			if itemCamera["ip"] in payload["ip"]:
 				videosList = os.listdir("videos")
 				return THIS.Node.BasicProtocol.BuildResponse(packet, {
+					'name': itemCamera["name"],
+					'email': itemCamera["email"],
+					'phone': itemCamera["phone"],
 					'frame_per_video': str(itemCamera["frame_per_video"]),
+					'seconds_per_video': itemCamera["seconds_per_video"],
 					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
+					'difference_sensetivity': itemCamera["high_diff"],
 					'face_detect': str(itemCamera["face_detect"]),
-					'video_list': videosList
+					'video_list': videosList,
+					'access_from_www': True,
+					'motion_detection': False,
+					'recording': False
 				})
 		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -598,6 +619,11 @@ class Context():
 				itemCamera["frame_per_video"] 				= payload["frame_per_video"]
 				itemCamera["camera_sensetivity_recording"] 	= payload["camera_sensetivity_recording"]
 				itemCamera["face_detect"] 					= payload["face_detect"]
+				itemCamera["high_diff"] 					= payload["high_diff"]
+				itemCamera["name"] 							= payload["name"]
+				itemCamera["seconds_per_video"] 			= payload["seconds_per_video"]
+				itemCamera["phone"] 						= payload["phone"]
+				itemCamera["email"] 						= payload["email"]
 
 				self.DB["cameras"] = dbCameras
 				# Save new camera to database
@@ -760,7 +786,11 @@ class Context():
 								"face_detect": 0,
 								"security": 0,
 								"motion_detection": 0,
-								"status": "disconnected"
+								"status": "disconnected",
+								"high_diff": 5000, 
+								"seconds_per_video": 1, 
+								"phone": "+972544784156",
+								"email": "yevgeniy.kiveisha@gmail.com"
 				})
 				camera.SetFramesPerVideo(2000)
 				camera.SetRecordingSensetivity(95)
@@ -937,7 +967,11 @@ class Context():
 									"face_detect": 0,
 									"security": 0,
 									"motion_detection": 0,
-									"status": "disconnected"
+									"status": "disconnected",
+									"high_diff": 5000, 
+									"seconds_per_video": 1, 
+									"phone": "+972544784156",
+									"email": "yevgeniy.kiveisha@gmail.com"
 					})
 					camera.SetFramesPerVideo(2000)
 					camera.SetRecordingSensetivity(95)
