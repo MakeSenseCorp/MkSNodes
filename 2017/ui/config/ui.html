@@ -187,7 +187,7 @@
 																<span class="text-muted">Difference Sensetivity</span>
 																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValueRaw">0</span>
 															</h6>
-															<input style="width: 100%" type="text" data-slider-min="1000" data-slider-max="261120" data-slider-step="10" id="rangeCameraSensetivityRaw">
+															<input style="width: 100%" type="text" data-slider-min="1000" data-slider-max="50000" data-slider-step="100" id="rangeCameraSensetivityRaw">
 														</div>
 													</div>
 												</div>
@@ -202,10 +202,10 @@
 														</div>
 														<div class="card-body">
 															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Seconds Per Frame</span>
+																<span class="text-muted">Delay Between Frames</span>
 																<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
 															</h6>
-															<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="30" data-slider-step="1" id="rangeFramesPerSecond">
+															<input style="width: 100%" type="text" data-slider-min="0.1" data-slider-max="5" data-slider-step="0.1" id="rangeFramesPerSecond">
 														</div> 
 													</div>
 												</div> 
@@ -231,7 +231,12 @@
 																<span class="text-muted">Storage Devices List</span>
 																<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
 															</h6>
-															<div id="devices_list_id"></div>
+															<div id="devices_list_id">
+																<div class="custom-control custom-radio">
+																	<input type="radio" id="id_node_local" name="customRadio" class="custom-control-input">
+																	<label class="custom-control-label" for="id_node_local">Local Node Storage</label>
+																</div>
+															</div>
 														</div>
 													</div>
 												</div>
@@ -257,7 +262,7 @@
 						</div>
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary" onclick="MiscInfoSave()">Save changes</button>
+							<button type="button" class="btn btn-primary" onclick="SetMiscInfo()">Save changes</button>
 						</div>
 					</div>
 				</div>
@@ -299,10 +304,10 @@
 								</div><br>
 								<div class="row">
 									<div class="col-lg-4">
-										<center><span class="fas fa-video" onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [RECORDING_COLOR]"></span></center>
+										<center><span class="fas fa-video" id="id_btn_rec_[IPADDRESS]" onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [RECORDING_COLOR]"></span></center>
 									</div>
 									<div class="col-lg-4">
-										<center><span class="fas fa-walking" onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [MOTION_COLOR]"></span></center>
+										<center><span class="fas fa-walking" id="id_btn_motion_[IPADDRESS]" onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: [MOTION_COLOR]"></span></center>
 									</div>
 									<div class="col-lg-4">
 										<center><span class="fas fa-cogs" onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 30px; cursor: pointer;color: black"></span></center>
@@ -322,20 +327,29 @@
 						</div>
 					</li>
 			`;
-			  
-			var LocalWeb = null;
+
+			var USBStorage = `
+					<div id="id_ctx_[USB_NAME]" class="custom-control custom-radio">
+						<input type="radio" id="id_[USB_NAME]" name="customRadio" class="custom-control-input">
+						<label class="custom-control-label" for="id_[USB_NAME]">[USB_NAME]</label>
+					</div>
+			`;
+			
+			var LocalWeb 				= null;
+			var USBStorageDevices 		= [];
+			var USBStorageDevicesCount 	= 1;
 
 			$(function(){
 				$.fn.editable.defaults.mode = 'inline';
-				$('#txt_mail').editable({
+				$('#txt_email').editable({
 							type:  'text',
 							name:  'email',
 							title: 'eMail'
 				});
-				$('#txt_sms').editable({
+				$('#txt_phone').editable({
 							type:  'text',
-							name:  'sms',
-							title: 'SMS'
+							name:  'phone',
+							title: 'Phopne'
 				});
 				$('#txt_name').editable({
 							type:  'text',
@@ -498,15 +512,61 @@
 					}, function(res) {
 						progress 	= res.data.payload.progress;
 						fps			= res.data.payload.fps;
-						document.getElementById("progressCapture").style.width = progress + "%";
 						document.getElementById("progressCapture").setAttribute("aria-valuenow", progress);
-						document.getElementById("progressCapture").innerHTML = progress + "%";
-						document.getElementById("txt_fps").innerHTML = fps + " fps";
+						document.getElementById("progressCapture").style.width 	= progress + "%";
+						document.getElementById("progressCapture").innerHTML 	= progress + "%";
+						document.getElementById("txt_fps").innerHTML 			= fps + " fps";
+
+						// Append new storage device loop
+						for (i = 0; i < res.data.payload.usb_devices.length; i++) {
+							name = res.data.payload.usb_devices[i];
+							this_element = document.getElementById("id_ctx_" + name);
+
+							if (this_element === null) {
+								row = USBStorage;
+								row = row.split("[USB_NAME]").join(name);
+								USBStorageDevicesCount++;
+								USBStorageDevices.push(name);
+								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+								document.getElementById("devices_list_id").innerHTML  += row;
+							}
+						}
+
+						// Remove storage device loop
+						diff = []
+						for (idx = 0; idx < USBStorageDevices.length; idx++) {
+							found = false;
+							for (i = 0; i < res.data.payload.usb_devices.length; i++) {
+								if (USBStorageDevices[idx] == res.data.payload.usb_devices[i]) {
+									found = true;
+								}
+							}
+							if (found == false) {
+								elem = document.getElementById("id_ctx_" + USBStorageDevices[idx]);
+								elem.parentNode.removeChild(elem);
+								USBStorageDevicesCount--;
+								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+								diff.push(idx);
+							}
+						}
+
+						for (idx = 0; idx < diff.length; idx++) {
+							console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
+							USBStorageDevices.splice(diff[idx],1);
+						}
 					});
 				}
 
 				this.SetIntervalHndl = function(hndl) {
 					this.Handle = hndl;
+				}
+			}
+
+			function SetCheckboxState(id, val) {
+				if (val == 1) {
+					document.getElementById(id).checked = true;
+				} else if (val == 0) {
+					document.getElementById(id).checked = false;
 				}
 			}
 
@@ -521,19 +581,23 @@
 					cameraSensetivity = res.data.payload.camera_sensetivity_recording;
 					$('#rangeFramesPerVideo').slider('setValue', framesPerVideo);
 					$('#rangeCameraSensetivity').slider('setValue', cameraSensetivity);
+					$('#rangeCameraSensetivityRaw').slider('setValue', res.data.payload.high_diff);
+					$('#rangeFramesPerSecond').slider('setValue', res.data.payload.seconds_per_frame);
 					document.getElementById("rangeFramesPerVideoValue").innerHTML = framesPerVideo;
 					document.getElementById("rangeCameraSensetivityValue").innerHTML = cameraSensetivity;
+					document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = res.data.payload.high_diff;
+					document.getElementById("rangeFramesPerSecondValue").innerHTML = res.data.payload.seconds_per_frame;
+
 					document.getElementById("ipAddress").innerHTML = camera_ip;
 					document.getElementById("macAddress").innerHTML = camera_mac;
 					document.getElementById("txt_name").innerHTML = res.data.payload.name;
 					document.getElementById("txt_email").innerHTML = res.data.payload.email;
 					document.getElementById("txt_phone").innerHTML = res.data.payload.phone;
 					
-					if (res.data.payload.face_detect == 1) {
-						document.getElementById("facedetectState").checked = true;
-					} else {
-						document.getElementById("facedetectState").checked = false;
-					}
+					SetCheckboxState("facedetectState", res.data.payload.face_detect);
+					SetCheckboxState("accesswww", res.data.payload.access_from_www);
+					SetCheckboxState("motion_detection", res.data.payload.motion_detection);
+					SetCheckboxState("camera_recording", res.data.payload.recording);
 
 					var filesList = res.data.payload.video_list;
 					document.getElementById("files_count_id").innerHTML = filesList.length;
@@ -549,15 +613,20 @@
 				});
 			}
 
-			function MiscInfoSave() {
-				camera_ip = document.getElementById("ipAddress").innerHTML;
-				camera_mac = document.getElementById("macAddress").innerHTML;
-				camera_name = document.getElementById("txt_name").innerHTML;
-				camera_phone = document.getElementById("txt_phone").innerHTML;
-				camera_email = document.getElementById("txt_email").innerHTML;
+			function SetMiscInfo() {
+				camera_ip 	 				 = document.getElementById("ipAddress").innerHTML;
+				camera_mac 	 				 = document.getElementById("macAddress").innerHTML;
+				camera_name  				 = document.getElementById("txt_name").innerHTML;
+				camera_phone 				 = document.getElementById("txt_phone").innerHTML;
+				camera_email 				 = document.getElementById("txt_email").innerHTML;
 				camera_sensetivity_recording = document.getElementById("rangeCameraSensetivityValue").innerHTML;
-				frame_per_video = document.getElementById("rangeFramesPerVideoValue").innerHTML;
-				face_detect = (document.getElementById("facedetectState").checked) ? 1 : 0;
+				frame_per_video 			 = document.getElementById("rangeFramesPerVideoValue").innerHTML;
+				high_diff 		 			 = document.getElementById("rangeCameraSensetivityValueRaw").innerHTML;
+				seconds_per_frame 			 = document.getElementById("rangeFramesPerSecondValue").innerHTML;
+				face_detect 				 = (document.getElementById("facedetectState").checked) ? 1 : 0;
+				accesswww 					 = (document.getElementById("accesswww").checked) ? 1 : 0;
+				motion_detection 			 = (document.getElementById("motion_detection").checked) ? 1 : 0;
+				camera_recording 			 = (document.getElementById("camera_recording").checked) ? 1 : 0;
 				api.SendCustomCommand(NodeUUID, "set_misc_information", {
 					mac: camera_mac,
 					ip: camera_ip,
@@ -566,9 +635,13 @@
 					face_detect: face_detect,
 					high_diff: 5000,
 					name: camera_name,
-					seconds_per_video: 1,
+					seconds_per_frame: seconds_per_frame,
 					phone: camera_phone,
 					email: camera_email,
+					access_from_www: accesswww,
+					motion_detection: motion_detection,
+					recording: camera_recording,
+					high_diff: high_diff
 				}, function(res) {
 					console.log(res);
 				});
@@ -644,15 +717,23 @@
 					document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Enabled";
 					api.SendCustomCommand(NodeUUID, "start_security", {
 					}, function(res) {
-						console.log(res);
+						payload = res.data.payload;
 						elem.style.color = "red";
+						for (i = 0; i < payload.ips.length; i++) {
+							eMotion = document.getElementById("id_btn_motion_" + payload.ips[i]);
+							eMotion.style.color = "red";
+						}
 					});
 				} else {
 					document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Disabled";
 					api.SendCustomCommand(NodeUUID, "stop_security", {
 					}, function(res) {
-						console.log(res);
+						payload = res.data.payload;
 						elem.style.color = "green";
+						for (i = 0; i < payload.ips.length; i++) {
+							eMotion = document.getElementById("id_btn_motion_" + payload.ips[i]);
+							eMotion.style.color = "green";
+						}
 					});
 				}
 			}

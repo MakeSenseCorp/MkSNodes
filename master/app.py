@@ -197,13 +197,17 @@ class Context():
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		
-	def OnCustomCommandRequestHandler(self, sock, packet):
+	def OnApplicationCommandRequestHandler(self, sock, packet):
 		print ("({classname})# REQUEST".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'error': '-1'
+		})
 
-	def OnCustomCommandResponseHandler(self, sock, packet):
+	def OnApplicationCommandResponseHandler(self, sock, packet):
 		print ("({classname})# RESPONSE".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.ResponseHandlers:
@@ -291,8 +295,8 @@ def main():
 	THIS.Node.GatewayConnectedCallback 				= THIS.WSConnectedHandler
 	THIS.Node.OnWSConnectionClosed 					= THIS.WSConnectionClosedHandler
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnApplicationRequestCallback			= THIS.OnCustomCommandRequestHandler
-	THIS.Node.OnApplicationResponseCallback			= THIS.OnCustomCommandResponseHandler
+	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 
 	# Run Node
 	print("(Master Application)# Start Node ...")
