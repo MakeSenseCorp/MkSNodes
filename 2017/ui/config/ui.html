@@ -330,7 +330,7 @@
 
 			var USBStorage = `
 					<div id="id_ctx_[USB_NAME]" class="custom-control custom-radio">
-						<input type="radio" id="id_[USB_NAME]" name="customRadio" class="custom-control-input">
+						<input type="radio" id="id_[USB_NAME]" onclick="storageSelected('[USB_NAME]')" name="customRadio" class="custom-control-input">
 						<label class="custom-control-label" for="id_[USB_NAME]">[USB_NAME]</label>
 					</div>
 			`;
@@ -338,6 +338,7 @@
 			var LocalWeb 				= null;
 			var USBStorageDevices 		= [];
 			var USBStorageDevicesCount 	= 1;
+			var SelectedStorageDevice 	= "";
 
 			$(function(){
 				$.fn.editable.defaults.mode = 'inline';
@@ -394,6 +395,10 @@
 			$('#rangeCameraSensetivityRaw').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = ev.value;
 			});
+
+			var storageSelected = function(device_name) {
+				SelectedStorageDevice = device_name;
+			}
 
 			var ConvertHEXtoString = function(hexx) {
 				var hex = hexx.toString();//force conversion
@@ -517,6 +522,8 @@
 						document.getElementById("progressCapture").innerHTML 	= progress + "%";
 						document.getElementById("txt_fps").innerHTML 			= fps + " fps";
 
+						console.log(res.data.payload);
+
 						// Append new storage device loop
 						for (i = 0; i < res.data.payload.usb_devices.length; i++) {
 							name = res.data.payload.usb_devices[i];
@@ -549,6 +556,10 @@
 								diff.push(idx);
 							}
 						}
+
+						console.log("id_" + SelectedStorageDevice);
+						// Select active storage device
+						SetCheckboxState("id_" + SelectedStorageDevice, 1);
 
 						for (idx = 0; idx < diff.length; idx++) {
 							console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
@@ -599,6 +610,8 @@
 					SetCheckboxState("motion_detection", res.data.payload.motion_detection);
 					SetCheckboxState("camera_recording", res.data.payload.recording);
 
+					SelectedStorageDevice = res.data.payload.usb_device_name;
+
 					var filesList = res.data.payload.video_list;
 					document.getElementById("files_count_id").innerHTML = filesList.length;
 					var html = `<ul class="list-group mb-3">`;
@@ -641,7 +654,8 @@
 					access_from_www: accesswww,
 					motion_detection: motion_detection,
 					recording: camera_recording,
-					high_diff: high_diff
+					high_diff: high_diff,
+					usb_device_name: SelectedStorageDevice
 				}, function(res) {
 					console.log(res);
 				});

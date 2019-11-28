@@ -633,7 +633,7 @@ class Context():
 					'access_from_www': str(itemCamera["access_from_www"]),
 					'motion_detection': str(itemCamera["motion_detection"]),
 					'recording': str(itemCamera["recording"]),
-					'usb_device': self.USBDevice,
+					'usb_device_name': self.USBDevice["name"],
 					'usb_devices': self.USBDevices
 				})
 		
@@ -644,6 +644,8 @@ class Context():
 	def SetMiscInformationHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		dbCameras = self.DB["cameras"]
+		self.DB["usb_device"]["name"]						= payload["usb_device_name"]
+		self.USBDevice = self.DB["usb_device"]
 		for itemCamera in dbCameras:
 			if itemCamera["ip"] in payload["ip"]:
 				itemCamera["frame_per_video"] 				= payload["frame_per_video"]
@@ -657,7 +659,6 @@ class Context():
 				itemCamera["access_from_www"] 				= payload["access_from_www"]
 				itemCamera["motion_detection"] 				= payload["motion_detection"]
 				itemCamera["recording"] 					= payload["recording"]
-				itemCamera["usb_device"] 					= payload["usb_device"]
 
 				self.DB["cameras"] = dbCameras
 				# Save new camera to database
