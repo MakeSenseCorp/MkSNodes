@@ -43,13 +43,17 @@ class Context():
 		# Application variables
 		self.ProgressBarCounter 		= 0
 	
-	def OnCustomCommandRequestHandler(self, sock, packet):
+	def OnApplicationCommandRequestHandler(self, sock, packet):
 		print ("({classname})# REQUEST".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
+			
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'error': '-1'
+		})
 
-	def OnCustomCommandResponseHandler(self, sock, packet):
+	def OnApplicationCommandResponseHandler(self, sock, packet):
 		print ("({classname})# RESPONSE".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.ResponseHandlers:
@@ -159,8 +163,8 @@ def main():
 	THIS.Node.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
 	THIS.Node.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
 
-	THIS.Node.OnApplicationRequestCallback			= THIS.OnCustomCommandRequestHandler
-	THIS.Node.OnApplicationResponseCallback			= THIS.OnCustomCommandResponseHandler
+	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")

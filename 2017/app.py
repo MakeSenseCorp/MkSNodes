@@ -145,23 +145,27 @@ class VideoCreator():
 		# TODO - Put in TRY CATCH
 		while (self.IsRunning is True):
 			item = self.Orders.get(block=True,timeout=None)
-			logging.info("[VideoCreator] Start video encoding...")
-			images = item["images"]
-			recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), './videos/video'+str(time.time())+'.avi'], stdin=PIPE)
-			for frame in images:
-				image = Image.open(BytesIO(frame))
-				image.save(recordingProcess.stdin, 'JPEG')
-			recordingProcess.stdin.close()
-			recordingProcess.wait()
-			logging.debug("[VideoCreator] {images} {item}".format(images = str(id(images)), item = str(id(item))))
-			images = []
-			item = None
-			logging.info("[VideoCreator] Start video encoding... DONE")
-			gc.collect()
+			try:
+				logging.info("[VideoCreator] Start video encoding...")
+				images = item["images"]
+				file_path = "{0}/video_{1}.avi".format(item["path"], str(time.time()))
+				recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), file_path], stdin=PIPE)
+				for frame in images:
+					image = Image.open(BytesIO(frame))
+					image.save(recordingProcess.stdin, 'JPEG')
+				recordingProcess.stdin.close()
+				recordingProcess.wait()
+				logging.debug("[VideoCreator] {images} {item}".format(images = str(id(images)), item = str(id(item))))
+				images = []
+				item = None
+				logging.info("[VideoCreator] Start video encoding... DONE")
+				gc.collect()
+			except Exception as e:
+				print ("[Camera] Exception", e)
 
 GEncoder = VideoCreator()
 
-class MkSImageProcessing():
+class MkSImageProcessing(): # TODO - Change name MkSImageComperator
 	def __init__(self):
 		self.ObjName 	= "ImageProcessing"
 		self.HighDiff	= 5000 # MAX = 261120
@@ -200,6 +204,7 @@ class ICamera():
 		self.IPAddress 					= ip
 		self.Address 					= "http://" + self.IPAddress + "/"
 		self.Name 						= ""
+		self.UID 						= ""
 		self.IsGetFrame 				= False
 		self.IsRecoding 				= False
 		self.IsCameraWorking 			= False
@@ -213,6 +218,7 @@ class ICamera():
 		self.State 						= 0
 		self.FrameCount  				= 0
 		self.FPS 						= 0.0
+		self.RecordingPath 				= ""
 
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
@@ -345,11 +351,17 @@ class ICamera():
 					self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
 				
 				if self.FramesPerVideo <= self.CurrentImageIndex:
-					# TODO - Add to order path to store the file
-					GEncoder.AddOrder({
-						'images': rec_buffer[rec_buffer_idx]
-					})
-					logging.debug("Sent recording order " + str(id(rec_buffer[rec_buffer_idx])))
+					path = "{0}/{1}/video".format(self.RecordingPath, self.UID)
+					try:
+						if not os.path.exists(path):
+							os.makedirs(path)
+						GEncoder.AddOrder({
+							'images': rec_buffer[rec_buffer_idx],
+							'path': path
+						})
+						logging.debug("Sent recording order " + str(id(rec_buffer[rec_buffer_idx])))
+					except Exception as e:
+						print ("[Camera] Exception", e)
 
 					if 1 == rec_buffer_idx:
 						rec_buffer_idx = 0
@@ -444,6 +456,8 @@ class Context():
 		self.HJTDetectorTimestamp 		= time.time()
 		self.USBDevices 				= []
 		self.USBDevice 					= None
+		self.LocalStoragePath 			= ".videos"
+		self.USBStoragePath 			= "/home/ykiveish/mks/nodes/2017/videos/usb"
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -797,6 +811,7 @@ class Context():
 			# Update camera IP (if it was changed)
 			for itemCamera in dbCameras:
 				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
+					camera.UID = uid
 					# Update DB with current IP
 					itemCamera["ip"] = ip
 					# Start camera thread
@@ -956,7 +971,7 @@ class Context():
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
 			
 			# Search for usb storage in /media/[USER]/
-			self.USBDevices = self.File.ListAllInFolder("/home/ykiveish/mks/nodes/2017/videos/usb")
+			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
 			print(self.USBDevices)
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
