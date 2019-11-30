@@ -245,8 +245,7 @@ class ICamera():
 			urllib2.install_opener(opener)
 			data = urllib2.urlopen(url).read()
 		except Exception as e:
-			# TODO - Exit node
-			print ("HTTPException", e)
+			print ("HTTPException GetRequest", e)
 			return "", True
 
 		return data, False
@@ -330,7 +329,7 @@ class ICamera():
 					THIS.Node.EmitOnNodeChange({
 								'camera_ip': str(self.IPAddress),
 								'event': "new_frame", 
-								'frame': base64.encodebytes(frame_cur)
+								'frame': base64.encodestring(frame_cur)
 							})
 				time.sleep(self.SecondsPerFrame)
 			else:
@@ -399,7 +398,7 @@ class HJTCamera(ICamera):
 			if "xqp2p_uid" in item:
 				uid = item.split('\"')
 				return uid[1]
-		return 0
+		return ""
 
 	def GetMACAddress(self):
 		data, error = self.GetRequest(self.Address + self.Commands['getnetattr'])
@@ -484,7 +483,7 @@ class Context():
 				frame = item.Frame()
 				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 								'camera_ip': str(item.GetIp()),
-								'frame': base64.encodebytes(frame)
+								'frame': base64.encodestring(frame)
 				})
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -798,6 +797,8 @@ class Context():
 		cameras 	= self.DeviceScanner.Scan("10.0.0.", [1,32])
 		HJTScanner 	= HJTCameraScanner()
 		ips 		= HJTScanner.Scan(cameras)
+		print (ips)
+		
 		cameraFound = False
 		# Foreach camera,
 		#	1. Get UID and MAC.
@@ -808,8 +809,15 @@ class Context():
 			camera 	= HJTCamera(ip)
 			mac 	= camera.GetMACAddress()
 			uid 	= camera.GetUID()
+			print (mac, uid)
 			# Update camera IP (if it was changed)
 			for itemCamera in dbCameras:
+				cameraFound = False
+				# Invalid MAC or UID (TODO - Do re.compile for MAC)
+				if uid == "" or mac == "":
+					print ("({classname})# Found IP is not valid camera".format(classname=self.ClassName))
+					break
+				# Is camera exist in DB
 				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
 					camera.UID = uid
 					# Update DB with current IP
@@ -838,32 +846,32 @@ class Context():
 					cameraFound = True
 					break
 			
-			if cameraFound is False:
-				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
-				# Append new camera.
-				dbCameras.append({
-								'mac': str(mac),
-								'uid': str(uid),
-								'ip': str(ip),
-								'name': 'Camera_' + str(uid),
-								'enable':1,
-								"frame_per_video": 2000,
-								"camera_sensetivity_recording": 95,
-								"recording": 0,
-								"face_detect": 0,
-								"security": 0,
-								"motion_detection": 0,
-								"status": "disconnected",
-								"high_diff": 5000, 
-								"seconds_per_frame": 1, 
-								"phone": "+972544784156",
-								"email": "yevgeniy.kiveisha@gmail.com",
-								'access_from_www': 1
-				})
-				camera.SetFramesPerVideo(2000)
-				camera.SetRecordingSensetivity(95)
-				# Add camera to camera obejct DB
-				self.ObjCameras.append(camera)
+				if cameraFound is False:
+					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
+					# Append new camera.
+					dbCameras.append({
+									'mac': str(mac),
+									'uid': str(uid),
+									'ip': str(ip),
+									'name': 'Camera_' + str(uid),
+									'enable':1,
+									"frame_per_video": 2000,
+									"camera_sensetivity_recording": 95,
+									"recording": 0,
+									"face_detect": 0,
+									"security": 0,
+									"motion_detection": 0,
+									"status": "disconnected",
+									"high_diff": 5000, 
+									"seconds_per_frame": 1, 
+									"phone": "+972544784156",
+									"email": "yevgeniy.kiveisha@gmail.com",
+									'access_from_www': 1
+					})
+					camera.SetFramesPerVideo(2000)
+					camera.SetRecordingSensetivity(95)
+					# Add camera to camera obejct DB
+					self.ObjCameras.append(camera)
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
 		objFile.Save("db.json", json.dumps(self.DB))
@@ -1078,10 +1086,8 @@ def main():
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
 	THIS.Node.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
 	THIS.Node.OnMasterRemoveNodeCallback			= THIS.OnMasterRemoveNodeHandler
-	try:
-		THIS.Node.Run(THIS.WorkingHandler)
-	except Exception as e:
-		print ("[Main] Exception", e)
+	
+	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")
 
 if __name__ == "__main__":
