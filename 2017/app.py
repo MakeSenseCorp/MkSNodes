@@ -149,6 +149,7 @@ class VideoCreator():
 				logging.info("[VideoCreator] Start video encoding...")
 				images = item["images"]
 				file_path = "{0}/video_{1}.avi".format(item["path"], str(time.time()))
+				print("[VideoCreator] Start recording, " + file_path)
 				recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), file_path], stdin=PIPE)
 				for frame in images:
 					image = Image.open(BytesIO(frame))
@@ -161,7 +162,7 @@ class VideoCreator():
 				logging.info("[VideoCreator] Start video encoding... DONE")
 				gc.collect()
 			except Exception as e:
-				print ("[Camera] Exception", e)
+				print ("[VideoCreator] Exception", e)
 
 GEncoder = VideoCreator()
 
@@ -205,6 +206,7 @@ class ICamera():
 		self.Address 					= "http://" + self.IPAddress + "/"
 		self.Name 						= ""
 		self.UID 						= ""
+		self.MAC 						= ""
 		self.IsGetFrame 				= False
 		self.IsRecoding 				= False
 		self.IsCameraWorking 			= False
@@ -219,6 +221,11 @@ class ICamera():
 		self.FrameCount  				= 0
 		self.FPS 						= 0.0
 		self.RecordingPath 				= ""
+
+		self.StopRecordingEvent 		= None
+	
+	def SetRecordingPath(self, path):
+		self.RecordingPath = path
 
 	def SetFramesPerVideo(self, value):
 		self.FramesPerVideo = value
@@ -343,33 +350,44 @@ class ICamera():
 						self.OnImageDifferentCallback(self.IPAddress, frame_cur)
 			
 			if self.IsRecoding is True:
-				if (frame_dif < self.RecordingSensetivity):
-					rec_buffer[rec_buffer_idx].append(frame_cur)
-					print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(rec_buffer[rec_buffer_idx])), diff = str(frame_dif), sensitivity = str(self.RecordingSensetivity)))
-					frame_pre = frame_cur
-					self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
-				
-				if self.FramesPerVideo <= self.CurrentImageIndex:
-					path = "{0}/{1}/video".format(self.RecordingPath, self.UID)
-					try:
-						if not os.path.exists(path):
-							os.makedirs(path)
-						GEncoder.AddOrder({
-							'images': rec_buffer[rec_buffer_idx],
-							'path': path
+				# Check for valid storage
+				if not os.path.exists(self.RecordingPath):
+					if self.StopRecordingEvent is not None:
+						self.StopRecordingEvent({
+							'path': self.RecordingPath,
+							'ip': self.IPAddress,
+							'mac': self.MAC,
+							'uid': self.UID
 						})
-						logging.debug("Sent recording order " + str(id(rec_buffer[rec_buffer_idx])))
-					except Exception as e:
-						print ("[Camera] Exception", e)
-
-					if 1 == rec_buffer_idx:
-						rec_buffer_idx = 0
-					else:
-						rec_buffer_idx = 1
+					self.IsRecoding = False
+				else:
+					if (frame_dif < self.RecordingSensetivity):
+						rec_buffer[rec_buffer_idx].append(frame_cur)
+						print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(rec_buffer[rec_buffer_idx])), diff = str(frame_dif), sensitivity = str(self.RecordingSensetivity)))
+						frame_pre = frame_cur
+						self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
 					
-					rec_buffer[rec_buffer_idx] = []
-					self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
-					gc.collect()
+					if self.FramesPerVideo <= self.CurrentImageIndex:
+						path = "{0}/{1}/video".format(self.RecordingPath, self.UID)
+						try:
+							if not os.path.exists(path):
+								os.makedirs(path)
+							GEncoder.AddOrder({
+								'images': rec_buffer[rec_buffer_idx],
+								'path': path
+							})
+							logging.debug("Sent recording order " + str(id(rec_buffer[rec_buffer_idx])))
+						except Exception as e:
+							print ("[Camera] Exception", e)
+
+						if 1 == rec_buffer_idx:
+							rec_buffer_idx = 0
+						else:
+							rec_buffer_idx = 1
+						
+						rec_buffer[rec_buffer_idx] = []
+						self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
+						gc.collect()
 
 class HJTCamera(ICamera):
 	def __init__(self, ip):
@@ -453,9 +471,10 @@ class Context():
 
 		self.LastTSEmailSent			= 0
 		self.HJTDetectorTimestamp 		= time.time()
+		self.LocalStorageEnabled 		= 0
 		self.USBDevices 				= []
 		self.USBDevice 					= None
-		self.LocalStoragePath 			= ".videos"
+		self.LocalStoragePath 			= "/home/ykiveish/mks/nodes/2017/videos/local"
 		self.USBStoragePath 			= "/home/ykiveish/mks/nodes/2017/videos/usb"
 
 	def UndefindHandler(self, message_type, source, data):
@@ -605,13 +624,15 @@ class Context():
 				'progress': str(process),
 				'fps': str(fps),
 				'usb_device': self.USBDevice,
-				'usb_devices': self.USBDevices
+				'usb_devices': self.USBDevices,
+				'local_storage_enabled': self.LocalStorageEnabled
 			})
 			return THIS.Node.BasicProtocol.BuildResponse(packet, {
 				'progress': str(process),
 				'fps': str(fps),
 				'usb_device': self.USBDevice,
-				'usb_devices': self.USBDevices
+				'usb_devices': self.USBDevices,
+				'local_storage_enabled': self.LocalStorageEnabled
 			})
 		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -632,7 +653,10 @@ class Context():
 		dbCameras = self.DB["cameras"]
 		for itemCamera in dbCameras:
 			if itemCamera["ip"] in payload["ip"]:
-				videosList = os.listdir("videos")
+				if self.LocalStorageEnabled:
+					videosList = os.listdir("{0}/{1}/video".format(self.LocalStoragePath,itemCamera["uid"]))
+				else:
+					videosList = os.listdir("{0}/{1}/{2}/video".format(self.USBStoragePath,self.USBDevice["name"],itemCamera["uid"]))
 				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 					'name': itemCamera["name"],
 					'email': itemCamera["email"],
@@ -647,7 +671,8 @@ class Context():
 					'motion_detection': str(itemCamera["motion_detection"]),
 					'recording': str(itemCamera["recording"]),
 					'usb_device_name': self.USBDevice["name"],
-					'usb_devices': self.USBDevices
+					'usb_devices': self.USBDevices,
+					'local_storage_enabled': self.LocalStorageEnabled
 				})
 		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -657,8 +682,16 @@ class Context():
 	def SetMiscInformationHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		dbCameras = self.DB["cameras"]
+		self.DB["local_storage"] 							= payload["local_storage_enabled"]
 		self.DB["usb_device"]["name"]						= payload["usb_device_name"]
-		self.USBDevice = self.DB["usb_device"]
+		self.USBDevice 										= self.DB["usb_device"]
+		self.LocalStorageEnabled 							= self.DB["local_storage"]
+
+		if self.USBDevice["name"] == "":
+			self.DB["usb_device"]["enabled"] = 0
+		else:
+			self.DB["usb_device"]["enabled"] = 1
+
 		for itemCamera in dbCameras:
 			if itemCamera["ip"] in payload["ip"]:
 				itemCamera["frame_per_video"] 				= payload["frame_per_video"]
@@ -683,6 +716,14 @@ class Context():
 						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
 						item.SetHighDiff(int(itemCamera["high_diff"]))
 						item.SetSecondsPerFrame(float(itemCamera["seconds_per_frame"]))
+
+						# Update storage path
+						if (self.LocalStorageEnabled == 1):
+							item.SetRecordingPath(self.LocalStoragePath)
+						else:
+							# Get USB device
+							self.USBDevice = self.DB["usb_device"]
+							item.SetRecordingPath("{0}/{1}".format(self.USBStoragePath,self.USBDevice["name"]))
 
 				return THIS.Node.BasicProtocol.BuildResponse(packet, {
 					'error': 'success'
@@ -781,23 +822,26 @@ class Context():
 			- Note, camera will store frames into buffer 
 			  but want save to file until device will be available.
 		'''
+		self.LocalStorageEnabled = self.DB["local_storage"]
+
+		# Get USB device
+		self.USBDevice = self.DB["usb_device"]
 
 		# Create file system for storing videos
-		if not os.path.exists(".videos"):
-			os.mkdir(".videos")
+		if not os.path.exists(self.LocalStoragePath):
+			os.makedirs(self.LocalStoragePath)
+		
+		if not os.path.exists(self.USBStoragePath):
+			os.makedirs(self.USBStoragePath)
 		
 		# Check if security is ON
 		if self.DB["security"] == 1:
 			self.SecurityEnabled = True
-		
-		# Get USB device name
-		self.USBDevice = self.DB["usb_device"]
 
 		# Search for cameras and update local database
 		cameras 	= self.DeviceScanner.Scan("10.0.0.", [1,32])
 		HJTScanner 	= HJTCameraScanner()
 		ips 		= HJTScanner.Scan(cameras)
-		print (ips)
 		
 		cameraFound = False
 		# Foreach camera,
@@ -809,7 +853,6 @@ class Context():
 			camera 	= HJTCamera(ip)
 			mac 	= camera.GetMACAddress()
 			uid 	= camera.GetUID()
-			print (mac, uid)
 			# Update camera IP (if it was changed)
 			for itemCamera in dbCameras:
 				cameraFound = False
@@ -819,7 +862,6 @@ class Context():
 					break
 				# Is camera exist in DB
 				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
-					camera.UID = uid
 					# Update DB with current IP
 					itemCamera["ip"] = ip
 					# Start camera thread
@@ -827,20 +869,33 @@ class Context():
 					# Check weither need to start recording
 					if 1 == itemCamera["recording"]:
 						camera.StartRecording()
-						# Create file system for this camera
-						#if not os.path.exists(".videos"):
-						#	os.mkdir(".videos")
-						#	os.mkdir(".videos\{0}".format(itemCamera["Name"]))
+					# Do we record into local storage
+					if (self.LocalStorageEnabled == 1):
+						camera.SetRecordingPath(self.LocalStoragePath)
+					else:
+						camera.SetRecordingPath("{0}/{1}".format(self.USBStoragePath,self.USBDevice["name"]))
+						path = "{0}/{1}/{2}/video".format(self.USBStoragePath,self.USBDevice["name"],itemCamera["uid"])
+						if not os.path.exists(path):
+							os.makedirs(path)
+					# Create local storage folder
+					path = "{0}/{1}/video".format(self.LocalStoragePath,itemCamera["uid"])
+					if not os.path.exists(path):
+						os.makedirs(path)
+					else:
+						print (path)
 					# If security is ON we need to get frames
 					if self.SecurityEnabled is True:
 						camera.StartSecurity()
 					# Update camera object with values from database
 					camera.Name = itemCamera["name"]
+					camera.UID 	= uid
+					camera.MAC 	= mac
 					camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 					camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
 					camera.SetHighDiff(int(itemCamera["high_diff"]))
 					camera.SetSecondsPerFrame(float(itemCamera["seconds_per_frame"]))
 					camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
+					camera.StopRecordingEvent 		= self.StopRecordingHandler
 					# Add camera to camera obejct DB
 					self.ObjCameras.append(camera)
 					cameraFound = True
@@ -1066,6 +1121,23 @@ class Context():
 			# Save new camera to database
 			self.File.Save("db.json", json.dumps(self.DB))
 			"""
+	
+	def StopRecordingHandler(self, data):
+		print ("({classname})# Recording path ({path}) is invalid for camera({ip})".format(classname=self.ClassName,path=data["path"],ip=data["ip"]))
+		objFile 	= MkSFile.File()
+		dbCameras 	= self.DB["cameras"]
+		for camera in dbCameras:
+			if data["uid"] in camera["uid"] and data["mac"] in camera["mac"]:
+				camera["recording"] = 0
+				# Send event to application
+				THIS.Node.EmitOnNodeChange({
+								'camera_ip': data["ip"],
+								'event': "stop_recording",
+							})
+				self.DB["cameras"] = dbCameras
+				# Save new camera to database
+				objFile.Save("db.json", json.dumps(self.DB))
+				return
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

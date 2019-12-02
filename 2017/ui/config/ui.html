@@ -217,7 +217,7 @@
 													<div class="card">
 														<div class="card-body">
 															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Video Files</span>
+																<span class="text-muted">Video Files (<a href="#" onclick="videoFilesRefresh()">Refresh</a>)</span>
 																<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
 															</h6>
 															<div id="files_list_id"></div>
@@ -233,7 +233,7 @@
 															</h6>
 															<div id="devices_list_id">
 																<div class="custom-control custom-radio">
-																	<input type="radio" id="id_node_local" name="customRadio" class="custom-control-input">
+																	<input type="radio" id="id_node_local" onclick="localStorageSelected()" name="customRadio" class="custom-control-input">
 																	<label class="custom-control-label" for="id_node_local">Local Node Storage</label>
 																</div>
 															</div>
@@ -290,6 +290,80 @@
 			var api = MkSAPIBuilder.GetInstance();
 			api.SetGlobalGatewayIP(GatewayIP);
 
+			function ChangableInfo (camer_ip, camera_mac, camera_uid) {
+				self = this;
+
+				this.CameraIP  	= camer_ip;
+				this.CameraMAC 	= camera_mac;
+				this.CameraUID 	= camera_uid;
+				this.Handle		= 0;
+
+				this.Publish = function() {
+					api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
+						mac: self.CameraMAC,
+						uid: self.CameraUID,
+						ip: self.CameraIP
+					}, function(res) {
+						progress 	= res.data.payload.progress;
+						fps			= res.data.payload.fps;
+						document.getElementById("progressCapture").setAttribute("aria-valuenow", progress);
+						document.getElementById("progressCapture").style.width 	= progress + "%";
+						document.getElementById("progressCapture").innerHTML 	= progress + "%";
+						document.getElementById("txt_fps").innerHTML 			= fps + " fps";
+
+						console.log(res.data.payload);
+
+						// Append new storage device loop
+						for (i = 0; i < res.data.payload.usb_devices.length; i++) {
+							name = res.data.payload.usb_devices[i];
+							this_element = document.getElementById("id_ctx_" + name);
+
+							if (this_element === null) {
+								row = USBStorage;
+								row = row.split("[USB_NAME]").join(name);
+								USBStorageDevicesCount++;
+								USBStorageDevices.push(name);
+								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+								document.getElementById("devices_list_id").innerHTML  += row;
+							}
+						}
+
+						// Remove storage device loop
+						diff = []
+						for (idx = 0; idx < USBStorageDevices.length; idx++) {
+							found = false;
+							for (i = 0; i < res.data.payload.usb_devices.length; i++) {
+								if (USBStorageDevices[idx] == res.data.payload.usb_devices[i]) {
+									found = true;
+								}
+							}
+							if (found == false) {
+								elem = document.getElementById("id_ctx_" + USBStorageDevices[idx]);
+								elem.parentNode.removeChild(elem);
+								USBStorageDevicesCount--;
+								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+								diff.push(idx);
+							}
+						}
+
+						if (LocalStorageEnabled) {
+							SetCheckboxState("id_node_local", 1);
+						} else {
+							SetCheckboxState("id_" + SelectedStorageDevice, 1);
+						}
+
+						for (idx = 0; idx < diff.length; idx++) {
+							console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
+							USBStorageDevices.splice(diff[idx],1);
+						}
+					});
+				}
+
+				this.SetIntervalHndl = function(hndl) {
+					this.Handle = hndl;
+				}
+			}
+
 			var CameraCell = `
 					<div class="col-lg-6">
 						<div class="card">
@@ -339,6 +413,8 @@
 			var USBStorageDevices 		= [];
 			var USBStorageDevicesCount 	= 1;
 			var SelectedStorageDevice 	= "";
+			var LocalStorageEnabled 	= false;
+			var CurrentCamera 			= null;
 
 			$(function(){
 				$.fn.editable.defaults.mode = 'inline';
@@ -398,6 +474,16 @@
 
 			var storageSelected = function(device_name) {
 				SelectedStorageDevice = device_name;
+				LocalStorageEnabled   = false;
+			}
+
+			var localStorageSelected = function() {
+				SelectedStorageDevice 	= "";
+				LocalStorageEnabled 	= true;
+			}
+
+			var videoFilesRefresh = function() {
+				GetMiscInfo(CurrentCamera.CameraIP, CurrentCamera.CameraMAC, CurrentCamera.CameraUID);
 			}
 
 			var ConvertHEXtoString = function(hexx) {
@@ -409,13 +495,16 @@
 			}
 
 			var OnNodeChangeEvent = function(packet) {
-				console.log("OnNodeChangeEvent");
+				console.log("OnNodeChangeEvent", packet.data.payload.event);
 				payload = packet.data.payload;
 				if (payload.event == "new_frame") {
 					ip = payload.camera_ip;
 					imgObj = document.getElementById("id_" + ip);
 					frame = payload.frame
 					imgObj.src = "data:image/jpg;base64,"+frame;
+				} else if (payload.event == "stop_recording") {
+					elem = document.getElementById("id_btn_rec_" + ip);
+					elem.style.color = "green";
 				}
 			}
 			
@@ -501,78 +590,6 @@
 				});
 			});
 
-			function ChangableInfo (camer_ip, camera_mac, camera_uid) {
-				self = this;
-
-				this.CameraIP  	= camer_ip;
-				this.CameraMAC 	= camera_mac;
-				this.CameraUID 	= camera_uid;
-				this.Handle		= 0;
-
-				this.Publish = function() {
-					api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
-						mac: self.CameraMAC,
-						uid: self.CameraUID,
-						ip: self.CameraIP
-					}, function(res) {
-						progress 	= res.data.payload.progress;
-						fps			= res.data.payload.fps;
-						document.getElementById("progressCapture").setAttribute("aria-valuenow", progress);
-						document.getElementById("progressCapture").style.width 	= progress + "%";
-						document.getElementById("progressCapture").innerHTML 	= progress + "%";
-						document.getElementById("txt_fps").innerHTML 			= fps + " fps";
-
-						console.log(res.data.payload);
-
-						// Append new storage device loop
-						for (i = 0; i < res.data.payload.usb_devices.length; i++) {
-							name = res.data.payload.usb_devices[i];
-							this_element = document.getElementById("id_ctx_" + name);
-
-							if (this_element === null) {
-								row = USBStorage;
-								row = row.split("[USB_NAME]").join(name);
-								USBStorageDevicesCount++;
-								USBStorageDevices.push(name);
-								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
-								document.getElementById("devices_list_id").innerHTML  += row;
-							}
-						}
-
-						// Remove storage device loop
-						diff = []
-						for (idx = 0; idx < USBStorageDevices.length; idx++) {
-							found = false;
-							for (i = 0; i < res.data.payload.usb_devices.length; i++) {
-								if (USBStorageDevices[idx] == res.data.payload.usb_devices[i]) {
-									found = true;
-								}
-							}
-							if (found == false) {
-								elem = document.getElementById("id_ctx_" + USBStorageDevices[idx]);
-								elem.parentNode.removeChild(elem);
-								USBStorageDevicesCount--;
-								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
-								diff.push(idx);
-							}
-						}
-
-						console.log("id_" + SelectedStorageDevice);
-						// Select active storage device
-						SetCheckboxState("id_" + SelectedStorageDevice, 1);
-
-						for (idx = 0; idx < diff.length; idx++) {
-							console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
-							USBStorageDevices.splice(diff[idx],1);
-						}
-					});
-				}
-
-				this.SetIntervalHndl = function(hndl) {
-					this.Handle = hndl;
-				}
-			}
-
 			function SetCheckboxState(id, val) {
 				if (val == 1) {
 					document.getElementById(id).checked = true;
@@ -611,6 +628,13 @@
 					SetCheckboxState("camera_recording", res.data.payload.recording);
 
 					SelectedStorageDevice = res.data.payload.usb_device_name;
+					LocalStorageEnabled = (res.data.payload.local_storage_enabled) ? true : false;
+
+					if (LocalStorageEnabled) {
+						SetCheckboxState("id_node_local", 1);
+					} else {
+						SetCheckboxState("id_" + SelectedStorageDevice, 1);
+					}
 
 					var filesList = res.data.payload.video_list;
 					document.getElementById("files_count_id").innerHTML = filesList.length;
@@ -655,13 +679,12 @@
 					motion_detection: motion_detection,
 					recording: camera_recording,
 					high_diff: high_diff,
-					usb_device_name: SelectedStorageDevice
+					usb_device_name: SelectedStorageDevice,
+					local_storage_enabled: (LocalStorageEnabled) ? 1 : 0
 				}, function(res) {
 					console.log(res);
 				});
 			}
-
-			var CurrentCamera = null;
 
 			$('#exampleModal').on('hide.bs.modal', function (e) {
 				clearInterval(CurrentCamera.Handle);
@@ -669,6 +692,7 @@
 
 			var OpenModal = function (elem, camera_mac, camera_uid, camer_ip) {
 				$('#exampleModal').modal('show')
+
 				CurrentCamera = new ChangableInfo(camer_ip, camera_mac, camera_uid);
 				progressbarInterval = setInterval(CurrentCamera.Publish, 5000);
 				CurrentCamera.Publish();
