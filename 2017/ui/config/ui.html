@@ -177,10 +177,17 @@
 													<div class="card">
 														<div class="card-body">
 															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Camera Sensetivity</span>
+																<span class="text-muted">Recording Sensetivity</span>
 																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
 															</h6>
 															<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
+														</div>
+														<div class="card-body">
+															<h6 class="d-flex justify-content-between align-items-center mb-3">
+																<span class="text-muted">Security Sensetivity</span>
+																<span class="badge badge-secondary badge-pill" id="range_security_sensetivity_value">0</span>
+															</h6>
+															<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="range_security_sensetivity">
 														</div>
 														<div class="card-body">
 															<h6 class="d-flex justify-content-between align-items-center mb-3">
@@ -365,7 +372,7 @@
 			}
 
 			var CameraCell = `
-					<div class="col-lg-6">
+					<div class="col-lg-6" id="[CAMERA_UID]">
 						<div class="card">
 							<div class="card-body">
 								<h6 class="d-flex justify-content-between align-items-center mb-3">
@@ -453,6 +460,12 @@
 					return 'Current value: ' + value;
 				}
 			});
+			$('#range_security_sensetivity').slider({
+				value : 0,
+				formatter: function(value) {
+					return 'Current value: ' + value;
+				}
+			});
 			$('#rangeCameraSensetivityRaw').slider({
 				value : 0,
 				formatter: function(value) {
@@ -468,6 +481,9 @@
 			$('#rangeCameraSensetivity').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValue").innerHTML = ev.value;
 			});
+			$('#range_security_sensetivity').slider().on('slide', function(ev) {
+				document.getElementById("range_security_sensetivity_value").innerHTML = ev.value;
+			})
 			$('#rangeCameraSensetivityRaw').slider().on('slide', function(ev) {
 				document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = ev.value;
 			});
@@ -609,10 +625,12 @@
 					cameraSensetivity = res.data.payload.camera_sensetivity_recording;
 					$('#rangeFramesPerVideo').slider('setValue', framesPerVideo);
 					$('#rangeCameraSensetivity').slider('setValue', cameraSensetivity);
+					$('#range_security_sensetivity').slider('setValue', res.data.payload.camera_sensetivity_security);
 					$('#rangeCameraSensetivityRaw').slider('setValue', res.data.payload.high_diff);
 					$('#rangeFramesPerSecond').slider('setValue', res.data.payload.seconds_per_frame);
 					document.getElementById("rangeFramesPerVideoValue").innerHTML = framesPerVideo;
 					document.getElementById("rangeCameraSensetivityValue").innerHTML = cameraSensetivity;
+					document.getElementById("range_security_sensetivity_value").innerHTML = res.data.payload.camera_sensetivity_security;
 					document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = res.data.payload.high_diff;
 					document.getElementById("rangeFramesPerSecondValue").innerHTML = res.data.payload.seconds_per_frame;
 
@@ -657,6 +675,7 @@
 				camera_phone 				 = document.getElementById("txt_phone").innerHTML;
 				camera_email 				 = document.getElementById("txt_email").innerHTML;
 				camera_sensetivity_recording = document.getElementById("rangeCameraSensetivityValue").innerHTML;
+				camera_sensetivity_security  = document.getElementById("range_security_sensetivity_value").innerHTML;
 				frame_per_video 			 = document.getElementById("rangeFramesPerVideoValue").innerHTML;
 				high_diff 		 			 = document.getElementById("rangeCameraSensetivityValueRaw").innerHTML;
 				seconds_per_frame 			 = document.getElementById("rangeFramesPerSecondValue").innerHTML;
@@ -669,6 +688,7 @@
 					ip: camera_ip,
 					frame_per_video: frame_per_video,
 					camera_sensetivity_recording: camera_sensetivity_recording,
+					camera_sensetivity_security: camera_sensetivity_security,
 					face_detect: face_detect,
 					high_diff: 5000,
 					name: camera_name,

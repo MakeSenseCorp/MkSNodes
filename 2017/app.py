@@ -224,6 +224,9 @@ class ICamera():
 
 		self.StopRecordingEvent 		= None
 	
+	def SetSecuritySensetivity(self, value):
+		self.SecuritySensitivity = value
+
 	def SetRecordingPath(self, path):
 		self.RecordingPath = path
 
@@ -327,10 +330,11 @@ class ICamera():
 				frame_pre = frame_cur
 
 				self.FPS = 1.0 / float(time.time()-ts)
-				print("Get frame ... ({0}) ({1}) (diff={diff}) (fps={fps})".format(	str(self.FrameCount),
+				print("Get frame ... ({0}) ({1}) (diff={diff}) (sensitivity={sensy}) (fps={fps})".format(	str(self.FrameCount),
 																					str(len(frame_cur)),
 																					diff=str(frame_dif),
-																					fps=str(self.FPS)))
+																					fps=str(self.FPS),
+																					sensy=str(self.SecuritySensitivity)))
 				ts = time.time()
 				if (frame_dif < self.SecuritySensitivity):
 					THIS.Node.EmitOnNodeChange({
@@ -435,6 +439,8 @@ class Context():
 		self.CurrentTimestamp 			= time.time()
 		self.File 						= MkSFile.File()
 		self.Node						= node
+		self.IPNetwork 					= "10.0.0."
+		self.IPAddresses				= [1,32]
 		# States
 		self.States = {
 		}
@@ -664,6 +670,7 @@ class Context():
 					'frame_per_video': str(itemCamera["frame_per_video"]),
 					'seconds_per_frame': itemCamera["seconds_per_frame"],
 					'camera_sensetivity_recording': str(itemCamera["camera_sensetivity_recording"]),
+					'camera_sensetivity_security': str(itemCamera["camera_sensetivity_security"]),
 					'high_diff': itemCamera["high_diff"],
 					'face_detect': str(itemCamera["face_detect"]),
 					'video_list': videosList,
@@ -705,6 +712,7 @@ class Context():
 				itemCamera["access_from_www"] 				= payload["access_from_www"]
 				itemCamera["motion_detection"] 				= payload["motion_detection"]
 				itemCamera["recording"] 					= payload["recording"]
+				itemCamera["camera_sensetivity_security"] 	= payload["camera_sensetivity_security"]
 
 				self.DB["cameras"] = dbCameras
 				# Save new camera to database
@@ -714,8 +722,17 @@ class Context():
 					if (item.GetIp() in payload["ip"]):
 						item.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
+						item.SetSecuritySensetivity(int(itemCamera["camera_sensetivity_security"]))
 						item.SetHighDiff(int(itemCamera["high_diff"]))
 						item.SetSecondsPerFrame(float(itemCamera["seconds_per_frame"]))
+
+						# Update camera recording status
+						if (1 == itemCamera["recording"]):
+							item.StartRecording()
+						else:
+							item.StopRecording()
+
+						# TODO - Update cmaera motion detection staus
 
 						# Update storage path
 						if (self.LocalStorageEnabled == 1):
@@ -804,6 +821,93 @@ class Context():
 			self.EmailService = ""
 			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
+	def SerachForCameras(self):
+		cameras 	= self.DeviceScanner.Scan(self.IPNetwork, self.IPAddresses)
+		HJTScanner 	= HJTCameraScanner()
+		return HJTScanner.Scan(cameras)
+	
+	def UpdateCameraStracture(self, dbCameras, ip):
+		camera 	= HJTCamera(ip)
+		mac 	= camera.GetMACAddress()
+		uid 	= camera.GetUID()
+		# Update camera IP (if it was changed)
+		for itemCamera in dbCameras:
+			cameraFound = False
+			# Invalid MAC or UID (TODO - Do re.compile for MAC)
+			if uid == "" or mac == "":
+				print ("({classname})# Found IP is not valid camera".format(classname=self.ClassName))
+				break
+			# Is camera exist in DB
+			if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
+				# Update DB with current IP
+				itemCamera["ip"] = ip
+				# Start camera thread
+				camera.StartCamera()
+				# Check weither need to start recording
+				if 1 == itemCamera["recording"]:
+					camera.StartRecording()
+				# Do we record into local storage
+				if (self.LocalStorageEnabled == 1):
+					camera.SetRecordingPath(self.LocalStoragePath)
+				else:
+					camera.SetRecordingPath("{0}/{1}".format(self.USBStoragePath,self.USBDevice["name"]))
+					path = "{0}/{1}/{2}/video".format(self.USBStoragePath,self.USBDevice["name"],itemCamera["uid"])
+					if not os.path.exists(path):
+						os.makedirs(path)
+				# Create local storage folder
+				path = "{0}/{1}/video".format(self.LocalStoragePath,itemCamera["uid"])
+				if not os.path.exists(path):
+					os.makedirs(path)
+				else:
+					print (path)
+				# If security is ON we need to get frames
+				if self.SecurityEnabled is True:
+					camera.StartSecurity()
+				# Update camera object with values from database
+				camera.Name = itemCamera["name"]
+				camera.UID 	= uid
+				camera.MAC 	= mac
+				camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
+				camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
+				camera.SetSecuritySensetivity(int(itemCamera["camera_sensetivity_security"]))
+				camera.SetHighDiff(int(itemCamera["high_diff"]))
+				camera.SetSecondsPerFrame(float(itemCamera["seconds_per_frame"]))
+				camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
+				camera.StopRecordingEvent 		= self.StopRecordingEventHandler
+				# Add camera to camera obejct DB
+				self.ObjCameras.append(camera)
+				cameraFound = True
+				itemCamera["enable"] = 1
+				break
+		
+			if cameraFound is False:
+				print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
+				# Append new camera.
+				dbCameras.append({
+								'mac': str(mac),
+								'uid': str(uid),
+								'ip': str(ip),
+								'name': 'Camera_' + str(uid),
+								'enable':1,
+								"frame_per_video": 2000,
+								"camera_sensetivity_recording": 95,
+								"camera_sensetivity_security": 95,
+								"recording": 0,
+								"face_detect": 0,
+								"security": 0,
+								"motion_detection": 0,
+								"status": "disconnected",
+								"high_diff": 5000, 
+								"seconds_per_frame": 1, 
+								"phone": "+972544784156",
+								"email": "yevgeniy.kiveisha@gmail.com",
+								'access_from_www': 1
+				})
+				camera.SetFramesPerVideo(2000)
+				camera.SetRecordingSensetivity(95)
+				# Add camera to camera obejct DB
+				self.ObjCameras.append(camera)
+
 	def NodeSystemLoadedHandler(self):
 		objFile = MkSFile.File()
 		# THIS.Node.GetListOfNodeFromGateway()
@@ -837,96 +941,17 @@ class Context():
 		# Check if security is ON
 		if self.DB["security"] == 1:
 			self.SecurityEnabled = True
-
-		# Search for cameras and update local database
-		cameras 	= self.DeviceScanner.Scan("10.0.0.", [1,32])
-		HJTScanner 	= HJTCameraScanner()
-		ips 		= HJTScanner.Scan(cameras)
-		
-		cameraFound = False
-		# Foreach camera,
-		#	1. Get UID and MAC.
-		#	2. Check DB if MAC and UID exist, is so save found IP.
-		#	3. If camera does not exist, save it.
+		# Search for cameras
+		ips = self.SerachForCameras()
+		# Get cameras from db
 		dbCameras = self.DB["cameras"]
+		# Disable all cameras
+		for itemCamera in dbCameras:
+			itemCamera["enable"] = 0
+		# Check all connected ips
 		for ip in ips:
-			camera 	= HJTCamera(ip)
-			mac 	= camera.GetMACAddress()
-			uid 	= camera.GetUID()
-			# Update camera IP (if it was changed)
-			for itemCamera in dbCameras:
-				cameraFound = False
-				# Invalid MAC or UID (TODO - Do re.compile for MAC)
-				if uid == "" or mac == "":
-					print ("({classname})# Found IP is not valid camera".format(classname=self.ClassName))
-					break
-				# Is camera exist in DB
-				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
-					# Update DB with current IP
-					itemCamera["ip"] = ip
-					# Start camera thread
-					camera.StartCamera()
-					# Check weither need to start recording
-					if 1 == itemCamera["recording"]:
-						camera.StartRecording()
-					# Do we record into local storage
-					if (self.LocalStorageEnabled == 1):
-						camera.SetRecordingPath(self.LocalStoragePath)
-					else:
-						camera.SetRecordingPath("{0}/{1}".format(self.USBStoragePath,self.USBDevice["name"]))
-						path = "{0}/{1}/{2}/video".format(self.USBStoragePath,self.USBDevice["name"],itemCamera["uid"])
-						if not os.path.exists(path):
-							os.makedirs(path)
-					# Create local storage folder
-					path = "{0}/{1}/video".format(self.LocalStoragePath,itemCamera["uid"])
-					if not os.path.exists(path):
-						os.makedirs(path)
-					else:
-						print (path)
-					# If security is ON we need to get frames
-					if self.SecurityEnabled is True:
-						camera.StartSecurity()
-					# Update camera object with values from database
-					camera.Name = itemCamera["name"]
-					camera.UID 	= uid
-					camera.MAC 	= mac
-					camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
-					camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
-					camera.SetHighDiff(int(itemCamera["high_diff"]))
-					camera.SetSecondsPerFrame(float(itemCamera["seconds_per_frame"]))
-					camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
-					camera.StopRecordingEvent 		= self.StopRecordingHandler
-					# Add camera to camera obejct DB
-					self.ObjCameras.append(camera)
-					cameraFound = True
-					break
-			
-				if cameraFound is False:
-					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
-					# Append new camera.
-					dbCameras.append({
-									'mac': str(mac),
-									'uid': str(uid),
-									'ip': str(ip),
-									'name': 'Camera_' + str(uid),
-									'enable':1,
-									"frame_per_video": 2000,
-									"camera_sensetivity_recording": 95,
-									"recording": 0,
-									"face_detect": 0,
-									"security": 0,
-									"motion_detection": 0,
-									"status": "disconnected",
-									"high_diff": 5000, 
-									"seconds_per_frame": 1, 
-									"phone": "+972544784156",
-									"email": "yevgeniy.kiveisha@gmail.com",
-									'access_from_www': 1
-					})
-					camera.SetFramesPerVideo(2000)
-					camera.SetRecordingSensetivity(95)
-					# Add camera to camera obejct DB
-					self.ObjCameras.append(camera)
+			self.UpdateCameraStracture(dbCameras, ip)
+		
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
 		objFile.Save("db.json", json.dumps(self.DB))
@@ -1025,6 +1050,12 @@ class Context():
 		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
 		THIS.Node.AppendFaceRestTable(endpoint="/file/download/<name>", 					endpoint_name="file_download", 			handler=THIS.FileDownloadHandler)
 
+	def CameraRunningStatus(self, ip, ips):
+		for camera in self.ObjCameras:
+			if (camera.GetIp() in ips):
+				return True
+		return False
+
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
 			self.CheckingForUpdate = True
@@ -1035,94 +1066,40 @@ class Context():
 			
 			# Search for usb storage in /media/[USER]/
 			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
-			print(self.USBDevices)
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
-			# Search for cameras and update local database
 			print ("({classname})# Seraching for cameras ...".format(classname=self.ClassName))
-			cameras = self.DeviceScanner.Scan("10.0.0.", [1,32])
-			HJTScanner = HJTCameraScanner()
-			ips = HJTScanner.Scan(cameras)
-			# Foreach camera,
-			#	1. Get UID and MAC.
-			#	2. Check DB if MAC and UID exist, is so save found IP.
-			#	3. If camera does not exist, save it.
+			# Search for cameras
+			ips = self.SerachForCameras()
+			return
+			# Get cameras from db
 			dbCameras = self.DB["cameras"]
-
 			# Remove disconnected devices
 			for camera in self.ObjCameras:
 				if (camera.GetIp() not in ips):
 					# Camera was disconnected
 					print ("({classname})# Deleting camera ({ip}) ...".format(classname=self.ClassName, ip=camera.GetIp()))
+					# Disable camera in database
+					for itemCamera in dbCameras:
+						if camera.GetIp() in itemCamera["ip"]:
+							itemCamera["enable"] = 0
+					# Remove camera from object list
 					self.ObjCameras.remove(camera)
 			
+			# Check all connected ips
 			for ip in ips:
-				camera = HJTCamera(ip)
-				mac = camera.GetMACAddress()
-				uid = camera.GetUID()
-				print ("({classname})# Found camera (ip={ip}, mac={mac}, uid={uid}) ...".format(classname=self.ClassName,
-													ip=ip,mac=mac,uid=uid))
+				# This camera is running
+				if (self.CameraRunningStatus(ip, ips) is True):
+					break
+				# Update camera
+				self.UpdateCameraStracture(dbCameras, ip)
 			
-			self.HJTDetectorTimestamp = time.time()
-			ips = []
-			return
-			"""
-				cameraFound = False
-				# Update camera IP (if it was changed)
-				for itemCamera in dbCameras:
-					if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
-						# Update DB with current IP
-						itemCamera["ip"] = ip
-						camera.SetState(int(itemCamera["state"]))
-						camera.StartCamera()
-						# Check weither need to start recording
-						if 1 == itemCamera["recording"]:
-							print ("[Camera Surveillance]>", "Start recording", mac, uid, ip)
-							camera.StartRecording()
-						# If security is ON we need to get frames
-						if self.SecurityEnabled is True:
-							camera.StartSecurity()
-						camera.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
-						camera.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
-						camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
-						# Add camera to camera obejct DB
-						self.ObjCameras.append(camera)
-						cameraFound = True
-						print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - True")
-						break
-				
-				if cameraFound is False:
-					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
-					# Append new camera.
-					dbCameras.append({
-									'mac': str(mac),
-									'uid': str(uid),
-									'ip': str(ip),
-									'name': 'Camera_' + str(uid),
-									'enable':1,
-									"frame_per_video": 2000,
-									"camera_sensetivity_recording": 95,
-									"recording": 0,
-									"face_detect": 0,
-									"security": 0,
-									"motion_detection": 0,
-									"status": "disconnected",
-									"high_diff": 5000, 
-									"seconds_per_frame": 1, 
-									"phone": "+972544784156",
-									"email": "yevgeniy.kiveisha@gmail.com",
-									'access_from_www': 1
-					})
-					camera.SetFramesPerVideo(2000)
-					camera.SetRecordingSensetivity(95)
-					# Add camera to camera obejct DB
-					self.ObjCameras.append(camera)
 			self.DB["cameras"] = dbCameras
 			# Save new camera to database
 			self.File.Save("db.json", json.dumps(self.DB))
-			"""
+			self.HJTDetectorTimestamp = time.time()
 	
-	def StopRecordingHandler(self, data):
+	def StopRecordingEventHandler(self, data):
 		print ("({classname})# Recording path ({path}) is invalid for camera({ip})".format(classname=self.ClassName,path=data["path"],ip=data["ip"]))
 		objFile 	= MkSFile.File()
 		dbCameras 	= self.DB["cameras"]
