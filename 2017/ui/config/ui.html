@@ -618,10 +618,15 @@
 			});
 
 			function SetCheckboxState(id, val) {
+				elem = document.getElementById(id);
+				if (elem === null) {
+					return;
+				}
+
 				if (val == 1) {
-					document.getElementById(id).checked = true;
+					elem.checked = true;
 				} else if (val == 0) {
-					document.getElementById(id).checked = false;
+					elem.checked = false;
 				}
 			}
 

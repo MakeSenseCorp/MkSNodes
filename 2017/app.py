@@ -878,7 +878,7 @@ class Context():
 					if not os.path.exists(path):
 						os.makedirs(path)
 					else:
-						print (path)
+						pass
 					# If security is ON we need to get frames
 					if self.SecurityEnabled is True:
 						camera.StartSecurity()
@@ -897,7 +897,6 @@ class Context():
 					self.ObjCameras.append(camera)
 					cameraFound = True
 					itemCamera["enable"] = 1
-					break
 			
 				if cameraFound is False:
 					print ("[Camera Surveillance]>", "NodeSystemLoadedHandler - False")
@@ -1086,8 +1085,13 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
+			print("\nTables:")
 			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+				print ("  {0} {1}  {2}  {3}  {4}  {5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
+			print("")
+			for idx, camera in enumerate(self.ObjCameras):
+				print ("  {0} {1}  {2}  {3} {4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
+			print("")
 			
 			# Search for usb storage in /media/[USER]/
 			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
