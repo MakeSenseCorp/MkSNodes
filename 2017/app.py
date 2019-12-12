@@ -31,7 +31,6 @@ from io import BytesIO
 import base64
 
 from mksdk import MkSFile
-from mksdk import MkSNode
 from mksdk import MkSSlaveNode
 from mksdk import MkSLocalHWConnector
 from mksdk import MkSUSBAdaptor
@@ -933,6 +932,7 @@ class Context():
 				})
 
 	def NodeSystemLoadedHandler(self):
+		print ("({classname})# Loading system ...".format(classname=self.ClassName))
 		objFile = MkSFile.File()
 		# THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
@@ -966,6 +966,7 @@ class Context():
 		if self.DB["security"] == 1:
 			self.SecurityEnabled = True
 		# Search for cameras
+		print ("({classname})# Searching for cameras ...".format(classname=self.ClassName))
 		ips = self.SerachForCameras()
 		# Get cameras from db
 		dbCameras = self.DB["cameras"]
@@ -973,6 +974,7 @@ class Context():
 		for itemCamera in dbCameras:
 			itemCamera["enable"] = 0
 		# Check all connected ips
+		print ("({classname})# Updating cameras database ...".format(classname=self.ClassName))
 		for ip in ips:
 			self.UpdateCameraStracture(dbCameras, ip)
 		
@@ -980,6 +982,7 @@ class Context():
 		# Save new camera to database
 		objFile.Save("db.json", json.dumps(self.DB))
 		self.HJTDetectorTimestamp = time.time()
+		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		print ("({classname})# REQUEST".format(classname=self.ClassName))
@@ -1095,6 +1098,26 @@ class Context():
 			
 			# Search for usb storage in /media/[USER]/
 			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
+
+			dbCameras = self.DB["cameras"]
+			for itemCamera in dbCameras:
+				camera = None
+				for item in self.ObjCameras:
+					if (item.GetIp() in itemCamera["ip"]):
+						camera = item
+						break
+				if camera is not None:
+					THIS.Node.EmitOnNodeChange({
+							'event': "misc_info",
+							'camera': itemCamera,
+							'data': {
+								'progress': str(camera.GetCapturingProcess()),
+								'fps': str(camera.GetFPS()),
+								'usb_device': self.USBDevice,
+								'usb_devices': self.USBDevices,
+								'local_storage_enabled': self.LocalStorageEnabled
+							}
+					})
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
 			print ("({classname})# Seraching for cameras ...".format(classname=self.ClassName))

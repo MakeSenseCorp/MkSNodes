@@ -9,10 +9,7 @@
 
         <title>YouTube Player</title>
 
-		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css" crossorigin="anonymous">
-		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap-slider.css" crossorigin="anonymous">
-		<link rel="stylesheet" href="/static/lib/fontawesome-5.11.2/css/all.min.css">
-		<link rel="stylesheet" href="/static/lib/bootstrap4-editable/css/bootstrap-editable.css">
+		[CSS]
      
         <style>
             body {
@@ -276,18 +273,7 @@
 			</div>
         </main>
 
-        <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
-        <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
-		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
-		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
-        <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
-		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
-		<script src="/static/lib/bootstrap4-editable/js/bootstrap-editable.min.js"></script>
-        
-        <script src="mksdk-js/MkSAPI.js"></script>
-        <script src="mksdk-js/MkSCommon.js"></script>
-        <script src="mksdk-js/MkSGateway.js"></script>
-        <script src="mksdk-js/MkSWebface.js"></script>
+		[SCRIPTS]
 
         <script>
 			var LocalWeb 				= null;
@@ -313,64 +299,68 @@
 				this.CameraUID 	= camera_uid;
 				this.Handle		= 0;
 
+				this.UpdateUI = function(payload) {
+					progress 	= payload.progress;
+					fps			= payload.fps;
+					document.getElementById("progressCapture").setAttribute("aria-valuenow", progress);
+					document.getElementById("progressCapture").style.width 	= progress + "%";
+					document.getElementById("progressCapture").innerHTML 	= progress + "%";
+					document.getElementById("txt_fps").innerHTML 			= fps + " fps";
+
+					console.log(payload);
+
+					// Append new storage device loop
+					for (i = 0; i < payload.usb_devices.length; i++) {
+						name = payload.usb_devices[i];
+						this_element = document.getElementById("id_ctx_" + name);
+
+						if (this_element === null) {
+							row = USBStorage;
+							row = row.split("[USB_NAME]").join(name);
+							USBStorageDevicesCount++;
+							USBStorageDevices.push(name);
+							document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+							document.getElementById("devices_list_id").innerHTML  += row;
+						}
+					}
+
+					// Remove storage device loop
+					diff = []
+					for (idx = 0; idx < USBStorageDevices.length; idx++) {
+						found = false;
+						for (i = 0; i < payload.usb_devices.length; i++) {
+							if (USBStorageDevices[idx] == payload.usb_devices[i]) {
+								found = true;
+							}
+						}
+						if (found == false) {
+							elem = document.getElementById("id_ctx_" + USBStorageDevices[idx]);
+							elem.parentNode.removeChild(elem);
+							USBStorageDevicesCount--;
+							document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
+							diff.push(idx);
+						}
+					}
+
+					if (LocalStorageEnabled) {
+						SetCheckboxState("id_node_local", 1);
+					} else {
+						SetCheckboxState("id_" + SelectedStorageDevice, 1);
+					}
+
+					for (idx = 0; idx < diff.length; idx++) {
+						console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
+						USBStorageDevices.splice(diff[idx],1);
+					}
+				}
+
 				this.Publish = function() {
 					api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
 						mac: self.CameraMAC,
 						uid: self.CameraUID,
 						ip: self.CameraIP
 					}, function(res) {
-						progress 	= res.data.payload.progress;
-						fps			= res.data.payload.fps;
-						document.getElementById("progressCapture").setAttribute("aria-valuenow", progress);
-						document.getElementById("progressCapture").style.width 	= progress + "%";
-						document.getElementById("progressCapture").innerHTML 	= progress + "%";
-						document.getElementById("txt_fps").innerHTML 			= fps + " fps";
-
-						console.log(res.data.payload);
-
-						// Append new storage device loop
-						for (i = 0; i < res.data.payload.usb_devices.length; i++) {
-							name = res.data.payload.usb_devices[i];
-							this_element = document.getElementById("id_ctx_" + name);
-
-							if (this_element === null) {
-								row = USBStorage;
-								row = row.split("[USB_NAME]").join(name);
-								USBStorageDevicesCount++;
-								USBStorageDevices.push(name);
-								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
-								document.getElementById("devices_list_id").innerHTML  += row;
-							}
-						}
-
-						// Remove storage device loop
-						diff = []
-						for (idx = 0; idx < USBStorageDevices.length; idx++) {
-							found = false;
-							for (i = 0; i < res.data.payload.usb_devices.length; i++) {
-								if (USBStorageDevices[idx] == res.data.payload.usb_devices[i]) {
-									found = true;
-								}
-							}
-							if (found == false) {
-								elem = document.getElementById("id_ctx_" + USBStorageDevices[idx]);
-								elem.parentNode.removeChild(elem);
-								USBStorageDevicesCount--;
-								document.getElementById("devices_count_id").innerHTML = USBStorageDevicesCount;
-								diff.push(idx);
-							}
-						}
-
-						if (LocalStorageEnabled) {
-							SetCheckboxState("id_node_local", 1);
-						} else {
-							SetCheckboxState("id_" + SelectedStorageDevice, 1);
-						}
-
-						for (idx = 0; idx < diff.length; idx++) {
-							console.log("delete " + USBStorageDevices[diff[idx]] + " index " + diff[idx]); 
-							USBStorageDevices.splice(diff[idx],1);
-						}
+						self.UpdateUI(res.data.payload);
 					});
 				}
 
@@ -529,6 +519,11 @@
 						document.getElementById("cameras_list_id").innerHTML += AppendCameraUI(payload.camera);
               			feather.replace();
 					}
+				} else if (payload.event == "misc_info") {
+					if (CurrentCamera === null) {
+						return;
+					}
+					CurrentCamera.UpdateUI(packet.data.payload.data);
 				}
 			}
 
@@ -718,7 +713,22 @@
 					usb_device_name: SelectedStorageDevice,
 					local_storage_enabled: (LocalStorageEnabled) ? 1 : 0
 				}, function(res) {
-					console.log(res);
+					if (res.data.payload.error === "success") {
+						elem_rec = document.getElementById("id_btn_rec_" + camera_ip);
+						elem_mov = document.getElementById("id_btn_motion_" + camera_ip);
+						if (camera_recording == 1) {
+							elem_rec.style.color = "red";
+						} else {
+							elem_rec.style.color = "green";
+						}
+						if (motion_detection == 1) {
+							elem_mov.style.color = "red";
+						} else {
+							elem_mov.style.color = "black";
+						}
+					} else {
+						alert("Could not save.");
+					}
 				});
 			}
 
@@ -730,10 +740,21 @@
 				$('#exampleModal').modal('show')
 
 				CurrentCamera = new ChangableInfo(camer_ip, camera_mac, camera_uid);
+				GetMiscInfo(camer_ip, camera_mac, camera_uid);
+
+				api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
+					mac: self.CameraMAC,
+					uid: self.CameraUID,
+					ip: self.CameraIP
+				}, function(res) {
+					self.UpdateUI(res.data.payload);
+				});
+
+				/*
 				progressbarInterval = setInterval(CurrentCamera.Publish, 5000);
 				CurrentCamera.Publish();
-				GetMiscInfo(camer_ip, camera_mac, camera_uid)
 				CurrentCamera.SetIntervalHndl(progressbarInterval);
+				*/
 			}
 
 			var Recording = function(elem, camera_mac, camera_uid, camer_ip) {
