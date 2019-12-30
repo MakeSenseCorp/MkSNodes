@@ -5346,3 +5346,1154 @@ TemplateNotFound: nodes.html
 2019-12-30 17:14:42.491 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
 2019-12-30 17:14:47.692 DEBUG websocket - close: Failed to write closing frame -> closing socket
 2019-12-30 17:14:47.693 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:11.904 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:12.005 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:32:12.005 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:32:12.005 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:32:12.007 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:32:12.212 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:12] "GET /static/lib/fontawesome-5.11.2/webfonts/fa-solid-900.woff2 HTTP/1.1" 304 -
+2019-12-30 21:32:13.331 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:13.393 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:32:13.394 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:32:13.394 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:32:13.394 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:32:14.893 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:14.945 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:32:14.946 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:32:14.946 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:32:14.947 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:32:19.833 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:19.879 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:32:19.879 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:32:19.880 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:32:19.881 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:32:19.914 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:32:19.914 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:23.237 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:23.297 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:32:23.297 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:32:23.297 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:32:23.298 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:32:33.448 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:32:33.448 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:33.449 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:32:33.449 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:33.449 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:32:33.449 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:32:48.569 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:48] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:32:48.572 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:48] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:32:48.574 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:48] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:32:48.588 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:48] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:32:48.590 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:32:48] "GET /static/css/vendor/bootstrap.min.css.map HTTP/1.1" 304 -
+2019-12-30 21:33:12.632 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:33:12.720 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:33:12.720 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:33:12.720 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:33:12.720 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:33:13.956 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:33:14.005 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:33:14.005 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:33:14.005 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:33:14.005 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:33:16.987 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:33:16.988 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:40:26.657 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:26] "GET / HTTP/1.1" 200 -
+2019-12-30 21:40:26.663 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:40:26.664 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:40:26.691 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:26] "GET / HTTP/1.1" 200 -
+2019-12-30 21:40:26.754 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:40:26.754 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:40:26.755 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:40:26.755 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:40:26.819 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:26] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:40:26.822 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:40:26.823 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:40:26.824 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:40:26.824 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:40:26.849 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:40:26.849 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:40:26.958 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:40:26.958 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:40:26.958 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:40:26.959 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:40:29.737 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:40:29.738 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:40:37.150 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:37] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:40:37.153 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:37] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:40:37.155 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:37] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:40:37.180 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:40:37] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:41:18.930 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:18] "GET / HTTP/1.1" 200 -
+2019-12-30 21:41:18.937 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:18.938 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:18.974 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:18] "GET / HTTP/1.1" 200 -
+2019-12-30 21:41:19.040 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:19.055 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:19.056 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:19.056 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:19.056 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:19.165 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:19.165 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:19.165 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:19.166 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:19.170 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:41:19.226 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/js/vendor/bootstrap.min.js.map HTTP/1.1" 304 -
+2019-12-30 21:41:19.247 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:19.306 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:19.413 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:19.417 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:19.425 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:19.436 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:19.436 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:19.436 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:19.436 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:19.476 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:19] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:41:20.194 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:20.195 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:20.808 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:20] "GET / HTTP/1.1" 200 -
+2019-12-30 21:41:20.815 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:20.819 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:20.843 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:20] "GET / HTTP/1.1" 200 -
+2019-12-30 21:41:20.924 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:20] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:20.945 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:20.945 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:20.945 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:20.945 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:21.044 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:21.073 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:41:21.076 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:21.076 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:21.076 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:21.076 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:21.107 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:21.202 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:21.206 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:21.207 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:41:21.241 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:41:21.241 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:41:21.242 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:41:21.242 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:41:21.278 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:41:21] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:41:24.723 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:24.723 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:31.614 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:31.614 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:31.614 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:31.614 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:31.615 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:31.615 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:41:31.615 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:41:31.615 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.102 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:28.108 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.110 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.143 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:28.242 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:28.242 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:28.242 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:28.243 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:28.308 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.379 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:28.380 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:28.380 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:28.380 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:28.388 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:43:28.438 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.508 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.602 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:28.602 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:28.602 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:28.602 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:28.636 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.639 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.647 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.659 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:28.691 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.734 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:28.841 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.873 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:43:28.874 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.874 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:28.874 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:28.874 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:28.875 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:28.875 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:28.909 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:28.909 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:28.909 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:28.909 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:28.923 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:43:28.949 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:28] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:28.960 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:29.054 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:43:29.055 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:29] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:29.055 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:29.056 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:43:29.056 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:29.057 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:43:29.057 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:29.058 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:43:29.058 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:29.059 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:29] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:29.063 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:29] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:29.068 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:29.068 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:29.069 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:29.069 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:29.121 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:29] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.306 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:59.313 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:59.315 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:59.349 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET / HTTP/1.1" 200 -
+2019-12-30 21:43:59.427 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:59.427 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:59.427 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:59.428 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:59.473 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.555 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:59.556 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:59.556 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:59.557 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:59.571 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:43:59.608 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:43:59.642 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.758 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:43:59.759 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:43:59.759 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:43:59.759 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:43:59.763 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.782 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.785 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:43:59.792 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:43:59] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:44:03.063 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:03.063 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.334 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET / HTTP/1.1" 200 -
+2019-12-30 21:44:21.344 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.346 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.408 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET / HTTP/1.1" 200 -
+2019-12-30 21:44:21.507 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:44:21.507 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:44:21.507 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:44:21.507 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:44:21.566 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:44:21.705 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:44:21.705 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:44:21.706 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:44:21.706 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:44:21.717 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:44:21.730 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:44:21.733 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.900 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:44:21.916 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:44:21.926 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:21.930 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:44:21.933 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:21.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.948 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:21.949 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.950 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:21.950 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.951 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:44:21.957 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:44:21.959 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:44:21.961 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:44:21.962 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:44:21.962 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:44:21.961 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:44:21] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:29.659 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:29] "GET / HTTP/1.1" 200 -
+2019-12-30 21:46:29.673 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:46:29.674 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:46:29.706 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:29] "GET / HTTP/1.1" 200 -
+2019-12-30 21:46:29.791 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:46:29.792 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:46:29.792 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:46:29.792 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:46:29.838 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:29] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:29.936 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:46:29.937 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:46:29.937 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:46:29.937 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:46:29.941 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:29] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:29.944 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:29] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:46:29.972 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:46:29.972 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:46:30.112 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:46:30.112 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:46:30.112 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:46:30.112 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:46:30.141 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:30] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:30.145 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:30] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:30.148 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:30] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:46:30.244 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:46:30] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:47:03.644 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:03] "GET / HTTP/1.1" 200 -
+2019-12-30 21:47:03.655 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:03.658 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:03.696 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:03] "GET / HTTP/1.1" 200 -
+2019-12-30 21:47:03.813 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:03] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:47:03.814 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:47:03.816 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:47:03.817 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:47:03.818 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:47:03.907 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:03] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:47:03.933 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:47:03.934 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:47:03.934 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:47:03.934 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:47:03.953 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:03] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:47:04.040 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:04.218 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:47:04.220 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:47:04.221 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:47:04.221 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:47:04.238 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:04] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:47:04.242 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:04] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:47:04.254 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:04] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:47:04.260 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:47:04] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:47:07.869 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:47:07.988 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:15.796 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:47:15.797 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:15.797 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:47:15.797 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:47:15.798 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:47:15.798 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:31.894 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:31] "GET / HTTP/1.1" 200 -
+2019-12-30 21:49:31.903 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:31.905 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:31.941 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:31] "GET / HTTP/1.1" 200 -
+2019-12-30 21:49:32.044 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:32.044 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:32.044 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:32.044 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:32.129 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.203 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:32.205 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:32.205 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:32.205 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:32.220 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:49:32.235 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.274 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:32.440 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.448 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.451 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.459 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:32] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:32.472 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:32.473 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:32.474 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:32.474 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:32.532 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:49:32.533 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:53.208 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET / HTTP/1.1" 200 -
+2019-12-30 21:49:53.214 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:53.215 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:53.247 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET / HTTP/1.1" 200 -
+2019-12-30 21:49:53.331 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:53.346 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:53.346 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:53.346 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:53.346 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:53.451 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:53.470 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:49:53.471 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:53.472 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:53.472 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:53.472 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:53.574 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:49:53.723 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:49:53.723 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:49:53.723 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:49:53.723 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:49:53.734 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:49:53.742 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:53.747 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:49:53.749 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:49:53] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:14.251 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:50:14.251 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:14.252 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:50:14.252 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:14.252 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:50:14.253 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:48.222 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET / HTTP/1.1" 200 -
+2019-12-30 21:50:48.229 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:48.233 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:48.257 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET / HTTP/1.1" 200 -
+2019-12-30 21:50:48.345 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:48.354 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:50:48.354 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:50:48.354 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:50:48.355 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:50:48.462 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:48.479 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:50:48.479 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:50:48.479 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:50:48.479 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:50:48.499 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:50:48.587 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:48.708 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:50:48.708 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:50:48.708 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:50:48.708 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:50:48.782 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:48.784 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:48.784 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:50:48.932 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:50:48.933 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:50:48.946 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:50:48] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.167 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET / HTTP/1.1" 200 -
+2019-12-30 21:52:09.178 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:09.179 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:09.216 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET / HTTP/1.1" 200 -
+2019-12-30 21:52:09.414 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:09.421 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:09.421 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:09.422 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:09.433 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.574 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.619 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:09.619 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:09.619 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:09.620 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:09.627 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:52:09.671 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:09.819 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.821 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.840 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:09.841 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:09.841 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:09.843 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:09.842 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:52:09.920 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:09] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:52:10.944 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:52:10.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:16.491 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:16] "GET / HTTP/1.1" 200 -
+2019-12-30 21:52:16.502 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:16.504 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:16.535 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:16] "GET / HTTP/1.1" 200 -
+2019-12-30 21:52:16.569 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:16.570 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:16.570 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:16.571 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:16.619 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:52:16] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:52:16.627 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:16.628 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:16.628 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:16.628 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:16.658 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:16.757 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:16.757 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:16.757 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:16.757 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:16.869 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:52:16.870 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:25.637 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:25.712 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:25.712 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:25.713 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:25.713 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:26.883 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:52:26.946 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:52:26.946 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:52:26.947 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:52:26.947 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:52:27.556 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:52:27.556 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:06.631 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:06.631 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:06.632 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:06.632 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:06.632 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:06.633 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:36.067 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:36] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:36.072 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:36.076 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:36.097 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:36] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:36.158 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:36.159 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:36.159 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:36.163 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:36.246 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:36.246 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:36.248 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:36.249 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:36.251 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:36] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:53:36.283 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:36.350 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:36.350 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:36.351 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:36.351 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:41.686 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:41.686 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:43.037 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:43] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:43.046 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:43.049 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:43.070 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:43] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:43.117 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:43.117 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:43.118 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:43.118 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:43.159 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:43.161 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:43.161 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:43.163 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:43.171 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:43] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:53:43.198 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:43.249 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:43.250 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:43.250 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:43.251 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:47.274 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:47.275 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:51.495 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:51] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:51.501 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:51.505 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:51.523 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:51] "GET / HTTP/1.1" 200 -
+2019-12-30 21:53:51.565 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:51.565 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:51.565 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:51.566 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:51.622 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:51.623 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:51.624 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:51.625 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:51.627 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:53:51] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:53:51.652 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:51.652 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:53:51.700 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:53:51.700 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:53:51.700 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:53:51.700 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:53:52.582 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:53:52.582 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:07.970 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:54:07] "GET / HTTP/1.1" 200 -
+2019-12-30 21:54:07.981 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:07.983 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:08.028 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:54:08] "GET / HTTP/1.1" 200 -
+2019-12-30 21:54:08.091 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:54:08.092 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:54:08.092 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:54:08.092 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:54:08.189 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:54:08.189 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:54:08.190 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:54:08.190 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:54:08.195 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:54:08] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:54:08.236 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:08.237 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:08.304 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:54:08.305 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:54:08.305 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:54:08.305 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:54:13.035 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:13.035 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.711 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.712 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.712 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.712 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.713 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.713 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.713 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.713 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.714 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.714 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:54:28.714 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:54:28.715 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:16.960 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:16] "GET / HTTP/1.1" 200 -
+2019-12-30 21:55:16.966 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:16.967 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:16.995 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:16] "GET / HTTP/1.1" 200 -
+2019-12-30 21:55:17.031 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:17.031 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:17.031 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:17.032 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:17.093 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:17.093 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:17.093 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:17.093 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:17.097 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:17] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:55:17.135 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:17.200 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:17.200 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:17.200 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:17.200 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:20.372 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:55:20.372 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:35.524 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:35] "GET / HTTP/1.1" 200 -
+2019-12-30 21:55:35.530 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:35.531 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:35.554 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:35] "GET / HTTP/1.1" 200 -
+2019-12-30 21:55:35.600 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:35.600 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:35.600 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:35.600 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:35.655 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:35] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:55:35.657 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:35.657 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:35.658 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:35.658 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:35.691 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:35.753 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:55:35.753 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:55:35.753 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:55:35.753 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:55:41.188 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:55:41.189 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:49.640 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:49] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:55:49.641 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:49] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:55:49.644 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:49] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:55:49.670 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:55:49] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:55:56.200 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:55:56.200 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:55:56.200 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:55:56.200 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:56:19.276 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET / HTTP/1.1" 200 -
+2019-12-30 21:56:19.291 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:56:19.294 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:56:19.356 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET / HTTP/1.1" 200 -
+2019-12-30 21:56:19.490 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:56:19.499 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:56:19.499 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:56:19.499 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:56:19.500 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:56:19.599 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:56:19.608 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:56:19.610 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:56:19.610 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:56:19.610 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:56:19.654 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:56:19.764 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:56:19.942 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:56:19.945 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:56:19.953 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:19] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 21:56:19.964 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:56:19.965 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:56:19.965 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:56:19.965 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:56:20.009 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:56:20] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 21:56:22.559 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:56:22.559 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:58:38.114 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:58:38] "GET / HTTP/1.1" 200 -
+2019-12-30 21:58:38.123 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:58:38.125 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:58:38.148 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:58:38] "GET / HTTP/1.1" 200 -
+2019-12-30 21:58:38.197 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:58:38.197 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:58:38.197 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:58:38.197 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:58:38.245 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:58:38.245 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:58:38.245 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:58:38.245 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:58:38.250 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:58:38] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:58:38.308 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:58:38.388 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:58:38.388 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:58:38.389 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:58:38.389 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:58:38.500 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:58:38.500 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:05.923 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:05] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:05.930 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:05.934 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:05.968 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:05] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:06.009 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:06.009 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:06.010 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:06.010 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:06.087 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:06] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:59:06.088 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:06.090 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:06.090 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:06.091 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:06.124 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:06.125 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:06.201 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:06.201 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:06.201 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:06.202 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:06.254 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:06.254 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:19.311 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:19] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:19.317 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:19.321 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:19.343 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:19] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:19.391 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:19.392 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:19.392 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:19.392 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:19.450 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:19.450 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:19.450 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:19.450 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:19.456 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:19] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:59:19.486 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:19.575 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:19.576 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:19.576 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:19.576 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:19.599 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:19.599 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:34.429 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:34] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:34.435 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:34.437 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:34.459 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:34] "GET / HTTP/1.1" 200 -
+2019-12-30 21:59:34.505 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:34.506 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:34.507 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:34.507 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:34.567 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 21:59:34] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 21:59:34.570 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:34.570 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:34.570 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:34.571 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:34.597 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:34.598 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:34.682 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:34.682 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:34.682 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:34.682 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:39.183 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:39.184 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:43.077 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:43.140 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:43.140 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:43.140 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:43.140 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:44.798 DEBUG websocket - close: Closed WebSocket
+2019-12-30 21:59:44.855 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 21:59:44.855 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 21:59:44.855 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 21:59:44.856 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 21:59:44.872 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 21:59:44.872 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:14.064 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:14.064 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:14.064 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:14.065 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:14.066 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:14.066 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:14.068 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:14.068 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:14.069 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:14.070 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.844 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.847 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.880 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.891 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.893 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.914 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.915 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.915 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.916 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.916 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.916 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.917 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.918 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.918 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.919 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.931 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.932 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.932 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.932 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.933 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.933 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.934 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.935 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.936 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.937 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.938 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.938 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.938 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.939 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.939 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.939 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.939 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.940 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.940 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.940 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.940 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.941 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.941 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.941 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.941 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.942 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.944 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.945 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.945 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.945 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.945 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:00:21.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:00:21.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:09.106 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET / HTTP/1.1" 200 -
+2019-12-30 22:01:09.336 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/mksdk-js/MkSAPI.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.337 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/mksdk-js/MkSCommon.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.339 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.340 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/js/vendor/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.340 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/css/vendor/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.340 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/css/node/dashboard.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.350 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET / HTTP/1.1" 200 -
+2019-12-30 22:01:09.355 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/mksdk-js/MkSGateway.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.363 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/mksdk-js/MkSWebface.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.364 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/js/node/index.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.366 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.366 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/js/node/common.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.475 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:09.475 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:09.475 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:09.475 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:09.535 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:09.535 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:09.535 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:09.535 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:09.579 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:09.594 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap/css/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.605 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/fontawesome-5.11.2/css/all.min.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.610 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:01:09.611 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap/css/bootstrap-slider.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.612 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:09.614 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap4-editable/css/bootstrap-editable.css HTTP/1.1" 200 -
+2019-12-30 22:01:09.615 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.615 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap/js/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.619 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/nodes/js/jquery_3_3_1/jquery.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.633 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/nodes/map/feather_4_19/feather.min.js.map HTTP/1.1" 200 -
+2019-12-30 22:01:09.634 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/nodes/js/feather_4_19/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.640 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap4-editable/js/bootstrap-editable.min.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.645 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:09] "GET /static/lib/bootstrap/js/bootstrap-slider.js HTTP/1.1" 200 -
+2019-12-30 22:01:09.709 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:09.709 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:09.709 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:09.710 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:12.499 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:12] "GET / HTTP/1.1" 200 -
+2019-12-30 22:01:12.504 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:12.505 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:12.533 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:01:12] "GET / HTTP/1.1" 200 -
+2019-12-30 22:01:12.561 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:12.561 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:12.562 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:12.562 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:12.635 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:12.635 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:12.636 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:12.636 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:12.643 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:12.708 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:01:12.708 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:01:12.709 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:01:12.709 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:01:12.815 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:01:12.815 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:12.815 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:01:12.816 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:41.444 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:01:41.445 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:59.464 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:01:59.469 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:32.323 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:32] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:32.331 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:32.337 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:32.359 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:32] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:32.399 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:32.399 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:32.399 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:32.399 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:32.439 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:32.439 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:32.439 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:32.439 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:32.464 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:02:32.464 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:32.521 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:32.521 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:32.521 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:32.521 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:32.875 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:02:32.877 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:37.552 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:37] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:37.557 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:37.561 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:37.581 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:37] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:37.627 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:37.627 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:37.627 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:37.627 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:37.674 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:37.674 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:37.674 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:37.674 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:37.702 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:37.767 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:37.768 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:37.768 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:37.768 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:38.448 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:02:38.448 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:40.527 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:40] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:40.537 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:40.540 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:40.558 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:40] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:40.595 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:40.595 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:40.595 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:40.596 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:40.623 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:40.623 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:40.623 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:40.624 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:40.653 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:40.708 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:40.708 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:40.708 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:40.708 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:44.039 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:02:44.040 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:46.369 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:46.370 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:50.298 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:50.359 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/css/vendor/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.374 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/css/node/dashboard.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.381 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.382 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/js/vendor/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.387 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/mksdk-js/MkSGateway.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.388 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/mksdk-js/MkSCommon.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.388 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/mksdk-js/MkSAPI.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.392 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET / HTTP/1.1" 200 -
+2019-12-30 22:02:50.398 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.398 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/mksdk-js/MkSWebface.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.402 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/js/node/common.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.404 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/js/node/index.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.512 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:50.512 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:50.512 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:50.512 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:50.577 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:50.577 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:50.577 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:50.578 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:50.628 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:02:50.642 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap/css/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.657 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/nodes/js/jquery_3_3_1/jquery.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.659 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap4-editable/css/bootstrap-editable.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.660 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/fontawesome-5.11.2/css/all.min.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.662 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.663 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap/css/bootstrap-slider.css HTTP/1.1" 200 -
+2019-12-30 22:02:50.665 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap/js/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.676 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap/js/bootstrap-slider.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.683 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/nodes/js/feather_4_19/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.685 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/nodes/map/feather_4_19/feather.min.js.map HTTP/1.1" 200 -
+2019-12-30 22:02:50.687 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:02:50] "GET /static/lib/bootstrap4-editable/js/bootstrap-editable.min.js HTTP/1.1" 200 -
+2019-12-30 22:02:50.756 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:02:50.756 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:02:50.756 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:02:50.756 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:02:52.726 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:02:52.729 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:00.767 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:00.768 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.946 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.947 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.947 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.947 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.947 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.948 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.948 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.948 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:01.948 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:01.948 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:07.492 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET / HTTP/1.1" 200 -
+2019-12-30 22:03:07.558 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/css/vendor/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.573 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/css/node/dashboard.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.574 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/js/vendor/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.578 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/mksdk-js/MkSAPI.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.583 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/mksdk-js/MkSGateway.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.584 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.586 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/mksdk-js/MkSCommon.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.594 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET / HTTP/1.1" 200 -
+2019-12-30 22:03:07.595 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/mksdk-js/MkSWebface.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.600 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.602 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/js/node/common.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.608 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/js/node/index.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.740 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:07.740 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:07.740 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:07.741 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:07.816 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:07.816 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:07.816 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:07.816 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:07.852 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:07.853 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:07.867 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap/css/bootstrap.min.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.878 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap/css/bootstrap-slider.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.882 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/fontawesome-5.11.2/css/all.min.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.893 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap4-editable/css/bootstrap-editable.css HTTP/1.1" 200 -
+2019-12-30 22:03:07.895 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/nodes/js/jquery_3_3_1/jquery.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.896 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.900 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap/js/bootstrap.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.910 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/nodes/map/feather_4_19/feather.min.js.map HTTP/1.1" 200 -
+2019-12-30 22:03:07.915 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap/js/bootstrap-slider.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.916 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/nodes/js/feather_4_19/feather.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.922 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:07] "GET /static/lib/bootstrap4-editable/js/bootstrap-editable.min.js HTTP/1.1" 200 -
+2019-12-30 22:03:07.987 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:07.987 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:07.987 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:07.987 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:08.788 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:08.788 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:32.543 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:32.544 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:37.078 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET / HTTP/1.1" 200 -
+2019-12-30 22:03:37.123 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET /static/js/vendor/feather.min.js HTTP/1.1" 304 -
+2019-12-30 22:03:37.125 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 304 -
+2019-12-30 22:03:37.128 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET /static/js/node/common.js HTTP/1.1" 304 -
+2019-12-30 22:03:37.134 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 304 -
+2019-12-30 22:03:37.136 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET /static/js/node/index.js HTTP/1.1" 304 -
+2019-12-30 22:03:37.139 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:03:37] "GET / HTTP/1.1" 200 -
+2019-12-30 22:03:37.226 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:37.226 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:37.226 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:37.226 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:37.293 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:37.293 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:37.293 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:37.293 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:37.326 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:03:37.428 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:03:37.429 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:03:37.429 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:03:37.429 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:03:37.943 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:03:37.943 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:04:23.192 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:04:23.198 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:04:23.205 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:04:23.208 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:05:00.828 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:05:00] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:05:00.831 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:05:00] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:05:00.832 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:05:00] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:05:00.855 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:05:00] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 22:06:31.824 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:06:31] "GET / HTTP/1.1" 200 -
+2019-12-30 22:06:31.837 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:06:31.837 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:06:31.859 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:06:31] "GET / HTTP/1.1" 200 -
+2019-12-30 22:06:31.910 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:06:31.910 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:06:31.910 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:06:31.911 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:06:31.954 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:06:31.955 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:06:31.955 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:06:31.956 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:06:31.958 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:06:31] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 22:06:31.992 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:06:32.111 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:06:32.111 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:06:32.112 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:06:32.112 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:06:32.223 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:06:32.223 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:07:45.332 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:07:45] "GET / HTTP/1.1" 200 -
+2019-12-30 22:07:45.337 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:07:45.338 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:07:45.359 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:07:45] "GET / HTTP/1.1" 200 -
+2019-12-30 22:07:45.403 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:07:45.403 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:07:45.403 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:07:45.403 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:07:45.473 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:07:45.473 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:07:45.473 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:07:45.473 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:07:45.477 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:07:45.552 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:07:45.552 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:07:45.552 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:07:45.552 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:07:45.572 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:07:45] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 22:07:46.158 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:07:46.159 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:08:18.859 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:08:18] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:08:18.892 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:08:18] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:08:18.894 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:08:18] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:08:18.970 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:08:18] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.222 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET / HTTP/1.1" 200 -
+2019-12-30 22:10:41.231 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:41.232 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:41.276 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET / HTTP/1.1" 200 -
+2019-12-30 22:10:41.395 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.417 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:41.418 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:41.418 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:41.418 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:41.532 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.554 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:41.554 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:41.554 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:41.554 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:41.563 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 22:10:41.648 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:41.814 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:41.814 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:41.814 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:41.815 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:41.822 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.823 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:10:41.823 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:41.827 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.825 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2019-12-30 22:10:41.897 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:41] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2019-12-30 22:10:53.163 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:53] "GET / HTTP/1.1" 200 -
+2019-12-30 22:10:53.168 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:53.169 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:53.191 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:53] "GET / HTTP/1.1" 200 -
+2019-12-30 22:10:53.237 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:53.237 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:53.237 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:53.237 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:53.287 INFO _internal - _log: 10.0.0.10 - - [30/Dec/2019 22:10:53] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2019-12-30 22:10:53.292 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:53.292 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:53.292 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:53.292 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:53.323 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:10:53.323 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:10:53.411 DEBUG handler - run_application: Initializing WebSocket
+2019-12-30 22:10:53.411 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2019-12-30 22:10:53.411 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2019-12-30 22:10:53.411 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2019-12-30 22:10:53.513 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:10:53.513 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:29.643 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:29.644 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.968 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.968 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.969 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
+2019-12-30 22:11:34.971 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2019-12-30 22:11:34.971 DEBUG websocket - close: Closed WebSocket
