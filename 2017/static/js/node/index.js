@@ -31,17 +31,18 @@ var ConvertHEXtoString = function(hexx) {
 	return str;
 }
 
+var api = null;
 $(document).ready(function() {
 	GlobalIpAddress = GlobalIP + ":" + GlobalPort;
 
 	// Gey makesense api instanse.
-	var api = MkSAPIBuilder.GetInstance();
+	api = MkSAPIBuilder.GetInstance();
 	api.SetGlobalGatewayIP(GlobalIP);
 
 	api.ConnectGateway(function() {
 		console.log("Connection to Gateway was established.");
 		api.SendCustomCommand(NodeUUID, "get_file", {
-			ui_type: "config",
+			ui_type: "app",
 			file_type: "html",
 			file_name: ""
 		}, function(res) {

@@ -23,17 +23,17 @@
             <nav class="col-md-2 d-none d-md-block bg-light sidebar">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
-                        <li class="nav-item">
+                        <li class="nav-item" onclick="menuSelected(1);">
                             <a class="nav-link" href="#">
                                 <span data-feather="crosshair"></span>Applications
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" onclick="menuSelected(2);">
                             <a class="nav-link" href="#">
                                 <span data-feather="cpu"></span>Config<span class="sr-only">(current)</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item" onclick="menuSelected(3);">
                             <a class="nav-link" href="#">
                                 <span data-feather="cpu"></span>Thumbnails
                             </a>
@@ -66,6 +66,35 @@
         var GlobalIP    = jsonData.ip;
         var GlobalPort  = jsonData.port;
         var NodeUUID    = jsonData.uuid;
+
+        var menuSelected = function(id) {
+            var ui_type     = "";
+            var file_type   = "";
+
+            switch(id) {
+                case 1:
+                    ui_type     = "app";
+                    file_type   = "html";
+                    break;
+                case 2: 
+                    ui_type     = "config";
+                    file_type   = "html";
+                    break;
+                case 3: 
+                    ui_type     = "thumbnail";
+                    file_type   = "html";
+                    break;
+            }
+
+            api.SendCustomCommand(NodeUUID, "get_file", {
+                ui_type: ui_type,
+                file_type: file_type,
+                file_name: ""
+            }, function(res) {
+                iframe = document.getElementById("id_context");
+                iframe.srcdoc = ConvertHEXtoString(res.data.payload.content);
+            });
+        }
     </script>
     <script src="{{ url_for('static', filename='mksdk-js/MkSAPI.js') }}"></script>
     <script src="{{ url_for('static', filename='mksdk-js/MkSCommon.js') }}"></script>

@@ -10,7 +10,6 @@ import re
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
-from mksdk import MkSNode
 from mksdk import MkSMasterNode
 from mksdk import MkSShellExecutor
 from mksdk import MkSExternalProcess
