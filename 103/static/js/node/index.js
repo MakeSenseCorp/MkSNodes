@@ -22,8 +22,32 @@ function GetNodeWidget() {
 	});
 }
 
+var ConvertHEXtoString = function(hexx) {
+	var hex = hexx.toString();//force conversion
+	var str = '';
+	for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
+		str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	}
+	return str;
+}
+
+var api = null;
 $(document).ready(function() {
 	GlobalIpAddress = GlobalIP + ":" + GlobalPort;
-	GetNodeInfo();
-	GetNodeWidget();
+
+	// Gey makesense api instanse.
+	api = MkSAPIBuilder.GetInstance();
+	api.SetGlobalGatewayIP(GlobalIP);
+
+	api.ConnectGateway(function() {
+		console.log("Connection to Gateway was established.");
+		api.SendCustomCommand(NodeUUID, "get_file", {
+			ui_type: "app",
+			file_type: "html",
+			file_name: ""
+		}, function(res) {
+			iframe = document.getElementById("id_context");
+			iframe.srcdoc = ConvertHEXtoString(res.data.payload.content);
+		});
+	});
 });

@@ -24,6 +24,7 @@ class Context():
 		self.Node							= node
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
+			'on_node_change':				self.OnNodeChangeHandler,
 			'get_connections_list':			self.GetConnectionsListRequestHandler,
 			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
 			'get_master_public_info':		self.GetMasterPublicInfoHandler,
@@ -32,13 +33,32 @@ class Context():
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
+			'get_online_devices':			self.GetOnlineDevicesHandler,
 		}
 		self.InstalledNodesDB				= None
 		self.ServicesDB 					= None
 		self.RunningServices				= []
+		self.NetworkDevicesList 			= []
 
 	def UndefindHandler(self, packet):
 		print ("UndefindHandler")
+
+	def OnNodeChangeHandler(self, sock, packet):
+		print ("({classname})# Node change event recieved ...".format(classname=self.ClassName))
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
+
+		if src in THIS.Node.IPScannerServiceUUID:
+			self.NetworkDevicesList = payload["online_devices"]
+
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'error': 'none'
+		})
+	
+	def GetOnlineDevicesHandler(self, sock, packet):
+		print ("({classname})# Online network device list ...".format(classname=self.ClassName))
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		print(payload)
 	
 	def GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
@@ -161,6 +181,7 @@ class Context():
 			'machine_name': str(machineName),
 			'network': network,
 			'on_boot_services': onBootServices,
+			'network_devices': self.NetworkDevicesList
 		}
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
@@ -197,7 +218,6 @@ class Context():
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
-		print ("({classname})# REQUEST".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
@@ -207,7 +227,6 @@ class Context():
 		})
 
 	def OnApplicationCommandResponseHandler(self, sock, packet):
-		print ("({classname})# RESPONSE".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
@@ -272,6 +291,9 @@ class Context():
 
 			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+			
+			#THIS.Node.SendRequestToNode(THIS.Node.IPScannerServiceUUID, "get_online_devices", {})
+			#THIS.Node.RegisterOnNodeChangeEvent(THIS.Node.IPScannerServiceUUID)
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)

@@ -11,7 +11,6 @@ import subprocess
 from datetime import datetime
 
 from mksdk import MkSFile
-from mksdk import MkSNode
 from mksdk import MkSSlaveNode
 from mksdk import MkSLocalHWConnector
 from mksdk import MkSUSBAdaptor
@@ -22,6 +21,7 @@ from flask import Response, request
 
 class Context():
 	def __init__(self, node):
+		self.ClassName 					= "IP Scanner"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
@@ -29,13 +29,12 @@ class Context():
 		self.States = {
 		}
 		# Handlers
-		self.Handlers					= {
+		self.RequestHandlers		= {
+			'get_online_devices':		self.GetOnlineDevicesHandler,
 			'undefined':				self.UndefindHandler
 		}
-		self.CustomRequestHandlers		= {
-			'get_online_devices':		self.GetOnlineDevicesHandler
-		}
-		self.CustomResponseHandlers		= {
+		self.ResponseHandlers		= {
+			'undefined':				self.UndefindHandler
 		}
 
 		# TODO - Find these networks automaticaly
@@ -45,26 +44,17 @@ class Context():
 		self.ThreadLock					= threading.Lock()
 		
 		self.Utilities = MkSUtils.Utils()
+		
 		items = self.Utilities.GetSystemIPs()
 		for item in items:
 			if ("127.0.0" not in item[0]):
 				net = ".".join(item[0].split('.')[0:-1]) + '.'
-				self.Networks.append(net)
-
+				if net not in self.Networks:
+					self.Networks.append(net)
+		
 		for network in self.Networks:
 			thread.start_new_thread(self.PingDevicesThread, (network, range(1,100), ))
 			thread.start_new_thread(self.PingDevicesThread, (network, range(101,200), ))
-	
-	def Ping(self, address):
-		response = subprocess.call("ping -c 1 %s" % address,
-				shell=True,
-				stdout=open('/dev/null', 'w'),
-				stderr=subprocess.STDOUT)
-		# Check response
-		if response == 0:
-			return True
-		else:
-			return False
 
 	def PingDevicesThread(self, network, range):
 		while (self.ThreadWorking is True):
@@ -72,101 +62,50 @@ class Context():
 				if (self.ThreadWorking is False):
 					return
 				ip = network + str(client)
-				res = self.Ping(ip)
+				res = MkSUtils.Ping(ip)
 				self.ThreadLock.acquire()
 				if (res is True):
-					print(ip, "ONLINE")
-					self.OnlineDevices[ip] = [ip, datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
-				else:
-					print(ip, "OFFLINE")
+					self.OnlineDevices[ip] = {
+						'ip':		ip, 
+						'datetime':	datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+						'ts':		time.time()
+					}
 				self.ThreadLock.release()
+	
+	def DisconnectedAddressesMonitorThread(self):
+		pass
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
 	
-	# { 
-	# 	u'direction': u'proxy_request', 
-	# 	u'command': u'send_email', 
-	# 	u'piggybag': 0, 
-	# 	u'payload': {
-	# 		u'header': {
-	# 			u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
-	# 			u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d023'
-	# 		}, u'data': {
-	# 			u'json': {
-	# 				u'body': u'Hello', 
-	# 				u'to': [u'yevgeniy.kiveisha@gmail.com'], 
-	# 				u'type': u'text', 
-	# 				u'subject': u'Test'
-	# 			}, 
-	# 			u'request': u'task_order'
-	# 		}
-	# 	}
-	# }
-	
 	def GetOnlineDevicesHandler(self, sock, packet):
-		print ("GetOnlineDevicesHandler", packet, self.OnlineDevices)
+		print ("({classname})# Online device request ...".format(classname=self.ClassName))
 		
 		listOfDevice = []
 		for key in self.OnlineDevices:
-			listOfDevice.append(self.OnlineDevices[key])
+			listOfDevice.append(self.OnlineDevices[key]["ip"])
 
-		THIS.Node.LocalServiceNode.SendCustomCommandResponse(sock, packet, {
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'online_devices': listOfDevice
 		})
 	
 	# Websockets
-	def WSDataArrivedHandler(self, message_type, source, data):
-		command = data['device']['command']
-		self.Handlers[command](message_type, source, data)
-
-	def WSConnectedHandler(self):
-		print ("WSConnectedHandler")
-
-	def WSConnectionClosedHandler(self):
-		print ("WSConnectionClosedHandler")
-
 	def NodeSystemLoadedHandler(self):
-		print ("NodeSystemLoadedHandler")
+		print ("({classname})# Node system loaded ...".format(classname=self.ClassName))
 	
-	def OnMasterFoundHandler(self, masters):
-		print ("OnMasterFoundHandler")
+	def OnApplicationCommandRequestHandler(self, sock, packet):
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.RequestHandlers:
+			return self.RequestHandlers[command](sock, packet)
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'error': '-1'
+		})
 
-	def OnMasterSearchHandler(self):
-		print ("OnMasterSearchHandler")
-
-	def OnMasterDisconnectedHandler(self):
-		print ("OnMasterDisconnectedHandler")
-
-	def OnDeviceConnectedHandler(self):
-		print ("OnDeviceConnectedHandler")
-
-	def OnLocalServerStartedHandler(self):
-		print ("OnLocalServerStartedHandler")
-
-	def OnAceptNewConnectionHandler(self, sock):
-		print ("OnAceptNewConnectionHandler")
-
-	def OnTerminateConnectionHandler(self, sock):
-		print ("OnTerminateConnectionHandler")
-
-	def OnGetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnGetSensorInfoRequestHandler")
-
-	def OnSetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnSetSensorInfoRequestHandler")
-	
-	def OnCustomCommandRequestHandler(self, sock, json_data):
-		print ("OnCustomCommandRequestHandler")
-		command = json_data['command']
-		if command in self.CustomRequestHandlers:
-			self.CustomRequestHandlers[command](sock, json_data)
-
-	def OnCustomCommandResponseHandler(self, sock, json_data):
-		print ("OnCustomCommandResponseHandler")
-		command = json_data['command']
-		if command in self.CustomResponseHandlers:
-			self.CustomResponseHandlers[command](sock, json_data)
+	def OnApplicationCommandResponseHandler(self, sock, packet):
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.ResponseHandlers:
+			self.ResponseHandlers[command](sock, packet)
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -189,24 +128,40 @@ class Context():
 		})
 
 	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 					endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 				endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
+		THIS.Node.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
+		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
-			print ("WorkingHandler")
-
-			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
-				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+			print("\nTables:")
+			for idx, item in enumerate(THIS.Node.GetConnections()):
+				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
+			print("")
+			network_device_to_delete = []
+			for key in self.OnlineDevices:
+				network_device = self.OnlineDevices[key]
+				if (MkSUtils.Ping(network_device["ip"]) is False):
+					print("Offline device " + network_device["ip"])
+					network_device_to_delete.append(key)
+				else:
+					print ("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]))
+			
+			for key in network_device_to_delete:
+				del self.OnlineDevices[key]
+			
+			listOfDevice = []
+			for key in self.OnlineDevices:
+				listOfDevice.append(self.OnlineDevices[key]["ip"])
+			THIS.Node.EmitOnNodeChange({
+				'online_devices': listOfDevice
+			})
 
-Service = MkSSlaveNode.SlaveNode()
-Node 	= MkSNode.Node("IP Scanner Service", Service)
-THIS 	= Context(Node)
+Node = MkSSlaveNode.SlaveNode()
+THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	THIS.ThreadWorking = False
@@ -217,24 +172,10 @@ def main():
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.OnWSDataArrived 										= THIS.WSDataArrivedHandler
-	THIS.Node.OnWSConnected 										= THIS.WSConnectedHandler
-	THIS.Node.OnWSConnectionClosed 									= THIS.WSConnectionClosedHandler
-	THIS.Node.OnNodeSystemLoaded									= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnDeviceConnected										= THIS.OnDeviceConnectedHandler
-	# Local service callbacks (TODO - please bubble these callbacks via Node)
-	THIS.Node.LocalServiceNode.OnMasterFoundCallback				= THIS.OnMasterFoundHandler
-	THIS.Node.LocalServiceNode.OnMasterSearchCallback				= THIS.OnMasterSearchHandler
-	THIS.Node.LocalServiceNode.OnMasterDisconnectedCallback			= THIS.OnMasterDisconnectedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerStartedCallback			= THIS.OnLocalServerStartedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerListenerStartedCallback = THIS.OnLocalServerListenerStartedHandler
-	THIS.Node.LocalServiceNode.OnAceptNewConnectionCallback			= THIS.OnAceptNewConnectionHandler
-	THIS.Node.LocalServiceNode.OnTerminateConnectionCallback 		= THIS.OnTerminateConnectionHandler
-	THIS.Node.LocalServiceNode.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
-	THIS.Node.LocalServiceNode.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
-	# TODO - On file upload event.
-	THIS.Node.LocalServiceNode.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+	THIS.Node.NodeSystemLoadedCallback						= THIS.NodeSystemLoadedHandler
+	THIS.Node.OnLocalServerListenerStartedCallback 			= THIS.OnLocalServerListenerStartedHandler	
+	THIS.Node.OnApplicationRequestCallback					= THIS.OnApplicationCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback					= THIS.OnApplicationCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	THIS.ThreadWorking = False
@@ -242,3 +183,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

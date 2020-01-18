@@ -157,6 +157,16 @@
 													</h6>
 												</div>
 											</div>
+											<br>
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted"> Network Devices List </span>
+														<span class="badge badge-secondary badge-pill" id="network_devices_count_id">0</span>
+													</h6>
+													<div id="network_devices_list_id"></div>
+												</div>
+											</div>
 										</div>
 										<div class="col-lg-6">
 											<div class="card">
@@ -299,6 +309,18 @@
 					<div class="col-lg-5">
 						<small class="my-0">[MAC]</small>
 					</div>
+					<div class="col-lg-2">
+						<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>
+					</div>
+				</div>
+			`;
+
+			var NetworkDevicesRow = `
+				<div class="row">
+					<div class="col-lg-5">
+						<small class="my-0">[IP]</small>
+					</div>
+					<div class="col-lg-5"></div>
 					<div class="col-lg-2">
 						<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>
 					</div>
@@ -483,9 +505,19 @@
 						row = row.split("[MAC]").join(element[1]);
 						html = html + row;
 					});
-				
 					html = html + `</div></div>`;
 					document.getElementById("network_interfaces_list_id").innerHTML = html;
+
+					var network_devices = payload.network_devices;
+					document.getElementById("network_devices_count_id").innerHTML = network_devices.length;
+					var html = `<div class="card"><div class="card-body">`;
+					network_devices.forEach(function(element) {
+						row = NetworkDevicesRow;
+						row = row.split("[IP]").join(element);
+						html = html + row;
+					});
+					html = html + `</div></div>`;
+					document.getElementById("network_devices_list_id").innerHTML = html;
 					
 					feather.replace();
 				});

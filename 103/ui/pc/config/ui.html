@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>YouTube Player</title>
+
+		<link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css" crossorigin="anonymous">
+     
+        <style>
+            body {
+              font-size: .875rem;
+            }
+            .feather {
+              width: 16px;
+              height: 16px;
+              vertical-align: text-bottom;
+            }
+            html {
+              position: relative;
+              min-height: 100%;
+            }
+            body {
+              /* Margin bottom by footer height */
+              margin-bottom: 60px;
+            }
+            .footer {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              /* Set the fixed height of the footer here */
+              height: 60px;
+              line-height: 60px; /* Vertically center the text there */
+              background-color: #f5f5f5;
+            }
+            body > .container {
+              padding: 60px 15px 0;
+            }
+            .footer > .container {
+              padding-right: 15px;
+              padding-left: 15px;
+            }
+            code {
+              font-size: 80%;
+            }
+        </style>
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <main role="main" class="container">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="card">
+              <div class="card-body">
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">Nodes List (<a href="#" onclick="GetOnlineMachines()">Refresh</a>)</span>
+										<span class="badge badge-secondary badge-pill" id="online_machines_count_id">0</span>
+									</h6>
+									<div id="online_machines_id"></div>
+								</div>
+					</div>
+				</div>
+			</div>
+        </main>
+
+        <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
+        <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+        <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
+        <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+        
+        <script src="mksdk-js/MkSAPI.js"></script>
+        <script src="mksdk-js/MkSCommon.js"></script>
+        <script src="mksdk-js/MkSGateway.js"></script>
+        <script src="mksdk-js/MkSWebface.js"></script>
+
+        <script>
+			var GatewayIP = "[GATEWAY_IP]";
+			var NodeUUID  = "[NODE_UUID]";
+			
+			// Gey makesense api instanse.
+			var api = MkSAPIBuilder.GetInstance();
+			api.SetGlobalGatewayIP(GatewayIP);
+		  
+          var MAchineIPRow = `
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <small class="my-0">[IP]</small>
+              </div>
+              <div>
+                <small class="my-0">[TIME]</small>
+              </div>
+            </li>
+          `;
+
+          // Gey makesense api instanse.
+          var api = MkSAPIBuilder.GetInstance();
+
+          var GetOnlineMachines = function() {
+            api.SendCustomCommand(NodeUUID, "get_online_devices", {}, function(res) {
+              console.log(res.data.payload);
+              var data = res.data.payload;
+              document.getElementById("online_machines_count_id").innerHTML = data.online_devices.length;
+              var html = `<ul class="list-group mb-3">`;
+              data.online_devices.forEach(function(element) {
+                row = MAchineIPRow;
+                row = row.split("[IP]").join(element[0]);
+                row = row.split("[TIME]").join(element[1]);
+                html = html + row;
+              });
+            
+              html = html + `</ul>`;
+              document.getElementById("online_machines_id").innerHTML = html;
+              feather.replace();
+            });
+          }
+
+          api.ConnectGateway(function() {
+            GetOnlineMachines();
+          });
+        </script>
+    </body>
+</html>

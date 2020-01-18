@@ -6497,3 +6497,72 @@ TemplateNotFound: nodes.html
 2019-12-30 22:11:34.970 DEBUG websocket - close: Closed WebSocket
 2019-12-30 22:11:34.971 DEBUG websocket - close: Failed to write closing frame -> closing socket
 2019-12-30 22:11:34.971 DEBUG websocket - close: Closed WebSocket
+2020-01-02 15:13:59.534 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-01-02 15:14:57.303 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET / HTTP/1.1" 200 -
+2020-01-02 15:14:57.353 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/css/vendor/bootstrap.min.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.362 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/mksdk-js/MkSAPI.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.364 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.368 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/mksdk-js/MkSCommon.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.370 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/js/vendor/feather.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.374 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/css/node/dashboard.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.376 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET / HTTP/1.1" 200 -
+2020-01-02 15:14:57.379 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/mksdk-js/MkSGateway.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.380 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/mksdk-js/MkSWebface.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.386 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/js/node/common.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.388 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.389 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/js/node/index.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.496 DEBUG handler - run_application: Initializing WebSocket
+2020-01-02 15:14:57.496 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-01-02 15:14:57.496 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-01-02 15:14:57.497 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-01-02 15:14:57.580 DEBUG handler - run_application: Initializing WebSocket
+2020-01-02 15:14:57.580 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-01-02 15:14:57.580 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-01-02 15:14:57.581 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-01-02 15:14:57.610 DEBUG websocket - close: Closed WebSocket
+2020-01-02 15:14:57.631 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap/css/bootstrap.min.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.638 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap/css/bootstrap-slider.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.640 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-01-02 15:14:57.641 DEBUG websocket - close: Closed WebSocket
+2020-01-02 15:14:57.642 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/fontawesome-5.11.2/css/all.min.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.646 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/nodes/js/jquery_3_3_1/jquery.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.647 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap4-editable/css/bootstrap-editable.css HTTP/1.1" 304 -
+2020-01-02 15:14:57.648 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.653 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap/js/bootstrap.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.657 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap/js/bootstrap-slider.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.661 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/nodes/js/feather_4_19/feather.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.664 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/nodes/map/feather_4_19/feather.min.js.map HTTP/1.1" 304 -
+2020-01-02 15:14:57.665 INFO _internal - _log: 10.0.0.10 - - [02/Jan/2020 15:14:57] "GET /static/lib/bootstrap4-editable/js/bootstrap-editable.min.js HTTP/1.1" 304 -
+2020-01-02 15:14:57.757 DEBUG handler - run_application: Initializing WebSocket
+2020-01-02 15:14:57.757 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-01-02 15:14:57.758 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-01-02 15:14:57.758 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-01-02 15:22:33.513 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-02 15:31:51.034 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-02 15:38:38.340 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-02 15:41:54.041 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-02 16:52:08.434 DEBUG app - CameraThread: Sent recording order 140602248730240
+2020-01-02 16:52:08.435 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2020-01-02 16:52:09.191 DEBUG app - OrdersManagerThread: [VideoCreator] 140602248730240 140602504361696
+2020-01-02 16:52:09.191 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2020-01-02 16:54:28.151 DEBUG app - CameraThread: Sent recording order 140602248732472
+2020-01-02 16:54:28.152 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2020-01-02 16:54:28.675 DEBUG app - OrdersManagerThread: [VideoCreator] 140602248732472 140602248733312
+2020-01-02 16:54:28.676 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2020-01-02 16:59:59.943 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 12:43:24.431 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 14:09:01.812 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 14:10:55.326 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 14:20:15.362 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 14:24:11.174 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-03 14:45:31.849 DEBUG app - CameraThread: Sent recording order 140623720747088
+2020-01-03 14:45:31.849 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding...
+2020-01-03 14:45:32.386 DEBUG app - OrdersManagerThread: [VideoCreator] 140623720747088 140623721108656
+2020-01-03 14:45:32.386 INFO app - OrdersManagerThread: [VideoCreator] Start video encoding... DONE
+2020-01-05 00:35:49.922 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-01-05 00:36:11.461 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-01-05 00:48:49.514 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-01-07 20:39:10.434 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-01-07 20:40:15.153 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-07 20:43:40.641 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-01-07 21:28:07.020 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
