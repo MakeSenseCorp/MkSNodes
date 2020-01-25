@@ -488,6 +488,7 @@ class Context():
 		self.Cameras 					= []
 		self.ObjCameras					= []
 		self.DeviceScanner 				= EthernetDeviceScanner()
+		self.HJTScanner 				= HJTCameraScanner()
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
@@ -500,7 +501,7 @@ class Context():
 		self.LocalStoragePath 			= "/home/ykiveish/mks/nodes/2017/videos/local"
 		self.USBStoragePath 			= "/home/ykiveish/mks/nodes/2017/videos/usb"
 
-	def UndefindHandler(self, message_type, source, data):
+	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
 
 	def GetSensorInfoHandler(self, sock, packet):
@@ -839,11 +840,24 @@ class Context():
 			self.EmailService = ""
 			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
+	def OnGetNodeInfoHandler(self, info, online):
+		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
+		return
+		
+		nodeType = info["payload"]["data"]["type"]
+		nodeUUID = info["payload"]["data"]["uuid"]
+		if (101 == nodeType):
+			self.SMSService = nodeUUID
+			print("[OnGetNodeInfoHandler]", "SMS service found")
+		if (102 == nodeType):
+			self.EmailService = nodeUUID
+			print("[OnMasterAppendNodeHandler]","Email service found")
+
 	def SerachForCameras(self):
-		cameras 	= self.DeviceScanner.Scan(self.IPNetwork, self.IPAddresses)
-		cameras 	+= self.DeviceScanner.Scan("192.168.1.", [100,132])
-		HJTScanner 	= HJTCameraScanner()
-		return HJTScanner.Scan(cameras)
+		#cameras 	= self.DeviceScanner.Scan(self.IPNetwork, self.IPAddresses)
+		#cameras 	+= self.DeviceScanner.Scan("192.168.1.", [100,132])
+		devices = THIS.Node.GetNetworkOnlineDevicesList()
+		return self.HJTScanner.Scan(devices)
 	
 	def UpdateCameraStracture(self, dbCameras, ip):
 		cameradb 	= None
@@ -977,6 +991,7 @@ class Context():
 		# Check if security is ON
 		if self.DB["security"] == 1:
 			self.SecurityEnabled = True
+
 		# Search for cameras
 		print ("({classname})# Searching for cameras ...".format(classname=self.ClassName))
 		ips = self.SerachForCameras()
@@ -997,7 +1012,6 @@ class Context():
 		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
-		print ("({classname})# REQUEST".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
@@ -1007,7 +1021,6 @@ class Context():
 		})
 
 	def OnApplicationCommandResponseHandler(self, sock, packet):
-		print ("({classname})# RESPONSE".format(classname=self.ClassName))
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
@@ -1017,44 +1030,6 @@ class Context():
 		# TODO - Find SMS service
 		#for uuid in uuids:
 		#	THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
-	
-	def OnGetNodeInfoHandler(self, info):
-		print ("OnGetNodeInfoHandler")
-		# TODO - info must be only data of a device, not whole packet
-		'''
-		{
-			u'direction': u'proxy_response', 
-			u'command': u'get_node_info', u
-			'piggybag': 0, 
-			u'payload': {
-				u'header': {
-					u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
-					u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d021'
-				}, 
-				u'data': {
-					u'isMasterNode': u'False', 
-					u'isHW': u'False', 
-					u'uuid': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
-					u'name': u'HJT', 
-					u'isLocalServerEnabled': u'True', 
-					u'brandname': u'Camera Surveillance', 
-					u'isWebEnabled': u'True', 
-					u'ostype': u'Any', 
-					u'osversion': u'Any', 
-					u'type': 2017, 
-					u'description': u'Camera Surveillance'
-				}
-			}
-		}
-		'''
-		nodeType = info["payload"]["data"]["type"]
-		nodeUUID = info["payload"]["data"]["uuid"]
-		if (101 == nodeType):
-			self.SMSService = nodeUUID
-			print("[OnGetNodeInfoHandler]", "SMS service found")
-		if (102 == nodeType):
-			self.EmailService = nodeUUID
-			print("[OnMasterAppendNodeHandler]","Email service found")
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -1102,12 +1077,12 @@ class Context():
 
 			print("\nTables:")
 			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  {0} {1}  {2}  {3}  {4}  {5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
+				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
 			for idx, camera in enumerate(self.ObjCameras):
-				print ("  {0} {1}  {2}  {3} {4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
+				print ("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
 			print("")
-			
+
 			# Search for usb storage in /media/[USER]/
 			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
 
@@ -1204,8 +1179,6 @@ def main():
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
-	THIS.Node.OnMasterAppendNodeCallback			= THIS.OnMasterAppendNodeHandler
-	THIS.Node.OnMasterRemoveNodeCallback			= THIS.OnMasterRemoveNodeHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")

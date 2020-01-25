@@ -291,9 +291,6 @@ class Context():
 
 			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
-			
-			#THIS.Node.SendRequestToNode(THIS.Node.IPScannerServiceUUID, "get_online_devices", {})
-			#THIS.Node.RegisterOnNodeChangeEvent(THIS.Node.IPScannerServiceUUID)
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)

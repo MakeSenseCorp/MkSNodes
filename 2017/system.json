@@ -1,18 +1,30 @@
 {
 	"node":
 	{
-		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d021",
-		"isHW":"False",
-		"type":2017,
-		"ostype":"Any",
-		"osversion":"Any",
-		"brandname":"Camera Surveillance",
-		"name":"HJT",
-		"description":"Camera Surveillance",
-        "isMasterNode":"False",
-        "isLocalServerEnabled":"True",
-        "isWebEnabled":"True",
-		"is_application_ui_enabled": "True"
+		"info": {
+			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d021",
+			"isHW":"False",
+			"type":2017,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"Camera Surveillance",
+			"name":"HJT",
+			"description":"Camera Surveillance",
+			"isMasterNode":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "application",
+				"cat_2": "image&video",
+				"cat_3": "ip_camera"
+			}
+		},
+		"service": {
+			"depend": [
+				103
+			]
+		}
 	},
 	"user":
 	{

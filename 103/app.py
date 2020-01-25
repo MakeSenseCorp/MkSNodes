@@ -53,8 +53,10 @@ class Context():
 					self.Networks.append(net)
 		
 		for network in self.Networks:
-			thread.start_new_thread(self.PingDevicesThread, (network, range(1,100), ))
-			thread.start_new_thread(self.PingDevicesThread, (network, range(101,200), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(1,50), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(50,100), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(100,150), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(150,200), ))
 
 	def PingDevicesThread(self, network, range):
 		while (self.ThreadWorking is True):
@@ -71,9 +73,6 @@ class Context():
 						'ts':		time.time()
 					}
 				self.ThreadLock.release()
-	
-	def DisconnectedAddressesMonitorThread(self):
-		pass
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")
@@ -89,7 +88,6 @@ class Context():
 			'online_devices': listOfDevice
 		})
 	
-	# Websockets
 	def NodeSystemLoadedHandler(self):
 		print ("({classname})# Node system loaded ...".format(classname=self.ClassName))
 	
@@ -134,31 +132,34 @@ class Context():
 		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
 
 	def WorkingHandler(self):
-		if time.time() - self.CurrentTimestamp > self.Interval:
-			self.CurrentTimestamp = time.time()
+		try:
+			if time.time() - self.CurrentTimestamp > self.Interval:
+				self.CurrentTimestamp = time.time()
 
-			print("\nTables:")
-			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
-			print("")
-			network_device_to_delete = []
-			for key in self.OnlineDevices:
-				network_device = self.OnlineDevices[key]
-				if (MkSUtils.Ping(network_device["ip"]) is False):
-					print("Offline device " + network_device["ip"])
-					network_device_to_delete.append(key)
-				else:
-					print ("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]))
-			
-			for key in network_device_to_delete:
-				del self.OnlineDevices[key]
-			
-			listOfDevice = []
-			for key in self.OnlineDevices:
-				listOfDevice.append(self.OnlineDevices[key]["ip"])
-			THIS.Node.EmitOnNodeChange({
-				'online_devices': listOfDevice
-			})
+				print("\nTables:")
+				for idx, item in enumerate(THIS.Node.GetConnections()):
+					print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
+				print("")
+				network_device_to_delete = []
+				for key in self.OnlineDevices:
+					network_device = self.OnlineDevices[key]
+					if (MkSUtils.Ping(network_device["ip"]) is False):
+						print("Offline device " + network_device["ip"])
+						network_device_to_delete.append(key)
+					else:
+						print ("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]))
+				
+				for key in network_device_to_delete:
+					del self.OnlineDevices[key]
+				
+				listOfDevice = []
+				for key in self.OnlineDevices:
+					listOfDevice.append(self.OnlineDevices[key]["ip"])
+				THIS.Node.EmitOnNodeChange({
+					'online_devices': listOfDevice
+				})
+		except Exception as e:
+			print ("({classname})# WorkingHandler ERROR ... \n{0}".format(e,classname=self.ClassName))
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

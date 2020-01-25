@@ -1,18 +1,30 @@
 {
 	"node":
 	{
-		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d024",
-		"isHW":"False",
-		"type":103,
-		"ostype":"Any",
-		"osversion":"Any",
-		"brandname":"IP Scanner Service",
-		"name":"IP Scanner Service",
-		"description":"IP Scanner Service",
-        "isMasterNode":"False",
-        "isLocalServerEnabled":"True",
-        "isWebEnabled":"True",
-		"is_application_ui_enabled": "True"
+		"info": {
+			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d024",
+			"isHW":"False",
+			"type":103,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"IP Scanner Service",
+			"name":"IP Scanner Service",
+			"description":"IP Scanner Service",
+			"isMasterNode":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "service",
+				"cat_2": "network",
+				"cat_3": "ip_scanner"
+			}
+		},
+		"service": {
+			"depend": [
+
+			]
+		}
 	},
 	"user":
 	{
