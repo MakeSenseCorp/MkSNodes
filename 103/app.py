@@ -44,7 +44,10 @@ class Context():
 		self.ThreadLock					= threading.Lock()
 		
 		self.Utilities = MkSUtils.Utils()
-		
+		self.SearchNetworks()
+	
+	def SearchNetworks(self):
+		print ("({classname})# Searching for networks ...".format(classname=self.ClassName))
 		items = self.Utilities.GetSystemIPs()
 		for item in items:
 			if ("127.0.0" not in item[0]):
