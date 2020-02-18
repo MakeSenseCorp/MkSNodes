@@ -119,7 +119,10 @@ class Context():
 		
 		# Get CPU temperature
 		data = shell.ExecuteCommand("cat /sys/class/thermal/thermal_zone0/temp")
-		temperature = float(float(data[:-3]) / 10.0)
+		try:
+			temperature = float(float(data[:-3]) / 10.0)
+		except Exception as e:
+			pass 
 		
 		# Get RAM free space
 		data = shell.ExecuteCommand("free")
