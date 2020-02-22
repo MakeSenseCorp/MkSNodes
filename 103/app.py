@@ -50,7 +50,7 @@ class Context():
 		print ("({classname})# Searching for networks ...".format(classname=self.ClassName))
 		items = self.Utilities.GetSystemIPs()
 		for item in items:
-			if ("127.0.0" not in item[0]):
+			if ("127.0.0" not in item[0] and "" != item[0]):
 				net = ".".join(item[0].split('.')[0:-1]) + '.'
 				if net not in self.Networks:
 					self.Networks.append(net)
@@ -67,6 +67,7 @@ class Context():
 				if (self.ThreadWorking is False):
 					return
 				ip = network + str(client)
+				print ("({classname})# Ping {0} ...".format(ip,classname=self.ClassName))
 				res = MkSUtils.Ping(ip)
 				self.ThreadLock.acquire()
 				if (res is True):
@@ -76,6 +77,7 @@ class Context():
 						'ts':		time.time()
 					}
 				self.ThreadLock.release()
+				time.sleep(0.5)
 
 	def UndefindHandler(self, message_type, source, data):
 		print ("UndefindHandler")

@@ -6625,3 +6625,186 @@ TemplateNotFound: nodes.html
 2020-01-25 01:22:45.693 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
 2020-01-25 01:24:34.767 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
 2020-01-25 01:33:57.296 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2020-01-25 17:16:26.049 INFO _internal - _log:  * Running on http://0.0.0.0:8031/ (Press CTRL+C to quit)
+2020-01-25 23:07:07.993 ERROR app - log_exception: Exception on /file/download/video_1577976728.45.avi [GET]
+Traceback (most recent call last):
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 2446, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1951, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1820, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1949, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/app.py", line 1935, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "app.py", line 1058, in FileDownloadHandler
+    return send_file(FilePath)
+  File "/home/ykiveish/.local/lib/python2.7/site-packages/flask/helpers.py", line 629, in send_file
+    file = open(filename, "rb")
+IOError: [Errno 2] No such file or directory: u'/home/ykiveish/mks/nodes/2017/./videos/video_1577976728.45.avi'
+2020-01-25 23:07:08.002 INFO _internal - _log: 10.0.0.14 - - [25/Jan/2020 23:07:08] "GET /file/download/video_1577976728.45.avi HTTP/1.1" 500 -
+2020-01-25 23:07:08.028 INFO _internal - _log: 10.0.0.14 - - [25/Jan/2020 23:07:08] "GET /favicon.ico HTTP/1.1" 404 -
+2020-02-04 23:22:33.583 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
+2020-02-04 23:45:20.987 INFO _internal - _log:  * Running on http://0.0.0.0:8001/ (Press CTRL+C to quit)
+2020-02-04 23:45:51.899 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET / HTTP/1.1" 200 -
+2020-02-04 23:45:51.941 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/css/vendor/bootstrap.min.css HTTP/1.1" 200 -
+2020-02-04 23:45:51.946 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/js/vendor/feather.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.949 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/mksdk-js/MkSAPI.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.951 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/js/vendor/jquery-3.3.1.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.963 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/mksdk-js/MkSCommon.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.966 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET / HTTP/1.1" 200 -
+2020-02-04 23:45:51.975 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/mksdk-js/MkSGateway.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.977 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/mksdk-js/MkSWebface.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.979 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/css/node/dashboard.css HTTP/1.1" 200 -
+2020-02-04 23:45:51.984 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/js/vendor/bootstrap.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.985 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/js/node/common.js HTTP/1.1" 200 -
+2020-02-04 23:45:51.986 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:51] "GET /static/js/node/index.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.062 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.129 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/css/vendor/bootstrap.min.css.map HTTP/1.1" 200 -
+2020-02-04 23:45:52.185 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/js/vendor/bootstrap.min.js.map HTTP/1.1" 200 -
+2020-02-04 23:45:52.247 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.253 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:45:52.253 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:45:52.253 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:45:52.253 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:45:52.288 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:45:52.288 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:45:52.289 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:45:52.289 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:45:52.299 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/images/node/favicon.ico HTTP/1.1" 200 -
+2020-02-04 23:45:52.357 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:45:52.381 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/css/bootstrap.min.css HTTP/1.1" 200 -
+2020-02-04 23:45:52.397 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap4-editable/css/bootstrap-editable.css HTTP/1.1" 200 -
+2020-02-04 23:45:52.402 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/css/bootstrap-slider.css HTTP/1.1" 200 -
+2020-02-04 23:45:52.402 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/fontawesome-5.11.2/css/all.min.css HTTP/1.1" 200 -
+2020-02-04 23:45:52.405 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.409 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/js/jquery_3_3_1/jquery.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.431 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/js/bootstrap.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.435 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/js/bootstrap-slider.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.440 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/js/feather_4_19/feather.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.446 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/map/feather_4_19/feather.min.js.map HTTP/1.1" 200 -
+2020-02-04 23:45:52.450 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap4-editable/js/bootstrap-editable.min.js HTTP/1.1" 200 -
+2020-02-04 23:45:52.518 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.552 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.559 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.572 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:52] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:52.599 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:45:52.599 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:45:52.599 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:45:52.599 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:45:57.029 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:45:57.120 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.197 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.200 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.205 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.241 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:45:57.242 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:45:57.242 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:45:57.242 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:45:57.270 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:45:57.270 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:45:57.271 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:45:57.271 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:45:57.768 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:45:57.897 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.925 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.928 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.931 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:45:57] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:45:57.957 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:45:57.957 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:45:57.957 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:45:57.957 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:45:59.026 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:46:00.380 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.389 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.394 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.397 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.417 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:46:00.417 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:46:00.417 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:46:00.417 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:46:00.855 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:46:00.935 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.938 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.941 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:00] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:00.945 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:46:00.945 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:46:00.945 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:46:00.945 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:46:01.017 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:01] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.022 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET / HTTP/1.1" 200 -
+2020-02-04 23:46:33.030 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:46:33.032 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:46:33.071 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET / HTTP/1.1" 200 -
+2020-02-04 23:46:33.150 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.195 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:46:33.195 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:46:33.195 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:46:33.195 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:46:33.302 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:46:33.302 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:46:33.302 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:46:33.302 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:46:33.321 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/js/vendor/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.396 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:46:33.594 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:46:33.594 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:46:33.594 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:46:33.594 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:46:33.628 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.631 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.633 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:46:33.653 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:46:33] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:47:18.744 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:18.815 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:18] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:47:18.840 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:18] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:18.842 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:18] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:18.844 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:18] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:18.861 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:47:18.861 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:47:18.861 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:47:18.862 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:47:36.479 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:38.370 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:38] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:47:38.392 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:38] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:38.394 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:38] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:38.396 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:38] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:38.420 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:47:38.420 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:47:38.420 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:47:38.420 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:47:43.646 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.719 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.720 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.722 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:43] "GET /static/lib/bootstrap/js/bootstrap.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:43.724 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.728 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.729 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.729 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.729 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.729 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:47:43.730 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:43.731 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:43] "GET /static/lib/nodes/js/popper_1_14_7/popper.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:43.728 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:43] "GET /static/lib/nodes/js/feather_4_19/feather.min.js.map HTTP/1.1" 404 -
+2020-02-04 23:47:43.760 DEBUG handler - run_application: Initializing WebSocket
+2020-02-04 23:47:43.761 DEBUG handler - upgrade_websocket: Validating WebSocket request
+2020-02-04 23:47:43.762 DEBUG handler - upgrade_connection: Attempting to upgrade connection
+2020-02-04 23:47:43.762 DEBUG handler - upgrade_connection: WebSocket request accepted, switching protocols
+2020-02-04 23:47:43.817 INFO _internal - _log: 10.0.0.14 - - [04/Feb/2020 23:47:43] "GET /static/lib/bootstrap/css/bootstrap.min.css.map HTTP/1.1" 404 -
+2020-02-04 23:47:54.499 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:47:54.500 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:50:15.596 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Closed WebSocket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Failed to write closing frame -> closing socket
+2020-02-04 23:50:15.597 DEBUG websocket - close: Closed WebSocket
+2020-02-05 09:52:09.261 INFO _internal - _log:  * Running on http://0.0.0.0:8032/ (Press CTRL+C to quit)
