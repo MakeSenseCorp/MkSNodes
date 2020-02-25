@@ -6,6 +6,10 @@ import mmap
 import os
 import time
 
+#from io import StringIO # "import StringIO" directly in python2
+from PIL import Image
+from io import BytesIO
+
 #vd = open('/dev/video0', 'rw')
 vd = os.open('/dev/video0', os.O_RDWR | os.O_NONBLOCK, 0)
 cp = v4l2.v4l2_capability()
@@ -63,11 +67,22 @@ buf.memory  = v4l2.V4L2_MEMORY_MMAP
 fcntl.ioctl(vd, v4l2.VIDIOC_DQBUF, buf)
 
 vid = open("video.jpeg", "wb")
-vid.write(mm.read(buf.length))
+frame = mm.read(buf.length)
+#vid.write(frame)
 #mm.seek(0)
 #fcntl.ioctl(vd, v4l2.VIDIOC_QBUF, buf)  # requeue the buffer
 
 print(">> Stop streaming")
 fcntl.ioctl(vd, v4l2.VIDIOC_STREAMOFF, buf_type)
 vid.close()
+
+#img = Image.open("video.jpeg")
+img = Image.open(BytesIO(frame))
+img.save("out.jpg", "JPEG", quality=25, optimize=True, progressive=True)
+img.save("out.webp",'webp',quality = 50)
+
+output = BytesIO()
+img.save(output, "JPEG", quality=5, optimize=True, progressive=True)
+#print(output.getvalue())
+
 #vd.close()
