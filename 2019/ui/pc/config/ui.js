@@ -1,1 +1,1 @@
-console.log("Node 1981 JS loaded ...");
+console.log("Hello from Node config");

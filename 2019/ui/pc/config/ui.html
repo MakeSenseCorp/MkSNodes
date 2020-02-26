@@ -7,7 +7,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>YouTube Player</title>
+        <title>USB Cameras</title>
 
 		[CSS]
      
@@ -47,12 +47,6 @@
             code {
               font-size: 80%;
             }
-
-			.vertical_align_center {
-				display: flex;
-				align-items: center;
-				flex-wrap: wrap;
-			}
         </style>
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -62,190 +56,177 @@
           <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
         <![endif]-->
     </head>
-    <body>
-        <main role="main" class="container">
-        	<div class="row">
-        	    <div class="col-lg-12">
-        	        <div class="card">
-						<div class="card-body">
-							<h6 class="d-flex justify-content-between align-items-center mb-3">
-								<span class="text-muted">Cameras List</span>
-								<span class="badge badge-secondary badge-pill" id="cameras_count_id">0</span>
-							</h6>
-							<div id="cameras_list_id"></div>
-						</div>
-                  	</div>
-        	    </div>
-			</div>
-			<!-- Modal -->
-			<div class="modal fade bd-example-modal-xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog modal-xl" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Settings</h5>
-							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-							</button>
-						</div>
-						<div class="modal-body">
-							<div class="row">
-								<div class="col-2">
-									<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-									<a class="nav-link active" id="v-pills-info-tab" data-toggle="pill" href="#v-pills-info" role="tab" aria-controls="v-pills-info" aria-selected="true">Information</a>
-									<a class="nav-link" id="v-pills-rec-tab" data-toggle="pill" href="#v-pills-rec" role="tab" aria-controls="v-pills-rec" aria-selected="false">Recording</a>
-									<a class="nav-link" id="v-pills-files-tab" data-toggle="pill" href="#v-pills-files" role="tab" aria-controls="v-pills-files" aria-selected="false">Files</a>
-									<a class="nav-link" id="v-pills-image-tab" data-toggle="pill" href="#v-pills-image" role="tab" aria-controls="v-pills-image" aria-selected="false">Image Settings</a>
-									</div>
+	<body style="background-color: #000;">
+		<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+		<div id="cameras_list_id" style="margin-bottom: 60px; margin: 10px;"></div>
+		<!-- Modal -->
+		<div class="modal fade bd-example-modal-xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-xl" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Settings</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="row">
+							<div class="col-2">
+								<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+								<a class="nav-link active" id="v-pills-info-tab" data-toggle="pill" href="#v-pills-info" role="tab" aria-controls="v-pills-info" aria-selected="true">Information</a>
+								<a class="nav-link" id="v-pills-rec-tab" data-toggle="pill" href="#v-pills-rec" role="tab" aria-controls="v-pills-rec" aria-selected="false">Recording</a>
+								<a class="nav-link" id="v-pills-files-tab" data-toggle="pill" href="#v-pills-files" role="tab" aria-controls="v-pills-files" aria-selected="false">Files</a>
+								<a class="nav-link" id="v-pills-image-tab" data-toggle="pill" href="#v-pills-image" role="tab" aria-controls="v-pills-image" aria-selected="false">Image Settings</a>
 								</div>
-								<div class="col-10">
-									<div class="tab-content" id="v-pills-tabContent">
-										<div class="tab-pane fade show active" id="v-pills-info" role="tabpanel" aria-labelledby="v-pills-info-tab">
-											<div class="row">
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">IP Adrress</span>
-																<span class="text-muted" id="ipAddress">0.0.0.0</span>
-															</h7>
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">MAC Address</span>
-																<span class="text-muted" id="macAddress">00:00:00:00:00</span>
-															</h7>
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Current FPS</span>
-																<span class="text-muted" id="txt_fps">1.6 fps</span>
-															</h7>
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Name</span>
-																<a href="#" id="txt_name">No Name</a>
-															</h7>
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">eMail</span>
-																<a href="#" id="txt_email">mail@gmail.com</a>
-															</h7>
-															<h7 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Phone (SMS)</span>
-																<a href="#" id="txt_phone">+97254123456</a>
-															</h7>
+							</div>
+							<div class="col-10">
+								<div class="tab-content" id="v-pills-tabContent">
+									<div class="tab-pane fade show active" id="v-pills-info" role="tabpanel" aria-labelledby="v-pills-info-tab">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">UID</span>
+															<span class="text-muted" id="ipAddress">N/A</span>
+														</h7>
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Device Path</span>
+															<span class="text-muted" id="macAddress">N/A</span>
+														</h7>
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Current FPS</span>
+															<span class="text-muted" id="txt_fps">1.6 fps</span>
+														</h7>
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Name</span>
+															<a href="#" id="txt_name">No Name</a>
+														</h7>
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">eMail</span>
+															<a href="#" id="txt_email">mail@gmail.com</a>
+														</h7>
+														<h7 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Phone (SMS)</span>
+															<a href="#" id="txt_phone">+97254123456</a>
+														</h7>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Precentage till next video creation</span>
+														</h6>
+														<div class="progress">
+															<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+														</div>
+													</div>
+													<div class="card-body">
+														<div class="custom-control custom-switch">
+															<input type="checkbox" class="custom-control-input" id="accesswww">
+															<label class="custom-control-label" for="accesswww">Access camera from anywere</label>
+														</div>
+														<div class="custom-control custom-switch">
+															<input type="checkbox" class="custom-control-input" id="motion_detection">
+															<label class="custom-control-label" for="motion_detection">Motion Detection</label>
+														</div>
+														<div class="custom-control custom-switch">
+															<input type="checkbox" class="custom-control-input" id="camera_recording">
+															<label class="custom-control-label" for="camera_recording">Recording</label>
 														</div>
 													</div>
 												</div>
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Precentage till next video creation</span>
-															</h6>
-															<div class="progress">
-																<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-															</div>
-														</div>
-														<div class="card-body">
-															<div class="custom-control custom-switch">
-																<input type="checkbox" class="custom-control-input" id="accesswww">
-																<label class="custom-control-label" for="accesswww">Access camera from anywere</label>
-															</div>
-															<div class="custom-control custom-switch">
-																<input type="checkbox" class="custom-control-input" id="motion_detection">
-																<label class="custom-control-label" for="motion_detection">Motion Detection</label>
-															</div>
-															<div class="custom-control custom-switch">
-																<input type="checkbox" class="custom-control-input" id="camera_recording">
-																<label class="custom-control-label" for="camera_recording">Recording</label>
+											</div>
+										</div>
+									</div>
+									<div class="tab-pane fade" id="v-pills-rec" role="tabpanel" aria-labelledby="v-pills-rec-tab">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Recording Sensetivity</span>
+															<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
+														</h6>
+														<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
+													</div>
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Security Sensetivity</span>
+															<span class="badge badge-secondary badge-pill" id="range_security_sensetivity_value">0</span>
+														</h6>
+														<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="range_security_sensetivity">
+													</div>
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Difference Sensetivity</span>
+															<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValueRaw">0</span>
+														</h6>
+														<input style="width: 100%" type="text" data-slider-min="1000" data-slider-max="50000" data-slider-step="100" id="rangeCameraSensetivityRaw">
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Frames Per Video</span>
+															<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
+														</h6>
+														<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
+													</div>
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Delay Between Frames</span>
+															<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
+														</h6>
+														<input style="width: 100%" type="text" data-slider-min="0.1" data-slider-max="5" data-slider-step="0.1" id="rangeFramesPerSecond">
+													</div> 
+												</div>
+											</div> 
+										</div>
+									</div>
+									<div class="tab-pane fade" id="v-pills-files" role="tabpanel" aria-labelledby="v-pills-files-tab">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Video Files (<a href="#" onclick="videoFilesRefresh()">Refresh</a>)</span>
+															<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
+														</h6>
+														<div id="files_list_id"></div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<h6 class="d-flex justify-content-between align-items-center mb-3">
+															<span class="text-muted">Storage Devices List</span>
+															<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
+														</h6>
+														<div id="devices_list_id">
+															<div class="custom-control custom-radio">
+																<input type="radio" id="id_node_local" onclick="localStorageSelected()" name="customRadio" class="custom-control-input">
+																<label class="custom-control-label" for="id_node_local">Local Node Storage</label>
 															</div>
 														</div>
 													</div>
 												</div>
 											</div>
 										</div>
-										<div class="tab-pane fade" id="v-pills-rec" role="tabpanel" aria-labelledby="v-pills-rec-tab">
-											<div class="row">
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Recording Sensetivity</span>
-																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValue">0</span>
-															</h6>
-															<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="rangeCameraSensetivity">
-														</div>
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Security Sensetivity</span>
-																<span class="badge badge-secondary badge-pill" id="range_security_sensetivity_value">0</span>
-															</h6>
-															<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="range_security_sensetivity">
-														</div>
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Difference Sensetivity</span>
-																<span class="badge badge-secondary badge-pill" id="rangeCameraSensetivityValueRaw">0</span>
-															</h6>
-															<input style="width: 100%" type="text" data-slider-min="1000" data-slider-max="50000" data-slider-step="100" id="rangeCameraSensetivityRaw">
-														</div>
-													</div>
-												</div>
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Frames Per Video</span>
-																<span class="badge badge-secondary badge-pill" id="rangeFramesPerVideoValue">0</span>
-															</h6>
-															<input style="width: 100%" type="text" data-slider-min="100" data-slider-max="5000" data-slider-step="100" id="rangeFramesPerVideo">
-														</div>
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Delay Between Frames</span>
-																<span class="badge badge-secondary badge-pill" id="rangeFramesPerSecondValue">0</span>
-															</h6>
-															<input style="width: 100%" type="text" data-slider-min="0.1" data-slider-max="5" data-slider-step="0.1" id="rangeFramesPerSecond">
-														</div> 
-													</div>
-												</div> 
-											</div>
-										</div>
-										<div class="tab-pane fade" id="v-pills-files" role="tabpanel" aria-labelledby="v-pills-files-tab">
-											<div class="row">
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Video Files (<a href="#" onclick="videoFilesRefresh()">Refresh</a>)</span>
-																<span class="badge badge-secondary badge-pill" id="files_count_id">0</span>
-															</h6>
-															<div id="files_list_id"></div>
-														</div>
-													</div>
-												</div>
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<h6 class="d-flex justify-content-between align-items-center mb-3">
-																<span class="text-muted">Storage Devices List</span>
-																<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
-															</h6>
-															<div id="devices_list_id">
-																<div class="custom-control custom-radio">
-																	<input type="radio" id="id_node_local" onclick="localStorageSelected()" name="customRadio" class="custom-control-input">
-																	<label class="custom-control-label" for="id_node_local">Local Node Storage</label>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="tab-pane fade" id="v-pills-image" role="tabpanel" aria-labelledby="v-pills-image-tab">
-											<div class="row">
-												<div class="col-lg-6">
-													<div class="card">
-														<div class="card-body">
-															<div class="custom-control custom-switch">
-																<input type="checkbox" class="custom-control-input" id="facedetectState">
-																<label class="custom-control-label" for="facedetectState">Face detection (Enable/Disable)</label>
-															</div>
+									</div>
+									<div class="tab-pane fade" id="v-pills-image" role="tabpanel" aria-labelledby="v-pills-image-tab">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="card">
+													<div class="card-body">
+														<div class="custom-control custom-switch">
+															<input type="checkbox" class="custom-control-input" id="facedetectState">
+															<label class="custom-control-label" for="facedetectState">Face detection (Enable/Disable)</label>
 														</div>
 													</div>
 												</div>
@@ -255,14 +236,15 @@
 								</div>
 							</div>
 						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary" onclick="SetMiscInfo()">Save changes</button>
-						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" onclick="SetMiscInfo()">Save changes</button>
 					</div>
 				</div>
 			</div>
-        </main>
+		</div>
+		</main>
 
 		[SCRIPTS]
 
@@ -297,8 +279,6 @@
 					document.getElementById("progressCapture").style.width 	= progress + "%";
 					document.getElementById("progressCapture").innerHTML 	= progress + "%";
 					document.getElementById("txt_fps").innerHTML 			= fps + " fps";
-
-					console.log(payload);
 
 					// Append new storage device loop
 					for (i = 0; i < payload.usb_devices.length; i++) {
@@ -361,29 +341,14 @@
 			}
 
 			var CameraCell = `
-					<div class="card">
-						<div class="card-body">
-							<div class="row">
-								<div class="col-lg-1 vertical_align_center">
-									<center><small class="my-0 ">[NAME]</small></center>
-								</div>
-								<div class="col-lg-8 vertical_align_center">
-									<img width="40px" height="30px" class="rounded" id="id_[IPADDRESS]"/>
-								</div>
-								<div class="col-lg-1 vertical_align_center">
-									<center><span class="fas fa-video" id="id_btn_rec_[IPADDRESS]" onClick="Recording(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 15px; cursor: pointer;color: [RECORDING_COLOR]"></span></center>
-								</div>
-								<div class="col-lg-1 vertical_align_center">
-									<center><span class="fas fa-walking" id="id_btn_motion_[IPADDRESS]" onClick="Motion(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 15px; cursor: pointer;color: [MOTION_COLOR]"></span></center>
-								</div>
-								<div class="col-lg-1 vertical_align_center">
-									<center><span class="fas fa-cogs" onClick="OpenModal(this,'[CAMERA_MAC]','[CAMERA_UID]','[IPADDRESS]');" style="font-size: 15px; cursor: pointer;color: black"></span></center>
-								</div>
+					<div class="col-lg-6" id="id_camera_[CAMERA_DEV]" onClick="OpenModal(this,'[CAMERA_DEV]','[CAMERA_UID]');">
+						<div class="row">
+							<div class="col-lg-12">
+								<img width="[WIDTH]px" height="[HEIGHT]px" class="rounded" id="id_[CAMERA_DEV]"/>
 							</div>
 						</div>
 					</div>
 			`;
-
 			var FileRow = `
 					<li class="list-group-item d-flex justify-content-between lh-condensed">
 						<div>
@@ -493,12 +458,13 @@
 				console.log("OnNodeChangeEvent", packet.data.payload.event);
 				payload = packet.data.payload;
 				if (payload.event == "new_frame") {
-					ip = payload.camera_ip;
-					imgObj = document.getElementById("id_" + ip);
+					dev = payload.dev;
+					console.log(dev);
+					imgObj = document.getElementById("id_" + dev);
 					frame = payload.frame
 					imgObj.src = "data:image/jpg;base64,"+frame;
 				} else if (payload.event == "stop_recording") {
-					elem = document.getElementById("id_btn_rec_" + ip);
+					elem = document.getElementById("id_btn_rec_" + dev);
 					elem.style.color = "green";
 				} else if (payload.event == "camera_disconnected") {
 					elem = document.getElementById("id_camera_" + payload.camera.uid);
@@ -507,7 +473,6 @@
 				} else if (payload.event == "camera_connected") {
 					elem = document.getElementById("id_camera_" + payload.camera.uid);
 					if (elem === null) {
-						document.getElementById("cameras_count_id").innerHTML = NextEnabledCameraIndex;
 						document.getElementById("cameras_list_id").innerHTML += AppendCameraUI(payload.camera);
               			feather.replace();
 					}
@@ -520,15 +485,22 @@
 			}
 
 			var AppendCameraUI = function(camera) {
-				var html = `<ul class="list-group mb-3">`;
+				html = "";
+				var width = document.getElementById("cameras_list_id").parentElement.clientWidth - 50;
+				var height = (width/2) * 0.8;
+				console.log(document.getElementById("cameras_list_id").parentElement.clientWidth);
 				if (camera.enable === 1) {
+					if (NextEnabledCameraIndex % 2 == 0) {
+						html += `<div class="row">`;
+					}
 					NextEnabledCameraIndex++;
 
 					row = CameraCell;
 					row = row.split("[NAME]").join(camera.name);
-					row = row.split("[IPADDRESS]").join(camera.ip);
-					row = row.split("[CAMERA_MAC]").join(camera.mac);
+					row = row.split("[CAMERA_DEV]").join(camera.dev);
 					row = row.split("[CAMERA_UID]").join(camera.uid);
+					row = row.split("[WIDTH]").join(width/2);
+					row = row.split("[HEIGHT]").join(height);
 
 					if (1 == camera.recording) {
 						row = row.split("[RECORDING_COLOR]").join("red");
@@ -549,8 +521,11 @@
 					}
 					
 					html += row;
+
+					if (NextEnabledCameraIndex % 2 == 0) {
+						html += `</div>`;
+					}
 				}
-				html = html + `</ul>`;
 				return html;
 			}
 			
@@ -568,17 +543,19 @@
 					for (i = 0; i < cameraCount; i++) {
 						camera = cameras[i];
 						html += AppendCameraUI(camera);
-
+						
 						api.RegisterOnNodeChange(NodeUUID, function(res) {
 							console.log("REGISTERED", res);
 						});
 
 						api.SendCustomCommand(NodeUUID, "get_frame", {
-							ip: camera.ip
+							uid: camera.uid
 						}, function(res) {
 							var payload = res.data.payload;
-							ip 			= payload.camera_ip;
-							imgObj 		= document.getElementById("id_" + ip);
+							console.log(payload.uid, payload.dev);
+							uid 		= payload.uid;
+							dev 		= payload.dev;
+							imgObj 		= document.getElementById("id_" + dev);
 							frame 		= payload.frame
 							imgObj.src = "data:image/jpg;base64,"+frame;
 						});
@@ -595,8 +572,7 @@
 							document.getElementById("cameraSecurtityText").innerHTML = "&nbsp;&nbsp;Security Disabled";
 						}
 					}
-					
-					document.getElementById("cameras_count_id").innerHTML = NextEnabledCameraIndex;
+
 					document.getElementById("cameras_list_id").innerHTML = html;
               		feather.replace();
 				});
@@ -621,7 +597,6 @@
 					uid: camera_uid,
 					ip: camera_ip
 				}, function(res) {
-					console.log(res);
 					framesPerVideo = res.data.payload.frame_per_video;
 					cameraSensetivity = res.data.payload.camera_sensetivity_recording;
 					$('#rangeFramesPerVideo').slider('setValue', framesPerVideo);

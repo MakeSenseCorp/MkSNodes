@@ -38,6 +38,9 @@ from mksdk import MkSProtocol
 
 from flask import Response, request
 from flask import send_file
+import v4l2
+import fcntl
+import mmap
 
 class VideoCreator():
 	def __init__(self):
@@ -112,8 +115,8 @@ class MkSImageProcessing(): # TODO - Change name MkSImageComperator
 			print ("[MkSImageProcessing] Exception", e)
 			return 0
 
-class IUSBCamera():
-	def __init__(self, ip):
+class UVCCamera():
+	def __init__(self, path):
 		self.ImP						= MkSImageProcessing()
 		self.Name 						= ""
 		self.IsGetFrame 				= False
@@ -134,6 +137,16 @@ class IUSBCamera():
 		self.StopRecordingEvent 		= None
 		# Synchronization
 		self.WorkingStatusLock 			= threading.Lock()
+
+		self.Device 					= None
+		self.DevicePath 				= path
+		self.Memory 					= None
+		self.CameraDriverValid 			= True
+		self.Buffer 					= None
+		self.CameraDriverName 			= ""
+		self.UID 						= self.CameraDriverName
+
+		self.InitCameraDriver()
 	
 	def SetSecuritySensetivity(self, value):
 		self.SecuritySensitivity = value
@@ -159,14 +172,74 @@ class IUSBCamera():
 	def GetFPS(self):
 		return self.FPS
 	
-	def GetFrameFromUSB(self):
-		return None
+	def InitCameraDriver(self):
+		self.Device = os.open(self.DevicePath, os.O_RDWR | os.O_NONBLOCK, 0)
+
+		if self.Device is None:
+			self.CameraDriverValid = False
+			return
+		
+		capabilities = v4l2.v4l2_capability()
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_QUERYCAP, capabilities)
+
+		if capabilities.capabilities & v4l2.V4L2_CAP_VIDEO_CAPTURE == 0:
+			self.CameraDriverValid = False
+			return
+		# Set camera name
+		self.CameraDriverName = capabilities.card.replace(" ", "")
+
+		# Setup video format (V4L2_PIX_FMT_MJPEG)
+		capture_format 						= v4l2.v4l2_format()
+		capture_format.type 				= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
+		capture_format.fmt.pix.pixelformat 	= v4l2.V4L2_PIX_FMT_MJPEG
+		capture_format.fmt.pix.width  		= 800
+		capture_format.fmt.pix.height 		= 600
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_S_FMT, capture_format)
+
+		# Tell the driver that we want some buffers
+		req_buffer         = v4l2.v4l2_requestbuffers()
+		req_buffer.type    = v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
+		req_buffer.memory  = v4l2.V4L2_MEMORY_MMAP
+		req_buffer.count   = 1
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_REQBUFS, req_buffer)
+
+		# Map driver to buffer
+		self.Buffer         	= v4l2.v4l2_buffer()
+		self.Buffer.type    	= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
+		self.Buffer.memory  	= v4l2.V4L2_MEMORY_MMAP
+		self.Buffer.index   	= 0
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_QUERYBUF, self.Buffer)
+		self.Memory 		= mmap.mmap(self.Device, self.Buffer.length, mmap.MAP_SHARED, mmap.PROT_READ | mmap.PROT_WRITE, offset=self.Buffer.m.offset)
+		# Queue the buffer for capture
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_QBUF, self.Buffer)
+
+		# Start streaming
+		self.BufferType = v4l2.v4l2_buf_type(v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE)
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_STREAMON, self.BufferType)
+		time.sleep(5)
 
 	def Frame(self):
-		command = self.GetFrame()
+		# Allocate new buffer
+		self.Buffer 		= v4l2.v4l2_buffer()
+		self.Buffer.type 	= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
+		self.Buffer.memory 	= v4l2.V4L2_MEMORY_MMAP
+		# Needed for virtual FPS and UVC driver
+		time.sleep(self.SecondsPerFrame)
+		# Get image from the driver queue
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_DQBUF, self.Buffer)
+		# Read frame from memory maped object
+		raw_frame 		= self.Memory.read(self.Buffer.length)
+		img_raw_Frame 	= Image.open(BytesIO(raw_frame))
+		output 			= BytesIO()
+		img_raw_Frame.save(output, "JPEG", quality=25, optimize=True, progressive=True)
+		frame 			= output.getvalue()
+
+		self.Memory.seek(0)
+		# Requeue the buffer
+		fcntl.ioctl(self.Device, v4l2.VIDIOC_QBUF, self.Buffer)
 		self.FrameCount +=  1
-		frame, error = self.GetRequest(self.Address + command)
-		return frame, error
+
+		return frame, False
 	
 	def SetState(self, state):
 		self.State = state
@@ -202,7 +275,9 @@ class IUSBCamera():
 
 	def StopCamera(self):
 		self.WorkingStatusLock.acquire()
-		print ("[Camera] Stop recording {0}".format(self.IPAddress))
+		print ("[Camera] Stop recording {0}".format(self.Device))
+		if self.CameraDriverValid is True:
+			fcntl.ioctl(self.Device, v4l2.VIDIOC_STREAMOFF, self.BufferType)
 		self.IsCameraWorking = False
 		self.WorkingStatusLock.release()
 
@@ -234,16 +309,16 @@ class IUSBCamera():
 					frame_pre = frame_cur
 
 					self.FPS = 1.0 / float(time.time()-ts)
-					print("[FRAME] ({0}) ({1}) ({ip}) (diff={diff}) (sensitivity={sensy}) (fps={fps})".format(	str(self.FrameCount),
+					print("[FRAME] ({0}) ({1}) ({dev}) (diff={diff}) (sensitivity={sensy}) (fps={fps})".format(	str(self.FrameCount),
 																						str(len(frame_cur)),
 																						diff=str(frame_dif),
 																						fps=str(self.FPS),
 																						sensy=str(self.SecuritySensitivity),
-																						ip=str(self.IPAddress)))
+																						dev=str(self.Device)))
 					ts = time.time()
 					if (frame_dif < self.SecuritySensitivity):
 						THIS.Node.EmitOnNodeChange({
-									'camera_ip': str(self.IPAddress),
+									'dev': self.DevicePath.split('/')[-1],
 									'event': "new_frame", 
 									'frame': base64.encodestring(frame_cur)
 						})
@@ -252,7 +327,7 @@ class IUSBCamera():
 						if (frame_dif < self.SecuritySensitivity):
 							print("[Camera] Security {diff} {sensitivity}".format(diff = str(frame_dif), sensitivity = str(self.SecuritySensitivity)))
 							if self.OnImageDifferentCallback is not None:
-								self.OnImageDifferentCallback(self.IPAddress, frame_cur)
+								self.OnImageDifferentCallback(self.Device, frame_cur)
 				
 					if self.IsRecoding is True:
 						# Check for valid storage
@@ -260,8 +335,9 @@ class IUSBCamera():
 							if self.StopRecordingEvent is not None:
 								self.StopRecordingEvent({
 									'path': self.RecordingPath,
-									'ip': self.IPAddress,
-									'mac': self.MAC,
+									'ip': "",
+									'dev': self.Device,
+									'mac': "",
 									'uid': self.UID
 								})
 							self.IsRecoding = False
@@ -294,51 +370,10 @@ class IUSBCamera():
 								gc.collect()
 				else:
 					print ("({classname})# ERROR - Cannot fetch frame ...".format(classname=self.ClassName))
-				time.sleep(self.SecondsPerFrame)
 			else:
 				time.sleep(1)
 			self.WorkingStatusLock.acquire()
 		print ("({classname})# Exit RECORDING THREAD ...".format(classname=self.ClassName))
-
-class HJTCamera(ICamera):
-	def __init__(self, ip):
-		ICamera.__init__(self, ip)
-		self.ClassName 	= "HJTCamera"
-		self.Commands 	= {
-			'frame': 			"tmpfs/auto.jpg",
-			'getnetattr': 		"web/cgi-bin/hi3510/param.cgi?cmd=getnetattr",
-			'getserverinfo': 	"web/cgi-bin/hi3510/param.cgi?cmd=getserverinfo",
-			'getxqp2pattr': 	"web/cgi-bin/hi3510/param.cgi?cmd=getxqp2pattr"
-		}
-		self.UserSensitiviy = 0
-
-	def GetIp(self):
-		return self.IPAddress
-
-	def GetAPIName(self):
-		return "hjt-ipc6100-b1w"
-
-	def GetFrame(self):
-		return self.Commands['frame']
-
-	def GetUID(self):
-		data, error = self.GetRequest(self.Address + self.Commands['getxqp2pattr'])
-		items = data.split("\r\n")
-		for item in items:
-			if "xqp2p_uid" in item:
-				uid = item.split('\"')
-				return uid[1]
-		return ""
-
-	def GetMACAddress(self):
-		data, error = self.GetRequest(self.Address + self.Commands['getnetattr'])
-		if error is True:
-			return ""
-
-		# Find MAC address from recieved string
-		p = re.compile('(?:[0-9a-fA-F]:?){12}') # ur'(?:[0-9a-fA-F]:?){12}'
-		mac = re.findall(p, data)
-		return mac[0] # TODO - Check mac is not null
 
 class Context():
 	def __init__(self, node):
@@ -347,8 +382,6 @@ class Context():
 		self.CurrentTimestamp 			= time.time()
 		self.File 						= MkSFile.File()
 		self.Node						= node
-		self.IPNetwork 					= "10.0.0."
-		self.IPAddresses				= [1,32]
 		# States
 		self.States = {
 		}
@@ -378,8 +411,8 @@ class Context():
 		self.DB							= None
 		self.Cameras 					= []
 		self.ObjCameras					= []
-		self.DeviceScanner 				= EthernetDeviceScanner()
-		self.HJTScanner 				= HJTCameraScanner()
+		self.DeviceScanner 				= None
+		self.UVCScanner 				= None
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
@@ -397,7 +430,6 @@ class Context():
 
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
-		# enabledCameras = [camera for camera in self.Cameras if camera["enable"] == 1] # Comprehension
 		payload = {
 			'db': self.DB,
 			'device': {
@@ -413,11 +445,12 @@ class Context():
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
 		for item in self.ObjCameras:
-			if (item.GetIp() in payload["ip"]):
+			if (item.CameraDriverName in payload["uid"]):
 				frame, error = item.Frame()
 				if error is False:
 					return THIS.Node.BasicProtocol.BuildResponse(packet, {
-									'camera_ip': str(item.GetIp()),
+									'uid': item.CameraDriverName,
+									'dev': item.DevicePath.split('/')[-1],
 									'frame': base64.encodestring(frame)
 					})
 
@@ -681,97 +714,41 @@ class Context():
 	
 	def OnCameraDiffrentHandler(self, ip, image):
 		print("OnCameraDiffrentHandler")
-		"""
-		if len(self.EmailService) > 0:
-			if (time.time() - self.LastTSEmailSent > 30):
-				print("Email service exist... Sending request...")
-				THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.EmailService, "send_email_html_with_image",
-							{	
-								'request': 'task_order',
-								'json': {
-									'to': ['yevgeniy.kiveisha@gmail.com'],
-									'subject': 'MakeSense - Security alert from camera',
-									'body': '<b>Image taken by camera<br><img src="cid:image1"><br>',
-									'type': 'text',
-									'image': base64.encodebytes(image).decode("utf-8")
-								}
-							})
-				self.LastTSEmailSent = time.time()
-		else:
-			print("Email service NOT FOUND... Canceling request...")
-		
-		if len(self.SMSService) > 0:
-			THIS.Node.LocalServiceNode.SendMessageToNodeViaGateway(self.SMSService, "send_sms",
-						{	
-							'request': 'task_order',
-							'json': {
-								'number': '0547884156',
-								'message': 'hello' 
-							}
-						})
-		else:
-			print("SMS service NOT FOUND... Canceling request...")
-		"""
 	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
-		if (101 == type):
-			self.SMSService = uuid
-			print("[OnMasterAppendNodeHandler]","SMS service found")
-		if (102 == type):
-			self.EmailService = uuid
-			print("[OnMasterAppendNodeHandler]","Email service found")
 	
 	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
-		if (101 == type):
-			self.SMSService = ""
-			print("[OnMasterRemoveNodeHandler]","SMS service REMOVED... Please DON NOT use service!")
-		if (102 == type):
-			self.EmailService = ""
-			print("[OnMasterRemoveNodeHandler]","Email service REMOVED... Please DON NOT use service!")
 
 	def OnGetNodeInfoHandler(self, info, online):
 		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
-		return
-		
-		nodeType = info["payload"]["data"]["type"]
-		nodeUUID = info["payload"]["data"]["uuid"]
-		if (101 == nodeType):
-			self.SMSService = nodeUUID
-			print("[OnGetNodeInfoHandler]", "SMS service found")
-		if (102 == nodeType):
-			self.EmailService = nodeUUID
-			print("[OnMasterAppendNodeHandler]","Email service found")
 
 	def SerachForCameras(self):
-		#cameras 	= self.DeviceScanner.Scan(self.IPNetwork, self.IPAddresses)
-		#cameras 	+= self.DeviceScanner.Scan("192.168.1.", [100,132])
-		devices = THIS.Node.GetNetworkOnlineDevicesList()
-		return self.HJTScanner.Scan(devices)
+		devices = ["/dev/video0"]
+		return devices
 	
-	def UpdateCameraStracture(self, dbCameras, ip):
+	def UpdateCameraStracture(self, dbCameras, dev_path):
 		cameradb 	= None
-		camera 		= HJTCamera(ip)
-		mac 		= camera.GetMACAddress()
-		uid 		= camera.GetUID()
+		camera 		= UVCCamera(dev_path)
+		uid 		= camera.CameraDriverName
 		cameraFound = False
+
 		# Update camera IP (if it was changed)
 		for itemCamera in dbCameras:
 			# Invalid MAC or UID (TODO - Do re.compile for MAC)
-			if uid == "" or mac == "":
-				print ("({classname})# Found IP is not valid camera".format(classname=self.ClassName))
+			if uid == "":
+				print ("({classname})# Found path is not valid camera".format(classname=self.ClassName))
 				return
 			else:
 				# Is camera exist in DB
-				if uid in itemCamera["uid"] and mac in itemCamera["mac"]:
+				if uid in itemCamera["uid"]:
 					cameraFound = True
 					cameradb 	= itemCamera
 					break
 		
 		if cameraFound is True:
-			# Update DB with current IP
-			cameradb["ip"] = ip
+			cameradb["dev"] = dev_path.split('/')[-1]
 			camera.SetFramesPerVideo(int(cameradb["frame_per_video"]))
 			camera.SetRecordingSensetivity(int(cameradb["camera_sensetivity_recording"]))
 			camera.SetSecuritySensetivity(int(cameradb["camera_sensetivity_security"]))
@@ -780,10 +757,9 @@ class Context():
 		else:
 			print ("({classname})# New camera... Adding to the database...".format(classname=self.ClassName))
 			cameradb = {
-				'mac': str(mac),
 				'uid': str(uid),
-				'ip': str(ip),
 				'name': 'Camera_' + str(uid),
+				'dev': dev_path,
 				'enable':1,
 				"frame_per_video": 2000,
 				"camera_sensetivity_recording": 95,
@@ -835,14 +811,13 @@ class Context():
 		# Update camera object with values from database
 		camera.Name = cameradb["name"]
 		camera.UID 	= uid
-		camera.MAC 	= mac
 		camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
 		camera.StopRecordingEvent 		= self.StopRecordingEventHandler
 		cameradb["enable"] = 1
 		# Add camera to camera obejct DB
 		self.ObjCameras.append(camera)
 			
-		print ("({classname})# Emit camera_connected {ip}".format(classname=self.ClassName,ip=cameradb["ip"]))
+		print ("({classname})# Emit camera_connected {dev}".format(classname=self.ClassName,dev=cameradb["dev"]))
 		THIS.Node.EmitOnNodeChange({
 				'event': "camera_connected",
 				'camera': cameradb
@@ -885,7 +860,7 @@ class Context():
 
 		# Search for cameras
 		print ("({classname})# Searching for cameras ...".format(classname=self.ClassName))
-		ips = self.SerachForCameras()
+		paths = self.SerachForCameras()
 		# Get ipscameras from db
 		dbCameras = self.DB["cameras"]
 		# Disable all cameras
@@ -893,8 +868,8 @@ class Context():
 			itemCamera["enable"] = 0
 		# Check all connected ips
 		print ("({classname})# Updating cameras database ...".format(classname=self.ClassName))
-		for ip in ips:
-			self.UpdateCameraStracture(dbCameras, ip)
+		for path in paths:
+			self.UpdateCameraStracture(dbCameras, path)
 		
 		self.DB["cameras"] = dbCameras
 		# Save new camera to database
@@ -955,9 +930,9 @@ class Context():
 		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
 		THIS.Node.AppendFaceRestTable(endpoint="/file/download/<name>", 					endpoint_name="file_download", 			handler=THIS.FileDownloadHandler)
 
-	def CameraRunningStatus(self, ip):
+	def CameraRunningStatus(self, dev):
 		for camera in self.ObjCameras:
-			if (camera.GetIp() == ip):
+			if (camera.DevicePath == dev):
 				return True
 		return False
 
@@ -970,6 +945,7 @@ class Context():
 			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
+			return
 			for idx, camera in enumerate(self.ObjCameras):
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
 			print("")
@@ -998,6 +974,7 @@ class Context():
 					})
 			
 		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
+			return
 			print ("({classname})# Seraching for cameras ...".format(classname=self.ClassName))
 			# Search for cameras
 			ips = self.SerachForCameras()
