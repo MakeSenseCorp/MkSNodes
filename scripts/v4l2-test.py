@@ -66,23 +66,40 @@ buf.type    = v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
 buf.memory  = v4l2.V4L2_MEMORY_MMAP
 fcntl.ioctl(vd, v4l2.VIDIOC_DQBUF, buf)
 
-vid = open("video.jpeg", "wb")
+#vid = open("video.jpeg", "wb")
 frame = mm.read(buf.length)
+img = Image.open(BytesIO(frame))
+img.save("out.jpg", "JPEG", quality=25, optimize=True, progressive=True)
+
 #vid.write(frame)
-#mm.seek(0)
-#fcntl.ioctl(vd, v4l2.VIDIOC_QBUF, buf)  # requeue the buffer
+mm.seek(0)
+fcntl.ioctl(vd, v4l2.VIDIOC_QBUF, buf)  # requeue the buffer
+
+for i in range(50):  # capture 50 frames
+    print("out_"+str(i)+".jpg")
+    buf = v4l2.v4l2_buffer()
+    buf.type = v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
+    buf.memory = v4l2.V4L2_MEMORY_MMAP
+    time.sleep(0.25)
+    fcntl.ioctl(vd, v4l2.VIDIOC_DQBUF, buf)  # get image from the driver queue
+    frame = mm.read(buf.length)  # write the raw yuyv data from the buffer to the file
+    #vid.write(bytes((bit for i, bit in enumerate(mm.read()) if not i % 2)))  # convert yuyv to grayscale
+    img = Image.open(BytesIO(frame))
+    img.save("out_"+str(i)+".jpg", "JPEG", quality=25, optimize=True, progressive=True)
+    mm.seek(0)
+    fcntl.ioctl(vd, v4l2.VIDIOC_QBUF, buf)  # requeue the buffer
 
 print(">> Stop streaming")
 fcntl.ioctl(vd, v4l2.VIDIOC_STREAMOFF, buf_type)
-vid.close()
+#vid.close()
 
 #img = Image.open("video.jpeg")
-img = Image.open(BytesIO(frame))
-img.save("out.jpg", "JPEG", quality=25, optimize=True, progressive=True)
-img.save("out.webp",'webp',quality = 50)
+#img = Image.open(BytesIO(frame))
+#img.save("out.jpg", "JPEG", quality=25, optimize=True, progressive=True)
+#img.save("out.webp",'webp',quality = 50)
 
-output = BytesIO()
-img.save(output, "JPEG", quality=5, optimize=True, progressive=True)
+#output = BytesIO()
+#img.save(output, "JPEG", quality=5, optimize=True, progressive=True)
 #print(output.getvalue())
 
 #vd.close()

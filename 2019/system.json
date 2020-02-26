@@ -1,0 +1,35 @@
+{
+	"node":
+	{
+		"info": {
+			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d056",
+			"isHW":"False",
+			"type":2019,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"Camera Surveillance",
+			"name":"UVC",
+			"description":"Camera Surveillance",
+			"isMasterNode":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "application",
+				"cat_2": "image&video",
+				"cat_3": "ip_camera"
+			}
+		},
+		"service": {
+			"depend": [	]
+		}
+	},
+	"user":
+	{
+		
+	},
+	"device":
+	{
+		
+	}
+}

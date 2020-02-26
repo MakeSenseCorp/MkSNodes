@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Multi-page template</title>
+		<link href="{{ url_for('static', filename='css/vendor/jquery.mobile-1.4.5.min.css') }}" rel="stylesheet">
+		<link rel="icon" href="{{ url_for('static', filename='images/node/favicon.ico') }}">
+	</head>
+	<body>
+		<script src="{{ url_for('static', filename='js/vendor/jquery.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/vendor/jquery.mobile-1.4.5.min.js') }}"></script>
+		<script type="text/javascript">
+		    var myVar       = "{{ data }}";
+		    var decodedJSON = $('<div/>').html(myVar).text();
+		    var jsonData    = $.parseJSON(decodedJSON);
+
+		    var GlobalIP    = jsonData.ip
+		    var GlobalPort  = jsonData.port
+		</script>
+		<script src="{{ url_for('static', filename='js/node/common.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/node/mobile.js') }}"></script>
+	</body>
+</html>
