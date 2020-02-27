@@ -117,6 +117,7 @@ class MkSImageProcessing(): # TODO - Change name MkSImageComperator
 
 class UVCCamera():
 	def __init__(self, path):
+		self.ClassName 					= "UVCCamera"
 		self.ImP						= MkSImageProcessing()
 		self.Name 						= ""
 		self.IsGetFrame 				= False
@@ -192,8 +193,8 @@ class UVCCamera():
 		capture_format 						= v4l2.v4l2_format()
 		capture_format.type 				= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
 		capture_format.fmt.pix.pixelformat 	= v4l2.V4L2_PIX_FMT_MJPEG
-		capture_format.fmt.pix.width  		= 800
-		capture_format.fmt.pix.height 		= 600
+		capture_format.fmt.pix.width  		= 640
+		capture_format.fmt.pix.height 		= 480
 		fcntl.ioctl(self.Device, v4l2.VIDIOC_S_FMT, capture_format)
 
 		# Tell the driver that we want some buffers
@@ -223,15 +224,27 @@ class UVCCamera():
 		self.Buffer 		= v4l2.v4l2_buffer()
 		self.Buffer.type 	= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
 		self.Buffer.memory 	= v4l2.V4L2_MEMORY_MMAP
-		# Needed for virtual FPS and UVC driver
-		time.sleep(self.SecondsPerFrame)
-		# Get image from the driver queue
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_DQBUF, self.Buffer)
+		frame_garbed 	= False
+		retry_counter	= 0
+		while frame_garbed is False and retry_counter < 5:
+			# Needed for virtual FPS and UVC driver
+			time.sleep(self.SecondsPerFrame)
+			# Get image from the driver queue
+			try:
+				fcntl.ioctl(self.Device, v4l2.VIDIOC_DQBUF, self.Buffer)
+				frame_garbed = True
+			except Exception as e:
+				retry_counter += 1
+				print ("({classname})# [ERROR] UVC driver cannot dqueue frame ... ({0})".format(retry_counter, classname=self.ClassName))
+		
+		if frame_garbed is False:
+			return None, True
+		
 		# Read frame from memory maped object
 		raw_frame 		= self.Memory.read(self.Buffer.length)
 		img_raw_Frame 	= Image.open(BytesIO(raw_frame))
 		output 			= BytesIO()
-		img_raw_Frame.save(output, "JPEG", quality=25, optimize=True, progressive=True)
+		img_raw_Frame.save(output, "JPEG", quality=15, optimize=True, progressive=True)
 		frame 			= output.getvalue()
 
 		self.Memory.seek(0)
@@ -562,7 +575,7 @@ class Context():
 		# Find camera
 		camera = None
 		for item in self.ObjCameras:
-			if (item.GetIp() in payload["ip"]):
+			if (payload["dev"] in item.DevicePath):
 				camera = item
 				break
 		
@@ -601,7 +614,7 @@ class Context():
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		dbCameras = self.DB["cameras"]
 		for itemCamera in dbCameras:
-			if itemCamera["ip"] in payload["ip"]:
+			if itemCamera["dev"] in payload["dev"]:
 				if self.LocalStorageEnabled:
 					videosList = os.listdir("{0}/{1}/video".format(self.LocalStoragePath,itemCamera["uid"]))
 				else:
@@ -643,7 +656,7 @@ class Context():
 			self.DB["usb_device"]["enabled"] = 1
 
 		for itemCamera in dbCameras:
-			if itemCamera["ip"] in payload["ip"]:
+			if itemCamera["dev"] in payload["dev"]:
 				itemCamera["frame_per_video"] 				= payload["frame_per_video"]
 				itemCamera["camera_sensetivity_recording"] 	= payload["camera_sensetivity_recording"]
 				itemCamera["face_detect"] 					= payload["face_detect"]
@@ -662,7 +675,7 @@ class Context():
 				self.File.Save("db.json", json.dumps(self.DB))
 
 				for item in self.ObjCameras:
-					if (item.GetIp() in payload["ip"]):
+					if (payload["dev"] in item.DevicePath):
 						item.SetFramesPerVideo(int(itemCamera["frame_per_video"]))
 						item.SetRecordingSensetivity(int(itemCamera["camera_sensetivity_recording"]))
 						item.SetSecuritySensetivity(int(itemCamera["camera_sensetivity_security"]))

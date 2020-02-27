@@ -88,11 +88,11 @@
 													<div class="card-body">
 														<h7 class="d-flex justify-content-between align-items-center mb-3">
 															<span class="text-muted">UID</span>
-															<span class="text-muted" id="ipAddress">N/A</span>
+															<span class="text-muted" id="id_uid">N/A</span>
 														</h7>
 														<h7 class="d-flex justify-content-between align-items-center mb-3">
 															<span class="text-muted">Device Path</span>
-															<span class="text-muted" id="macAddress">N/A</span>
+															<span class="text-muted" id="id_dev">N/A</span>
 														</h7>
 														<h7 class="d-flex justify-content-between align-items-center mb-3">
 															<span class="text-muted">Current FPS</span>
@@ -264,11 +264,10 @@
 			var api = MkSAPIBuilder.GetInstance();
 			api.SetGlobalGatewayIP(GatewayIP);
 
-			function ChangableInfo (camer_ip, camera_mac, camera_uid) {
+			function ChangableInfo (camera_dev, camera_uid) {
 				self = this;
 
-				this.CameraIP  	= camer_ip;
-				this.CameraMAC 	= camera_mac;
+				this.CameraDEV 	= camera_dev;
 				this.CameraUID 	= camera_uid;
 				this.Handle		= 0;
 
@@ -327,9 +326,8 @@
 
 				this.Publish = function() {
 					api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
-						mac: self.CameraMAC,
-						uid: self.CameraUID,
-						ip: self.CameraIP
+						dev: self.CameraDEV,
+						uid: self.CameraUID
 					}, function(res) {
 						self.UpdateUI(res.data.payload);
 					});
@@ -443,7 +441,7 @@
 			}
 
 			var videoFilesRefresh = function() {
-				GetMiscInfo(CurrentCamera.CameraIP, CurrentCamera.CameraMAC, CurrentCamera.CameraUID);
+				GetMiscInfo(CurrentCamera.CameraDEV, CurrentCamera.CameraUID);
 			}
 
 			var ConvertHEXtoString = function(hexx) {
@@ -591,11 +589,10 @@
 				}
 			}
 
-			function GetMiscInfo (camera_ip, camera_mac, camera_uid) {
+			function GetMiscInfo (camera_dev, camera_uid) {
 				api.SendCustomCommand(NodeUUID, "get_misc_information", {
-					mac: camera_mac,
+					dev: camera_dev,
 					uid: camera_uid,
-					ip: camera_ip
 				}, function(res) {
 					framesPerVideo = res.data.payload.frame_per_video;
 					cameraSensetivity = res.data.payload.camera_sensetivity_recording;
@@ -610,8 +607,8 @@
 					document.getElementById("rangeCameraSensetivityValueRaw").innerHTML = res.data.payload.high_diff;
 					document.getElementById("rangeFramesPerSecondValue").innerHTML = res.data.payload.seconds_per_frame;
 
-					document.getElementById("ipAddress").innerHTML = camera_ip;
-					document.getElementById("macAddress").innerHTML = camera_mac;
+					document.getElementById("id_uid").innerHTML = camera_uid;
+					document.getElementById("id_dev").innerHTML = camera_dev;
 					document.getElementById("txt_name").innerHTML = res.data.payload.name;
 					document.getElementById("txt_email").innerHTML = res.data.payload.email;
 					document.getElementById("txt_phone").innerHTML = res.data.payload.phone;
@@ -645,8 +642,8 @@
 			}
 
 			function SetMiscInfo() {
-				camera_ip 	 				 = document.getElementById("ipAddress").innerHTML;
-				camera_mac 	 				 = document.getElementById("macAddress").innerHTML;
+				camera_dev 	 				 = document.getElementById("id_dev").innerHTML;
+				camera_uid 	 				 = document.getElementById("id_uid").innerHTML;
 				camera_name  				 = document.getElementById("txt_name").innerHTML;
 				camera_phone 				 = document.getElementById("txt_phone").innerHTML;
 				camera_email 				 = document.getElementById("txt_email").innerHTML;
@@ -660,8 +657,8 @@
 				motion_detection 			 = (document.getElementById("motion_detection").checked) ? 1 : 0;
 				camera_recording 			 = (document.getElementById("camera_recording").checked) ? 1 : 0;
 				api.SendCustomCommand(NodeUUID, "set_misc_information", {
-					mac: camera_mac,
-					ip: camera_ip,
+					dev: camera_dev,
+					uid: camera_uid,
 					frame_per_video: frame_per_video,
 					camera_sensetivity_recording: camera_sensetivity_recording,
 					camera_sensetivity_security: camera_sensetivity_security,
@@ -679,8 +676,8 @@
 					local_storage_enabled: (LocalStorageEnabled) ? 1 : 0
 				}, function(res) {
 					if (res.data.payload.error === "success") {
-						elem_rec = document.getElementById("id_btn_rec_" + camera_ip);
-						elem_mov = document.getElementById("id_btn_motion_" + camera_ip);
+						elem_rec = document.getElementById("id_btn_rec_" + camera_dev);
+						elem_mov = document.getElementById("id_btn_motion_" + camera_dev);
 						if (camera_recording == 1) {
 							elem_rec.style.color = "red";
 						} else {
@@ -701,16 +698,15 @@
 				clearInterval(CurrentCamera.Handle);
 			})
 
-			var OpenModal = function (elem, camera_mac, camera_uid, camer_ip) {
+			var OpenModal = function (elem, camera_dev, camera_uid) {
 				$('#exampleModal').modal('show')
 
-				CurrentCamera = new ChangableInfo(camer_ip, camera_mac, camera_uid);
-				GetMiscInfo(camer_ip, camera_mac, camera_uid);
+				CurrentCamera = new ChangableInfo(camera_dev, camera_uid);
+				GetMiscInfo(camera_dev, camera_uid);
 
 				api.SendCustomCommand(NodeUUID, "get_changed_misc_info", {
-					mac: self.CameraMAC,
-					uid: self.CameraUID,
-					ip: self.CameraIP
+					dev: camera_dev,
+					uid: camera_uid
 				}, function(res) {
 					self.UpdateUI(res.data.payload);
 				});
