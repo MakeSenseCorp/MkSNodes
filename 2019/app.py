@@ -1,19 +1,11 @@
 #!/usr/bin/python
 import os
 import sys
-import gc
 import signal
 import json
 import time
 import thread
 import threading
-import logging
-logging.basicConfig(
-	filename='app.log',
-	level=logging.DEBUG,
-    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-)
 
 import subprocess
 import urllib2
@@ -32,361 +24,11 @@ import base64
 
 from mksdk import MkSFile
 from mksdk import MkSSlaveNode
-from mksdk import MkSLocalHWConnector
-from mksdk import MkSUSBAdaptor
-from mksdk import MkSProtocol
+from mksdk import MkSShellExecutor
+from mksdk import MkSUVCCamera
 
 from flask import Response, request
 from flask import send_file
-import v4l2
-import fcntl
-import mmap
-
-class VideoCreator():
-	def __init__(self):
-		self.ObjName 	= "VideoCreator"
-		self.Orders 	= Queue.Queue()
-		self.IsRunning	= True
-		self.FPS		= 8
-		thread.start_new_thread(self.OrdersManagerThread, ())
-	
-	def SetFPS(self, fps):
-		self.FPS = fps
-
-	def AddOrder(self, order):
-		self.Orders.put(order)
-		self.IsRunning = True
-
-	def OrdersManagerThread(self):
-		# TODO - Put in TRY CATCH
-		while (self.IsRunning is True):
-			item = self.Orders.get(block=True,timeout=None)
-			try:
-				logging.info("[VideoCreator] Start video encoding...")
-				images = item["images"]
-				file_path = "{0}/video_{1}.avi".format(item["path"], str(time.time()))
-				print("[VideoCreator] Start recording, " + file_path)
-				recordingProcess = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-r', str(self.FPS), '-i', '-', '-vcodec', 'mpeg4', '-qscale', '5', '-r', str(self.FPS), file_path], stdin=PIPE)
-				for frame in images:
-					image = Image.open(BytesIO(frame))
-					image.save(recordingProcess.stdin, 'JPEG')
-				recordingProcess.stdin.close()
-				recordingProcess.wait()
-				logging.debug("[VideoCreator] {images} {item}".format(images = str(id(images)), item = str(id(item))))
-				images = []
-				item = None
-				logging.info("[VideoCreator] Start video encoding... DONE")
-				gc.collect()
-			except Exception as e:
-				print ("[VideoCreator] Exception", e)
-
-GEncoder = VideoCreator()
-
-class MkSImageProcessing(): # TODO - Change name MkSImageComperator
-	def __init__(self):
-		self.ObjName 	= "ImageProcessing"
-		self.HighDiff	= 5000 # MAX = 261120
-	
-	def SetHighDiff(self, value):
-		self.HighDiff = value
-
-	def CompareJpegImages(self, img_one, img_two):
-		if (img_one is None or img_two is None):
-			return 0
-		
-		try:
-			emboss_img_one = Image.open(BytesIO(img_one)).filter(ImageFilter.EMBOSS)
-			emboss_img_two = Image.open(BytesIO(img_two)).filter(ImageFilter.EMBOSS)
-
-			im = [None, None] 								# to hold two arrays
-			for i, f in enumerate([emboss_img_one, emboss_img_two]):
-				# .filter(ImageFilter.GaussianBlur(radius=2))) # blur using PIL
-				im[i] = (np.array(f
-				.convert('L')            					# convert to grayscale using PIL
-				.resize((32,32), resample=Image.BICUBIC)) 	# reduce size and smooth a bit using PIL
-				).astype(np.int)   							# convert from unsigned bytes to signed int using numpy
-			diff_precentage = (float(self.HighDiff - (np.abs(im[0] - im[1]).sum())) / self.HighDiff) * 100
-			
-			if (diff_precentage < 0):
-				return 0
-			
-			return diff_precentage
-		except Exception as e:
-			print ("[MkSImageProcessing] Exception", e)
-			return 0
-
-class UVCCamera():
-	def __init__(self, path):
-		self.ClassName 					= "UVCCamera"
-		self.ImP						= MkSImageProcessing()
-		self.Name 						= ""
-		self.IsGetFrame 				= False
-		self.IsRecoding 				= False
-		self.IsCameraWorking 			= False
-		self.IsSecurity					= False
-		self.FramesPerVideo 			= 2000
-		self.SecondsPerFrame			= 0.4
-		self.RecordingSensetivity 		= 95
-		self.SecuritySensitivity 		= 92
-		self.CurrentImageIndex 			= 0
-		self.OnImageDifferentCallback	= None
-		self.State 						= 0
-		self.FrameCount  				= 0
-		self.FPS 						= 0.0
-		self.RecordingPath 				= ""
-		# Events
-		self.StopRecordingEvent 		= None
-		# Synchronization
-		self.WorkingStatusLock 			= threading.Lock()
-
-		self.Device 					= None
-		self.DevicePath 				= path
-		self.Memory 					= None
-		self.CameraDriverValid 			= True
-		self.Buffer 					= None
-		self.CameraDriverName 			= ""
-		self.UID 						= self.CameraDriverName
-
-		self.InitCameraDriver()
-	
-	def SetSecuritySensetivity(self, value):
-		self.SecuritySensitivity = value
-
-	def SetRecordingPath(self, path):
-		self.RecordingPath = path
-
-	def SetFramesPerVideo(self, value):
-		self.FramesPerVideo = value
-
-	def SetRecordingSensetivity(self, value):
-		self.RecordingSensetivity = value
-	
-	def SetHighDiff(self, value):
-		self.ImP.SetHighDiff(value)
-	
-	def SetSecondsPerFrame(self, value):
-		self.SecondsPerFrame = value
-
-	def GetCapturingProcess(self):
-		return int((float(self.CurrentImageIndex) / float(self.FramesPerVideo)) * 100.0)
-	
-	def GetFPS(self):
-		return self.FPS
-	
-	def InitCameraDriver(self):
-		self.Device = os.open(self.DevicePath, os.O_RDWR | os.O_NONBLOCK, 0)
-
-		if self.Device is None:
-			self.CameraDriverValid = False
-			return
-		
-		capabilities = v4l2.v4l2_capability()
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_QUERYCAP, capabilities)
-
-		if capabilities.capabilities & v4l2.V4L2_CAP_VIDEO_CAPTURE == 0:
-			self.CameraDriverValid = False
-			return
-		# Set camera name
-		self.CameraDriverName = capabilities.card.replace(" ", "")
-
-		# Setup video format (V4L2_PIX_FMT_MJPEG)
-		capture_format 						= v4l2.v4l2_format()
-		capture_format.type 				= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
-		capture_format.fmt.pix.pixelformat 	= v4l2.V4L2_PIX_FMT_MJPEG
-		capture_format.fmt.pix.width  		= 640
-		capture_format.fmt.pix.height 		= 480
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_S_FMT, capture_format)
-
-		# Tell the driver that we want some buffers
-		req_buffer         = v4l2.v4l2_requestbuffers()
-		req_buffer.type    = v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
-		req_buffer.memory  = v4l2.V4L2_MEMORY_MMAP
-		req_buffer.count   = 1
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_REQBUFS, req_buffer)
-
-		# Map driver to buffer
-		self.Buffer         	= v4l2.v4l2_buffer()
-		self.Buffer.type    	= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
-		self.Buffer.memory  	= v4l2.V4L2_MEMORY_MMAP
-		self.Buffer.index   	= 0
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_QUERYBUF, self.Buffer)
-		self.Memory 		= mmap.mmap(self.Device, self.Buffer.length, mmap.MAP_SHARED, mmap.PROT_READ | mmap.PROT_WRITE, offset=self.Buffer.m.offset)
-		# Queue the buffer for capture
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_QBUF, self.Buffer)
-
-		# Start streaming
-		self.BufferType = v4l2.v4l2_buf_type(v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE)
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_STREAMON, self.BufferType)
-		time.sleep(5)
-
-	def Frame(self):
-		# Allocate new buffer
-		self.Buffer 		= v4l2.v4l2_buffer()
-		self.Buffer.type 	= v4l2.V4L2_BUF_TYPE_VIDEO_CAPTURE
-		self.Buffer.memory 	= v4l2.V4L2_MEMORY_MMAP
-		frame_garbed 	= False
-		retry_counter	= 0
-		while frame_garbed is False and retry_counter < 5:
-			# Needed for virtual FPS and UVC driver
-			time.sleep(self.SecondsPerFrame)
-			# Get image from the driver queue
-			try:
-				fcntl.ioctl(self.Device, v4l2.VIDIOC_DQBUF, self.Buffer)
-				frame_garbed = True
-			except Exception as e:
-				retry_counter += 1
-				print ("({classname})# [ERROR] UVC driver cannot dqueue frame ... ({0})".format(retry_counter, classname=self.ClassName))
-		
-		if frame_garbed is False:
-			return None, True
-		
-		# Read frame from memory maped object
-		raw_frame 		= self.Memory.read(self.Buffer.length)
-		img_raw_Frame 	= Image.open(BytesIO(raw_frame))
-		output 			= BytesIO()
-		img_raw_Frame.save(output, "JPEG", quality=15, optimize=True, progressive=True)
-		frame 			= output.getvalue()
-
-		self.Memory.seek(0)
-		# Requeue the buffer
-		fcntl.ioctl(self.Device, v4l2.VIDIOC_QBUF, self.Buffer)
-		self.FrameCount +=  1
-
-		return frame, False
-	
-	def SetState(self, state):
-		self.State = state
-	
-	def GetState(self):
-		return self.State
-
-	def StartSecurity(self):
-		self.IsSecurity = True
-		self.IsGetFrame = True
-
-	def StopSecurity(self):
-		self.IsSecurity = False
-	
-	def StartGettingFrames(self):
-		self.IsGetFrame = True
-
-	def StopGettingFrames(self):
-		self.IsGetFrame = False
-	
-	def StartRecording(self):
-		self.IsRecoding = True
-		self.IsGetFrame = True
-
-	def StopRecording(self):
-		self.IsRecoding = False
-
-	def StartCamera(self):
-		self.WorkingStatusLock.acquire()
-		if (self.IsCameraWorking is False):
-			thread.start_new_thread(self.CameraThread, ())
-		self.WorkingStatusLock.release()
-
-	def StopCamera(self):
-		self.WorkingStatusLock.acquire()
-		print ("[Camera] Stop recording {0}".format(self.Device))
-		if self.CameraDriverValid is True:
-			fcntl.ioctl(self.Device, v4l2.VIDIOC_STREAMOFF, self.BufferType)
-		self.IsCameraWorking = False
-		self.WorkingStatusLock.release()
-
-	def CameraThread(self):
-		global GEncoder
-		
-		# TODO - Is video creation is on going?
-		# TODO - Each camera must have its own video folder.
-		# TODO - Enable/Disable camera - self.IsGetFrame(T/F)
-		# TODO - Stop recording will not kill this thread
-
-		frame_cur 			 = None
-		frame_pre 			 = None
-		frame_dif 	 		 = 0
-		rec_buffer 			 = [[],[]]
-		rec_buffer_idx 		 = 0
-		ts 					 = time.time()
-
-		self.IsCameraWorking = True
-		self.IsGetFrame 	 = True
-		
-		self.WorkingStatusLock.acquire()
-		while self.IsCameraWorking is True:
-			self.WorkingStatusLock.release()
-			if self.IsGetFrame is True:
-				frame_cur, error = self.Frame()
-				if (error is False):
-					frame_dif = self.ImP.CompareJpegImages(frame_cur, frame_pre)
-					frame_pre = frame_cur
-
-					self.FPS = 1.0 / float(time.time()-ts)
-					print("[FRAME] ({0}) ({1}) ({dev}) (diff={diff}) (sensitivity={sensy}) (fps={fps})".format(	str(self.FrameCount),
-																						str(len(frame_cur)),
-																						diff=str(frame_dif),
-																						fps=str(self.FPS),
-																						sensy=str(self.SecuritySensitivity),
-																						dev=str(self.Device)))
-					ts = time.time()
-					if (frame_dif < self.SecuritySensitivity):
-						THIS.Node.EmitOnNodeChange({
-									'dev': self.DevicePath.split('/')[-1],
-									'event': "new_frame", 
-									'frame': base64.encodestring(frame_cur)
-						})
-
-					if self.IsSecurity is True:
-						if (frame_dif < self.SecuritySensitivity):
-							print("[Camera] Security {diff} {sensitivity}".format(diff = str(frame_dif), sensitivity = str(self.SecuritySensitivity)))
-							if self.OnImageDifferentCallback is not None:
-								self.OnImageDifferentCallback(self.Device, frame_cur)
-				
-					if self.IsRecoding is True:
-						# Check for valid storage
-						if not os.path.exists(self.RecordingPath):
-							if self.StopRecordingEvent is not None:
-								self.StopRecordingEvent({
-									'path': self.RecordingPath,
-									'ip': "",
-									'dev': self.Device,
-									'mac': "",
-									'uid': self.UID
-								})
-							self.IsRecoding = False
-						else:
-							if (frame_dif < self.RecordingSensetivity):
-								rec_buffer[rec_buffer_idx].append(frame_cur)
-								print("[Camera] Recording {frames} {diff} {sensitivity}".format(frames = str(len(rec_buffer[rec_buffer_idx])), diff = str(frame_dif), sensitivity = str(self.RecordingSensetivity)))
-								self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
-							
-							if self.FramesPerVideo <= self.CurrentImageIndex:
-								path = "{0}/{1}/video".format(self.RecordingPath, self.UID)
-								try:
-									if not os.path.exists(path):
-										os.makedirs(path)
-									GEncoder.AddOrder({
-										'images': rec_buffer[rec_buffer_idx],
-										'path': path
-									})
-									logging.debug("Sent recording order " + str(id(rec_buffer[rec_buffer_idx])))
-								except Exception as e:
-									print ("[Camera] Exception", e)
-
-								if 1 == rec_buffer_idx:
-									rec_buffer_idx = 0
-								else:
-									rec_buffer_idx = 1
-								
-								rec_buffer[rec_buffer_idx] = []
-								self.CurrentImageIndex = len(rec_buffer[rec_buffer_idx])
-								gc.collect()
-				else:
-					print ("({classname})# ERROR - Cannot fetch frame ...".format(classname=self.ClassName))
-			else:
-				time.sleep(1)
-			self.WorkingStatusLock.acquire()
-		print ("({classname})# Exit RECORDING THREAD ...".format(classname=self.ClassName))
 
 class Context():
 	def __init__(self, node):
@@ -458,11 +100,11 @@ class Context():
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
 		for item in self.ObjCameras:
-			if (item.CameraDriverName in payload["uid"]):
+			if (item.UID in payload["uid"]):
 				frame, error = item.Frame()
 				if error is False:
 					return THIS.Node.BasicProtocol.BuildResponse(packet, {
-									'uid': item.CameraDriverName,
+									'uid': item.UID,
 									'dev': item.DevicePath.split('/')[-1],
 									'frame': base64.encodestring(frame)
 					})
@@ -474,14 +116,14 @@ class Context():
 	def StartRecordingHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
-		for item in self.ObjCameras:
-			if (item.GetIp() in payload["ip"]):
+		for obj_camera in self.ObjCameras:
+			if (obj_camera.UID in payload["uid"]):
 				# TODO - Each camera must have its own directory
-				item.StartRecording()
+				obj_camera.StartRecording()
 				cameras = self.DB["cameras"]
-				for item in cameras:
-					if (item["ip"] in payload["ip"]):
-						item["recording"] = 1
+				for camera in cameras:
+					if (camera["uid"] in payload["uid"]):
+						camera["recording"] = 1
 						self.File.Save("db.json", json.dumps(self.DB))
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -491,14 +133,14 @@ class Context():
 	def StopRecordingHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		# Find camera
-		for item in self.ObjCameras:
-			if (item.GetIp() in payload["ip"]):
+		for obj_camera in self.ObjCameras:
+			if (obj_camera.UID in payload["uid"]):
 				# TODO - Each camera must have its own directory
-				item.StopRecording()
+				obj_camera.StopRecording()
 				cameras = self.DB["cameras"]
-				for item in cameras:
-					if (item["ip"] in payload["ip"]):
-						item["recording"] = 0
+				for camera in cameras:
+					if (camera["uid"] in payload["uid"]):
+						camera["recording"] = 0
 						self.File.Save("db.json", json.dumps(self.DB))
 		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -508,9 +150,9 @@ class Context():
 	def StartMotionDetectionHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		cameras = self.DB["cameras"]
-		for item in cameras:
-			if (item["ip"] in payload["ip"]):
-				item["motion_detection"] = 1
+		for camera in cameras:
+			if (camera["uid"] in payload["uid"]):
+				camera["motion_detection"] = 1
 				self.File.Save("db.json", json.dumps(self.DB))
 		
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -520,9 +162,9 @@ class Context():
 	def StopMotionDetectionHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		cameras = self.DB["cameras"]
-		for item in cameras:
-			if (item["ip"] in payload["ip"]):
-				item["motion_detection"] = 0
+		for camera in cameras:
+			if (camera["uid"] in payload["uid"]):
+				camera["motion_detection"] = 0
 				self.File.Save("db.json", json.dumps(self.DB))
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
@@ -533,38 +175,38 @@ class Context():
 		self.DB["security"] = 1
 		self.SecurityEnabled = True
 		cameras = self.DB["cameras"]
-		ips = []
-		for item in cameras:
-			item["security"]  		 = 1
-			item["motion_detection"] = 1
-			ips.append(item["ip"])
+		devices = []
+		for camera in cameras:
+			camera["security"]			= 1
+			camera["motion_detection"] 	= 1
+			devices.append(camera["dev"])
 		self.DB["cameras"] = cameras
-		for item in self.ObjCameras:
-			item.StartSecurity()
+		for obj_camera in self.ObjCameras:
+			obj_camera.StartSecurity()
 		self.File.Save("db.json", json.dumps(self.DB))
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STARTED',
-			'ips': ips
+			'devices': devices
 		})
 
 	def StopSecurityHandler(self, sock, packet):
 		self.DB["security"] = 0
 		self.SecurityEnabled = False
 		cameras = self.DB["cameras"]
-		ips = []
-		for item in cameras:
-			item["security"]  		 = 0
-			item["motion_detection"] = 0
-			ips.append(item["ip"])
-		for item in self.ObjCameras:
-			item.StopSecurity()
+		devices = []
+		for camera in cameras:
+			camera["security"]  		= 0
+			camera["motion_detection"] 	= 0
+			devices.append(camera["dev"])
+		for obj_camera in self.ObjCameras:
+			obj_camera.StopSecurity()
 		self.DB["cameras"] = cameras
 		self.File.Save("db.json", json.dumps(self.DB))
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'STOPPED',
-			'ips': ips
+			'devices': devices
 		})
 
 	def SetCameraNameHandler(self, sock, packet):
@@ -738,30 +380,34 @@ class Context():
 		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
 
 	def SerachForCameras(self):
-		devices = ["/dev/video0"]
+		shell = MkSShellExecutor.ShellExecutor()
+		# Get all video devices
+		data = shell.ExecuteCommand("ls /dev/video*")
+		devices = data.split("\n")[:-1]
 		return devices
 	
 	def UpdateCameraStracture(self, dbCameras, dev_path):
-		cameradb 	= None
-		camera 		= UVCCamera(dev_path)
-		uid 		= camera.CameraDriverName
-		cameraFound = False
+		cameradb 		= None
+		camera 			= MkSUVCCamera.UVCCamera(dev_path)
+		camera_drv_name	= camera.CameraDriverName
+		cameraFound 	= False
 
-		# Update camera IP (if it was changed)
+		# Update camera path (if it was changed)
 		for itemCamera in dbCameras:
-			# Invalid MAC or UID (TODO - Do re.compile for MAC)
-			if uid == "":
+			# Invalid driver name
+			if camera_drv_name == "":
 				print ("({classname})# Found path is not valid camera".format(classname=self.ClassName))
 				return
 			else:
 				# Is camera exist in DB
-				if uid in itemCamera["uid"]:
+				if camera_drv_name in itemCamera["driver_name"]:
 					cameraFound = True
 					cameradb 	= itemCamera
 					break
 		
 		if cameraFound is True:
-			cameradb["dev"] = dev_path.split('/')[-1]
+			cameradb["dev"] 	= dev_path.split('/')[-1]
+			cameradb["path"] 	= dev_path
 			camera.SetFramesPerVideo(int(cameradb["frame_per_video"]))
 			camera.SetRecordingSensetivity(int(cameradb["camera_sensetivity_recording"]))
 			camera.SetSecuritySensetivity(int(cameradb["camera_sensetivity_security"]))
@@ -770,9 +416,11 @@ class Context():
 		else:
 			print ("({classname})# New camera... Adding to the database...".format(classname=self.ClassName))
 			cameradb = {
-				'uid': str(uid),
-				'name': 'Camera_' + str(uid),
-				'dev': dev_path,
+				'uid': camera.UID,
+				'name': 'Camera_' + camera.UID,
+				'dev': dev_path.split('/')[-1],
+				'path': dev_path,
+				'driver_name': camera_drv_name,
 				'enable':1,
 				"frame_per_video": 2000,
 				"camera_sensetivity_recording": 95,
@@ -800,6 +448,7 @@ class Context():
 			cameradb["enable"] = 1
 		
 		# Start camera thread
+		camera.OnFrameChangeHandler = self.OnFrameChangeCallback
 		camera.StartCamera()
 		# Check weither need to start recording
 		if 1 == cameradb["recording"]:
@@ -823,7 +472,6 @@ class Context():
 			camera.StartSecurity()
 		# Update camera object with values from database
 		camera.Name = cameradb["name"]
-		camera.UID 	= uid
 		camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
 		camera.StopRecordingEvent 		= self.StopRecordingEventHandler
 		cameradb["enable"] = 1
@@ -905,10 +553,7 @@ class Context():
 			self.ResponseHandlers[command](sock, packet)
 	
 	def OnGetNodesListHandler(self, uuids):
-		print (" ?????????????????????? OnGetNodesListHandler", uuids)
-		# TODO - Find SMS service
-		#for uuid in uuids:
-		#	THIS.Node.LocalServiceNode.GetNodeInfo(uuid)
+		print ("OnGetNodesListHandler", uuids)
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -985,46 +630,6 @@ class Context():
 								'local_storage_enabled': self.LocalStorageEnabled
 							}
 					})
-			
-		if time.time() - self.HJTDetectorTimestamp > 60 * 1:
-			return
-			print ("({classname})# Seraching for cameras ...".format(classname=self.ClassName))
-			# Search for cameras
-			ips = self.SerachForCameras()
-			
-			# Get cameras from db
-			dbCameras = self.DB["cameras"]
-			# Remove disconnected devices
-			for camera in self.ObjCameras:
-				if (camera.GetIp() not in ips):
-					# Camera was disconnected
-					print ("({classname})# Deleting camera ({ip}) ...".format(classname=self.ClassName, ip=camera.GetIp()))
-					# Disable camera in database
-					for itemCamera in dbCameras:
-						if camera.GetIp() in itemCamera["ip"]:
-							itemCamera["enable"] = 0
-							THIS.Node.EmitOnNodeChange({
-									'event': "camera_disconnected",
-									'camera': itemCamera
-							})
-					# Remove camera from object list
-					camera.StopCamera()
-					time.sleep(2)
-					self.ObjCameras.remove(camera)
-			
-			# Check all connected ips
-			for ip in ips:
-				# This camera is running
-				if (self.CameraRunningStatus(ip) is True):
-					print ("({classname})# Camera is running ... ({ip}) ...".format(classname=self.ClassName, ip=ip))
-				else:
-					# Update camera
-					self.UpdateCameraStracture(dbCameras, ip)
-			
-			self.DB["cameras"] = dbCameras
-			# Save new camera to database
-			self.File.Save("db.json", json.dumps(self.DB))
-			self.HJTDetectorTimestamp = time.time()
 	
 	def StopRecordingEventHandler(self, data):
 		print ("({classname})# Recording path ({path}) is invalid for camera({ip})".format(classname=self.ClassName,path=data["path"],ip=data["ip"]))
@@ -1042,6 +647,9 @@ class Context():
 				# Save new camera to database
 				objFile.Save("db.json", json.dumps(self.DB))
 				return
+	
+	def OnFrameChangeCallback(self, data):
+		THIS.Node.EmitOnNodeChange(data)
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
