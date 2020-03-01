@@ -1,0 +1,35 @@
+{
+	"node":
+	{
+		"info": {
+			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d059",
+			"isHW":"False",
+			"type":2020,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"433Mhz Controller",
+			"name":"433Mhz Controller",
+			"description":"433Mhz Controller",
+			"isMasterNode":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "application",
+				"cat_2": "sesnors",
+				"cat_3": ""
+			}
+		},
+		"service": {
+			"depend": [	]
+		}
+	},
+	"user":
+	{
+		
+	},
+	"device":
+	{
+		
+	}
+}
