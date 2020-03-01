@@ -50,6 +50,7 @@ class Context():
 		}
 		# Application variables
 		self.DB							= None
+		self.SensorsLive				= {}
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
@@ -104,6 +105,16 @@ class Context():
 		jsonSensorStr = objFile.Load("db.json")
 		if jsonSensorStr != "":
 			self.DB = json.loads(jsonSensorStr)
+
+			for db_sensor in self.DB["sensors"]:
+				self.SensorsLive[db_sensor["addr"]] = {
+					'value': 0,
+					'access': db_sensor["access"]
+				}
+			
+			#db_file = open("db.json", "w")
+			#json.dump(self.DB, db_file, indent=2)
+			#db_file.close()
 		
 		if self.HW.Connect("2020") is True:
 			data = self.HW.Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
@@ -174,9 +185,11 @@ class Context():
 
 			if self.HW.IsValidDevice() is True:
 				self.TestData += 1
-				data = self.HW.Send(struct.pack("<BBBBBH", 0xDE, 0xAD, 0x1, 100, 2, self.TestData))
-				magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
-				print(magic_one, magic_two, direction, op_code, content_length, ack)
+				for sensor in self.DB["sensors"]:
+					data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 2, self.TestData))
+				#data = self.HW.Send(struct.pack("<BBBBBH", 0xDE, 0xAD, 0x1, 100, 2, self.TestData))
+				#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
+				#print(magic_one, magic_two, direction, op_code, content_length, ack)
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

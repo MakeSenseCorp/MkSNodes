@@ -1,1 +1,30 @@
-{"security": 0, "cameras": [{"status": "disconnected", "frame_per_video": "500", "enable": 1, "seconds_per_frame": "1", "uid": "VirtualBoxWebcam-USBVideoD", "camera_sensetivity_security": "98", "access_from_www": 1, "high_diff": "5000", "camera_sensetivity_recording": "98", "dev": "video0", "recording": 1, "phone": "+972544784156", "motion_detection": 0, "face_detect": 0, "security": 0, "email": "yevgeniy.kiveisha@gmail.com", "name": "Room"}], "local_storage": 1, "usb_device": {"enabled": 0, "name": ""}}
+{
+  "local_storage": 1, 
+  "security": 0, 
+  "sensors": [
+    {
+      "enable": 1, 
+      "addr": 1, 
+      "access_from_www": 1, 
+      "custom": {}, 
+      "recording": 1, 
+      "namme": "Room", 
+      "type": 1,
+      "access": 1
+    },
+    {
+        "enable": 1, 
+        "addr": 2, 
+        "access_from_www": 1, 
+        "custom": {}, 
+        "recording": 1, 
+        "namme": "Toilet", 
+        "type": 1,
+        "access": 1
+    }
+  ], 
+  "usb_device": {
+    "enabled": 0, 
+    "name": ""
+  }
+}
