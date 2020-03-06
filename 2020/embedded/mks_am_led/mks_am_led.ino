@@ -21,6 +21,7 @@ uint8_t rf_rx_buffer[MKS_PROT_BUFF_SIZE_32] = {0};
 uint8_t rf_rx_buffer_length = MKS_PROT_BUFF_SIZE_32;
 MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_rx_buffer;
 
+uint8_t me_addr = 1;
 uint32_t ticker = 1;
 
 void setup() {
@@ -97,21 +98,23 @@ void loop() {
     }
   } else {
     if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
-      Serial.print(ptr_packet->addr);
-      Serial.print(" ");
-      Serial.print(ptr_packet->command);
-      Serial.print(" ");
-      Serial.print(ptr_packet->data);
-      Serial.println();
+      if (ptr_packet->addr == me_addr) {
+        Serial.print(ptr_packet->addr);
+        Serial.print(" ");
+        Serial.print(ptr_packet->command);
+        Serial.print(" ");
+        Serial.print(ptr_packet->data);
+        Serial.println();
 
-      switch(ptr_packet->command) {
-        case 1:
-          if (ptr_packet->data > 0) {
-            digitalWrite(LED_BUILTIN, HIGH);
-          } else {
-            digitalWrite(LED_BUILTIN, LOW);
-          }
-        break;
+        switch(ptr_packet->command) {
+          case 1:
+            if (ptr_packet->data > 0) {
+              digitalWrite(LED_BUILTIN, HIGH);
+            } else {
+              digitalWrite(LED_BUILTIN, LOW);
+            }
+          break;
+        }
       }
     }
     

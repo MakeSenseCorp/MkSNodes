@@ -1,26 +1,42 @@
 {
   "local_storage": 1, 
   "security": 0, 
+  "confuguration": {
+      "devices": {
+        "tx": {
+
+        },
+        "rx": {
+  
+        }
+      }
+  },
   "sensors": [
     {
+      "id": 1,
       "enable": 1, 
       "addr": 1, 
       "access_from_www": 1, 
       "custom": {}, 
       "recording": 1, 
-      "namme": "Room", 
+      "name": "Room", 
       "type": 1,
-      "access": 1
+      "access": 1,
+      "rf_type": 3,
+      "value": 0
     },
     {
+        "id": 2,
         "enable": 1, 
         "addr": 2, 
         "access_from_www": 1, 
         "custom": {}, 
         "recording": 1, 
-        "namme": "Toilet", 
+        "name": "Toilet", 
         "type": 1,
-        "access": 1
+        "access": 1,
+        "rf_type": 3,
+        "value": 0
     }
   ], 
   "usb_device": {

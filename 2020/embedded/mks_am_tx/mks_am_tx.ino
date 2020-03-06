@@ -92,14 +92,6 @@ void loop() {
           uart_tx_header->op_code        = OPCODE_TX_DATA;
           uart_tx_header->content_length = 4;
           uart_tx_buffer_length          = sizeof(mks_header) + 4;
-          
-          // uint16_t payload = 0;
-          // memcpy((unsigned char *)&payload, (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], sizeof(uint16_t));
-          // memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)&payload, sizeof(uint16_t));
-
-          //ptr_packet->addr    = 0x1;
-          //ptr_packet->command = 0x2;
-          //ptr_packet->data    = payload;
 
           memcpy((unsigned char *)&rf_tx_buffer[0], (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], MKS_PROT_BUFF_SIZE_32);
           memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], MKS_PROT_BUFF_SIZE_32);
@@ -113,8 +105,6 @@ void loop() {
         }
         break;
         default: {
-          //uart_rx_buffer[len] = '\n';
-          //Serial.write(&uart_tx_buffer[0], len + 1);
           uart_rx_buffer[len] = '\n';
           Serial.write(&uart_rx_buffer[0], len + 1);
 		    }

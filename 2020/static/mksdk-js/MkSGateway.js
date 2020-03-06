@@ -1,5 +1,7 @@
 function MkSGateway (key) {
 	self = this;
+
+	MkSGlobal.MakeSenseDomain = "127.0.0.1";
 	
 	this.WS 				= null;
 	this.Key 				= key;
@@ -7,6 +9,7 @@ function MkSGateway (key) {
 	this.WSServerPort		= 1982;
 	this.RestAPIUrl 		= "http://" + MkSGlobal.MakeSenseDomain;
 	this.WSServerUrl		= "ws://" + MkSGlobal.MakeSenseDomain;
+	console.log("Domain", MkSGlobal.MakeSenseDomain);
 	this.RestAPIFullUrl 	= this.RestAPIUrl.concat(":", this.RestAPIPort);
 	this.WSServerFullURl	= this.WSServerUrl.concat(":", this.WSServerPort);
 	this.WSState 			= "DISCONN";
@@ -94,6 +97,7 @@ MkSGateway.prototype.Connect = function (callback) {
 	var self = this;
 	
 	if ("DISCONN" == this.WSState) {
+		console.log("Opening socket", this.WSServerFullURl);
 		this.WS = new WebSocket(this.WSServerFullURl);
 		this.WS.onopen = function () {
 			var handshakeMsg = {

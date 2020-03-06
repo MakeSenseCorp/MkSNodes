@@ -16,7 +16,7 @@ import Queue
 from mksdk import MkSFile
 from mksdk import MkSSlaveNode
 from mksdk import MkSShellExecutor
-from mksdk import MkSConnectorArduino
+from mksdk import MkSConnectorUART
 from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
 
@@ -29,11 +29,6 @@ class Context():
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.File 						= MkSFile.File()
-		self.HW 						= MkSConnectorArduino.Connector()
-		self.Protocol					= MkSProtocol.Protocol()
-		self.Adaptor					= MkSUSBAdaptor.Adaptor(self.RFDataArrivedHandler)
-		self.HW.SetProtocol(self.Protocol)
-		self.HW.SetAdaptor(self.Adaptor)
 		self.Node						= node
 		# States
 		self.States = {
@@ -54,10 +49,11 @@ class Context():
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
-		self.RFDeviceType 				= 0
+		self.MasterTX 					= None
 		self.TestData 					= 500
-
 		self.SwitchTestValue 			= 0
+
+		self.HW 						= MkSConnectorUART.Connector()
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -65,11 +61,8 @@ class Context():
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
 		payload = {
-			'db': self.DB,
-			'device': {
-				'ip': THIS.Node.MyLocalIP,
-				'webport': THIS.Node.LocalWebPort
-			}
+			'sensors': self.DB["sensors"],
+			'devices': self.DB["confuguration"]["devices"]
 		}
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
@@ -79,6 +72,13 @@ class Context():
 	
 	def WriteSensorInfoHandler(self, sock, packet):
 		print ("({classname})# WriteSensorInfoHandler ...".format(classname=self.ClassName))
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+
+		addr  = payload["addr"]
+		value = payload["value"]
+		data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value))
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {})
 	
 	def RFDataArrivedHandler(self, packet):
 		pass
@@ -100,7 +100,7 @@ class Context():
 		return devices
 	
 	def NodeSystemLoadedHandler(self):
-		print ("({classname})# Loading system ...".format(classname=self.ClassName))
+		print ("({classname})# Loading system ...".format(classname=self.ClassName))		
 		objFile = MkSFile.File()
 		# THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
@@ -113,24 +113,22 @@ class Context():
 					'value': 0,
 					'access': db_sensor["access"]
 				}
-			
-			#db_file = open("db.json", "w")
-			#json.dump(self.DB, db_file, indent=2)
-			#db_file.close()
 		
-		if self.HW.Connect("2020") is True:
-			data = self.HW.Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
+		adapters = self.HW.Connect("2020")
+		for adapter in adapters:
+			data = adapter["dev"].Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
 			magic_one, magic_two, direction, op_code, content_length, rf_type = struct.unpack("BBBBBB", data[0:6])
-			# TODO - Check if response command is correct
-			# print (magic_one, magic_two, op_code, content_length, rf_type)
-			self.RFDeviceType = rf_type
-
-			if self.RFDeviceType == 0x1:
+			if rf_type == 1:
+				self.MasterTX = adapter
 				print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
-
-			print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
-		else:
-			THIS.Node.Exit()
+			elif rf_type == 2:
+				self.MasterRX = adapter
+				print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
+			elif rf_type == 3:
+				print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
+				adapter["dev"].Disconnect()
+		
+		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -185,15 +183,12 @@ class Context():
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
 
-			if self.HW.IsValidDevice() is True:
-				self.TestData += 1
+			return
+			if self.MasterTX is not None:
 				self.SwitchTestValue = 1 - self.SwitchTestValue
 				for sensor in self.DB["sensors"]:
-					#data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 2, self.TestData))
-					data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, self.SwitchTestValue))
-				#data = self.HW.Send(struct.pack("<BBBBBH", 0xDE, 0xAD, 0x1, 100, 2, self.TestData))
-				#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
-				#print(magic_one, magic_two, direction, op_code, content_length, ack)
+					data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, self.SwitchTestValue))
+					#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

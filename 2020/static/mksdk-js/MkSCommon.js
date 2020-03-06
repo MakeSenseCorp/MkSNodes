@@ -1,7 +1,7 @@
 function MkSCommon () {
 	self = this;
 	
-	this.MakeSenseDomain = "10.0.0.10";
+	this.MakeSenseDomain = "127.0.0.1";
 	this.MakeSenseServerUrl = "http://" + this.MakeSenseDomain + ":8080/";
   	
   	this.UserDEVKey = "ac6de837-7863-72a9-c789-a0aae7e9d93e" || localStorage.getItem("key");
@@ -84,6 +84,7 @@ var MkSCommonBuilder = (function () {
 })();
 
 var MkSGlobal = MkSCommonBuilder.GetInstance();
+console.log("MkSCommon", MkSGlobal.MakeSenseDomain);
 
 /*var MakeSenseServerUrl 	= "http://ec2-18-236-253-240.us-west-2.compute.amazonaws.com:8080/";
 var MakeSenseDomain 	= "ec2-18-236-253-240.us-west-2.compute.amazonaws.com";
