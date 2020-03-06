@@ -5,13 +5,10 @@
 #include "MkSSensor.h"
 #include "MkSAMCommon.h"
 
-#define OPCODE_TX_DATA			100
-#define OPCODE_RX_DATA			101
-
 NodeState state = { 0 };
 
 unsigned char DEVICE_TYPE[] = { '2','0','2','0' };
-unsigned char DEVICE_SUB_TYPE = MASTER_TX;
+unsigned char DEVICE_SUB_TYPE = SLAVE;
 
 mks_header*   uart_tx_header;
 unsigned char uart_tx_buffer[MAX_LENGTH];
@@ -20,14 +17,16 @@ unsigned char uart_tx_buffer_length;
 mks_header*   uart_rx_header;
 unsigned char uart_rx_buffer[MAX_LENGTH];
 
-uint8_t rf_tx_buffer[MKS_PROT_BUFF_SIZE_32] = {0};
-MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_tx_buffer;
+uint8_t rf_rx_buffer[MKS_PROT_BUFF_SIZE_32] = {0};
+uint8_t rf_rx_buffer_length = MKS_PROT_BUFF_SIZE_32;
+MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_rx_buffer;
 
 uint32_t ticker = 1;
 
 void setup() {
   Serial.begin(9600);
   delay(10);
+  Serial.println("Loading Firmware ...");
   
   memset(uart_tx_buffer, 0, MAX_LENGTH);
   uart_tx_header = (mks_header *)(&uart_tx_buffer[0]);
@@ -41,9 +40,12 @@ void setup() {
   uart_tx_header->op_code         = 0x2;
   uart_tx_header->content_length  = 0x0;
   uart_tx_buffer[6] = '\n';
+
+  pinMode(LED_BUILTIN, OUTPUT);
   
-  vw_set_tx_pin(MKS_PROT_PIN);  // pin
+  vw_set_rx_pin(MKS_PROT_PIN);  // pin
   vw_setup(MKS_PROT_BPS);       // bps
+  vw_rx_start();
 }
 
 void loop() {
@@ -86,35 +88,7 @@ void loop() {
           state.pauseTs = millis();
         }
         break;
-		    case OPCODE_TX_DATA: {
-          // Build response.
-          uart_tx_header->direction      = SYNC_RESPONSE;
-          uart_tx_header->op_code        = OPCODE_TX_DATA;
-          uart_tx_header->content_length = 4;
-          uart_tx_buffer_length          = sizeof(mks_header) + 4;
-          
-          // uint16_t payload = 0;
-          // memcpy((unsigned char *)&payload, (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], sizeof(uint16_t));
-          // memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)&payload, sizeof(uint16_t));
-
-          //ptr_packet->addr    = 0x1;
-          //ptr_packet->command = 0x2;
-          //ptr_packet->data    = payload;
-
-          memcpy((unsigned char *)&rf_tx_buffer[0], (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], MKS_PROT_BUFF_SIZE_32);
-          memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], MKS_PROT_BUFF_SIZE_32);
-
-          vw_send(rf_tx_buffer, MKS_PROT_BUFF_SIZE_32); 
-          vw_wait_tx(); 
-  
-          uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
-          uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
-          Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
-        }
-        break;
         default: {
-          //uart_rx_buffer[len] = '\n';
-          //Serial.write(&uart_tx_buffer[0], len + 1);
           uart_rx_buffer[len] = '\n';
           Serial.write(&uart_rx_buffer[0], len + 1);
 		    }
@@ -122,18 +96,22 @@ void loop() {
       }
     }
   } else {
-    delay(10);
-    
-    if (ticker % 1000 == 0) {
-      if (!state.pause) {
-        uart_tx_header->direction                 = ASYNC;
-        uart_tx_header->op_code                   = OPCODE_HEARTBEAT;
-        uart_tx_header->content_length            = 1;
-        uart_tx_buffer_length                     = sizeof(mks_header) + 1;
-        uart_tx_buffer[sizeof(mks_header)]        = MKS_ACK;
-        uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
-        uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
-        Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
+    if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
+      Serial.print(ptr_packet->addr);
+      Serial.print(" ");
+      Serial.print(ptr_packet->command);
+      Serial.print(" ");
+      Serial.print(ptr_packet->data);
+      Serial.println();
+
+      switch(ptr_packet->command) {
+        case 1:
+          if (ptr_packet->data > 0) {
+            digitalWrite(LED_BUILTIN, HIGH);
+          } else {
+            digitalWrite(LED_BUILTIN, LOW);
+          }
+        break;
       }
     }
     

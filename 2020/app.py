@@ -57,6 +57,8 @@ class Context():
 		self.RFDeviceType 				= 0
 		self.TestData 					= 500
 
+		self.SwitchTestValue 			= 0
+
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
 	
@@ -185,8 +187,10 @@ class Context():
 
 			if self.HW.IsValidDevice() is True:
 				self.TestData += 1
+				self.SwitchTestValue = 1 - self.SwitchTestValue
 				for sensor in self.DB["sensors"]:
-					data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 2, self.TestData))
+					#data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 2, self.TestData))
+					data = self.HW.Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, self.SwitchTestValue))
 				#data = self.HW.Send(struct.pack("<BBBBBH", 0xDE, 0xAD, 0x1, 100, 2, self.TestData))
 				#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
 				#print(magic_one, magic_two, direction, op_code, content_length, ack)
