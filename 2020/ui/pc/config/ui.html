@@ -58,6 +58,22 @@
     </head>
 	<body>
 		<main role="main" class="container">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="jumbotron">
+						<h1 class="display-4">TX</h1>
+						<hr class="my-4">
+						<p class="lead">Connected</p>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="jumbotron">
+						<h1 class="display-4">RX</h1>
+						<hr class="my-4">
+						<p class="lead">Not Connected</p>
+					</div>
+				</div>
+			</div>
         	<div class="row">
         	    <div class="col-lg-12">
         	        <div class="card">
@@ -207,27 +223,13 @@
 			`;
 
 			var SensorCell = `
-					<div class="card">
-						<div class="card-body">
-							<div class="row">
-								<div class="col-lg-1 align-items-center">
-									[ICON]
-								</div>
-								<div class="col-lg-4">
-									<small class="my-0">[NAME]</small>
-								</div>
-								<div class="col-lg-5">
-								</div>
-								<div class="col-lg-1">
-									[SENSOR]
-								</div>
-								<div class="col-lg-1">
-									<span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>
-								</div>
-							</div>
-						</div>
-					</div>
-					</br>
+					<tr>
+						<td>[ICON]</td>
+						<td>[NAME]</td>
+						<td>[DESCRIPTION]</td>
+						<td>[SENSOR]</td>
+						<td><span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
+					</tr>
 			`;
 
 			var SensorUIGenerate = function(sensor) {
@@ -235,6 +237,7 @@
 				html = html.split("[ID]").join(sensor.addr);
 				html = html.split("[NAME]").join(sensor.name);
 				html = html.split("[RF_TYPE]").join(sensor.rf_type);
+				html = html.split("[DESCRIPTION]").join("433MHz sensor");
 
 				var htmlType = "";
 				switch(sensor.type) {
@@ -247,7 +250,11 @@
 						</div>
 					`;
 					htmlType = htmlType.split("[DISABLED]").join("");
-					htmlType = htmlType.split("[STATE]").join("checked");
+					if (sensor.value == 0) {
+						htmlType = htmlType.split("[STATE]").join("");
+					} else {
+						htmlType = htmlType.split("[STATE]").join("checked");
+					}
 					htmlType = htmlType.split("[SWITCH_ID]").join(sensor.id);
 					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
 					break;
@@ -281,11 +288,24 @@
 					sensors = data.sensors;
 					devices = data.devices;
 
-					var htmlSensors = ""
+					var htmlSensors = `
+					<div class="table-responsive">
+						<table class="table table-striped table-sm">
+							<thead>
+								<tr>
+									<th>Icon</th>
+									<th>Name</th>
+									<th>Description</th>
+									<th>Value</th>
+									<th>Settings</th>
+								</tr>
+							</thead>
+							<tbody>`;
 					for (var key in sensors) {
 						sensor = sensors[key];
 						htmlSensors += SensorUIGenerate(sensor);
 					}
+					htmlSensors += `</tbody></table></div>`;
 					document.getElementById("sensors_list_id").innerHTML = htmlSensors;
 					document.getElementById("sensors_count_id").innerHTML = sensors.length;
 					

@@ -57,6 +57,12 @@ class Context():
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
+
+	def FindSensor(self, addr):
+		for sensor in self.DB["sensors"]:
+			if sensor["addr"] == addr:
+				return sensor
+		return None
 	
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
@@ -76,7 +82,11 @@ class Context():
 
 		addr  = payload["addr"]
 		value = payload["value"]
-		data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value))
+		if self.MasterTX is not None:
+			data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value))
+			sensor = self.FindSensor(addr)
+			sensor["value"] = value
+			self.File.SaveJSON("db.json", self.DB)
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {})
 	
@@ -91,13 +101,6 @@ class Context():
 
 	def OnGetNodeInfoHandler(self, info, online):
 		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
-
-	def SerachForCameras(self):
-		shell = MkSShellExecutor.ShellExecutor()
-		# Get all video devices
-		data = shell.ExecuteCommand("ls /dev/video*")
-		devices = data.split("\n")[:-1]
-		return devices
 	
 	def NodeSystemLoadedHandler(self):
 		print ("({classname})# Loading system ...".format(classname=self.ClassName))		
@@ -110,7 +113,7 @@ class Context():
 
 			for db_sensor in self.DB["sensors"]:
 				self.SensorsLive[db_sensor["addr"]] = {
-					'value': 0,
+					'value': db_sensor["value"],
 					'access': db_sensor["access"]
 				}
 		
@@ -183,11 +186,9 @@ class Context():
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
 
-			return
 			if self.MasterTX is not None:
-				self.SwitchTestValue = 1 - self.SwitchTestValue
 				for sensor in self.DB["sensors"]:
-					data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, self.SwitchTestValue))
+					data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"]))
 					#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
 
 Node = MkSSlaveNode.SlaveNode()
