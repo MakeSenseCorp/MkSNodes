@@ -50,10 +50,32 @@ class Context():
 		self.SMSService					= ""
 		self.EmailService				= ""
 		self.MasterTX 					= None
+		self.MasterRX 					= None
 		self.TestData 					= 500
 		self.SwitchTestValue 			= 0
 
 		self.HW 						= MkSConnectorUART.Connector()
+
+		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
+	
+	def AdaptorDisconnectedCallback(self, path, type):
+		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, type, classname=self.ClassName))
+		if self.MasterTX is not None:
+			if self.MasterTX["path"] in path:
+				self.MasterTX = None
+				THIS.Node.EmitOnNodeChange({
+					'event': "device_remove",
+					'type': "master_tx",
+					'path': path
+				})
+		if self.MasterRX is not None:
+			if self.MasterRX["path"] in path:
+				self.MasterRX = None
+				THIS.Node.EmitOnNodeChange({
+					'event': "device_remove",
+					'type': "master_rx",
+					'path': path
+				})
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -102,6 +124,37 @@ class Context():
 	def OnGetNodeInfoHandler(self, info, online):
 		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
 	
+	def CheckDeviceType(self, adapter):
+		data = adapter["dev"].Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
+		magic_one, magic_two, direction, op_code, content_length, rf_type = struct.unpack("BBBBBB", data[0:6])
+		adapter["type"] = rf_type
+		if rf_type == 1:
+			self.MasterTX = adapter
+			self.DB["confuguration"]["devices"]["tx"]["state"] = 1
+			print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_found",
+				'type': rf_type,
+				'path': adapter["path"]
+			})
+		elif rf_type == 2:
+			self.MasterRX = adapter
+			self.DB["confuguration"]["devices"]["rx"]["state"] = 1
+			print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_found",
+				'type': rf_type,
+				'path': adapter["path"]
+			})
+		elif rf_type == 3:
+			print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_found",
+				'type': rf_type,
+				'path': adapter["path"]
+			})
+			adapter["dev"].Disconnect()
+
 	def NodeSystemLoadedHandler(self):
 		print ("({classname})# Loading system ...".format(classname=self.ClassName))		
 		objFile = MkSFile.File()
@@ -111,6 +164,9 @@ class Context():
 		if jsonSensorStr != "":
 			self.DB = json.loads(jsonSensorStr)
 
+			self.DB["confuguration"]["devices"]["rx"]["state"] = 0
+			self.DB["confuguration"]["devices"]["tx"]["state"] = 0
+
 			for db_sensor in self.DB["sensors"]:
 				self.SensorsLive[db_sensor["addr"]] = {
 					'value': db_sensor["value"],
@@ -119,17 +175,7 @@ class Context():
 		
 		adapters = self.HW.Connect("2020")
 		for adapter in adapters:
-			data = adapter["dev"].Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
-			magic_one, magic_two, direction, op_code, content_length, rf_type = struct.unpack("BBBBBB", data[0:6])
-			if rf_type == 1:
-				self.MasterTX = adapter
-				print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
-			elif rf_type == 2:
-				self.MasterRX = adapter
-				print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
-			elif rf_type == 3:
-				print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
-				adapter["dev"].Disconnect()
+			self.CheckDeviceType(adapter)
 		
 		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
 	
@@ -186,6 +232,12 @@ class Context():
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
 
+			changes = self.HW.UpdateUARTInterfaces()
+			for change in changes:
+				if change["change"] in "append":
+					adapter = self.HW.FindAdaptor(change["path"])
+					self.CheckDeviceType(adapter)
+
 			if self.MasterTX is not None:
 				for sensor in self.DB["sensors"]:
 					data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"]))
@@ -195,8 +247,9 @@ Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.HW.Disconnect()
 	THIS.Node.Stop()
+	time.sleep(0.5)
+	THIS.HW.Disconnect()
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)

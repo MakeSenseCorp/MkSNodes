@@ -59,20 +59,8 @@
 	<body>
 		<main role="main" class="container">
 			<div class="row">
-				<div class="col-lg-6">
-					<div class="jumbotron">
-						<h1 class="display-4">TX</h1>
-						<hr class="my-4">
-						<p class="lead">Connected</p>
-					</div>
-				</div>
-				<div class="col-lg-6">
-					<div class="jumbotron">
-						<h1 class="display-4">RX</h1>
-						<hr class="my-4">
-						<p class="lead">Not Connected</p>
-					</div>
-				</div>
+				<div class="col-lg-6" id="id_tx_device"></div>
+				<div class="col-lg-6" id="id_rx_device"></div>
 			</div>
         	<div class="row">
         	    <div class="col-lg-12">
@@ -80,7 +68,7 @@
 						<div class="card-body">
 							<br>
 							<h6 class="d-flex justify-content-between align-items-center mb-3">
-								<span class="text-muted">Connected Devices</span>
+								<span class="text-muted">Configurable Sensors</span>
 								<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
 							</h6>
 							<div class="card">
@@ -102,7 +90,7 @@
 		
 		<!-- Modal -->
 		<div class="modal fade bd-example-modal-xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-xl" role="document">
+			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="exampleModalLabel">Settings</h5>
@@ -112,19 +100,17 @@
 					</div>
 					<div class="modal-body">
 						<div class="row">
-							<div class="col-2">
+							<div class="col-4">
 								<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
 								<a class="nav-link active" id="v-pills-info-tab" data-toggle="pill" href="#v-pills-info" role="tab" aria-controls="v-pills-info" aria-selected="true">Information</a>
 								<a class="nav-link" id="v-pills-rec-tab" data-toggle="pill" href="#v-pills-rec" role="tab" aria-controls="v-pills-rec" aria-selected="false">Recording</a>
-								<a class="nav-link" id="v-pills-files-tab" data-toggle="pill" href="#v-pills-files" role="tab" aria-controls="v-pills-files" aria-selected="false">Files</a>
-								<a class="nav-link" id="v-pills-image-tab" data-toggle="pill" href="#v-pills-image" role="tab" aria-controls="v-pills-image" aria-selected="false">Image Settings</a>
 								</div>
 							</div>
-							<div class="col-10">
+							<div class="col-8">
 								<div class="tab-content" id="v-pills-tabContent">
 									<div class="tab-pane fade show active" id="v-pills-info" role="tabpanel" aria-labelledby="v-pills-info-tab">
 										<div class="row">
-											<div class="col-lg-6">
+											<div class="col-lg-12">
 												<div class="card">
 													<div class="card-body">
 														<h7 class="d-flex justify-content-between align-items-center mb-3">
@@ -132,51 +118,20 @@
 															<span class="text-muted" id="id_uid">N/A</span>
 														</h7>
 														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">Device Path</span>
-															<span class="text-muted" id="id_dev">N/A</span>
-														</h7>
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">Current FPS</span>
-															<span class="text-muted" id="txt_fps">1.6 fps</span>
-														</h7>
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
 															<span class="text-muted">Name</span>
 															<a href="#" id="txt_name">No Name</a>
-														</h7>
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">eMail</span>
-															<a href="#" id="txt_email">mail@gmail.com</a>
-														</h7>
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">Phone (SMS)</span>
-															<a href="#" id="txt_phone">+97254123456</a>
 														</h7>
 													</div>
 												</div>
 											</div>
-											<div class="col-lg-6">
+										</div>
+									</div>
+									<div class="tab-pane fade show" id="v-pills-rec" role="tabpanel" aria-labelledby="v-v-pills-rec-tab">
+										<div class="row">
+											<div class="col-lg-12">
 												<div class="card">
 													<div class="card-body">
-														<h6 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">Precentage till next video creation</span>
-														</h6>
-														<div class="progress">
-															<div id="progressCapture" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-														</div>
-													</div>
-													<div class="card-body">
-														<div class="custom-control custom-switch">
-															<input type="checkbox" class="custom-control-input" id="accesswww">
-															<label class="custom-control-label" for="accesswww">Access camera from anywere</label>
-														</div>
-														<div class="custom-control custom-switch">
-															<input type="checkbox" class="custom-control-input" id="motion_detection">
-															<label class="custom-control-label" for="motion_detection">Motion Detection</label>
-														</div>
-														<div class="custom-control custom-switch">
-															<input type="checkbox" class="custom-control-input" id="camera_recording">
-															<label class="custom-control-label" for="camera_recording">Recording</label>
-														</div>
+
 													</div>
 												</div>
 											</div>
@@ -188,7 +143,7 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" onclick="SetMiscInfo()">Save changes</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
 					</div>
 				</div>
 			</div>
@@ -206,19 +161,10 @@
 			api.SetGlobalGatewayIP(GatewayIP);
 
 			var DeviceCell = `
-					<div class="card">
-						<div class="card-body">
-							<div class="row">
-								<div class="col-lg-4">
-									<small class="my-0">[NAME]</small>
-								</div>
-								<div class="col-lg-6">
-								</div>
-								<div class="col-lg-2">
-									<span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="download"></span>
-								</div>
-							</div>
-						</div>
+					<div class="jumbotron">
+						<h1 class="display-4" style="color: [COLOR]">[NAME]</h1>
+						<hr class="my-4">
+						<p class="lead">[STATE]</p>
 					</div>
 			`;
 
@@ -263,6 +209,19 @@
 				return html;
 			}
 
+			var DeviceUIGenerate = function(type, device) {
+				htmlDevice = DeviceCell;
+				htmlDevice = htmlDevice.split("[NAME]").join(type);
+				if (device.state == 1) {
+					htmlDevice = htmlDevice.split("[COLOR]").join("green");
+					htmlDevice = htmlDevice.split("[STATE]").join("Connected");
+				} else {
+					htmlDevice = htmlDevice.split("[COLOR]").join("red");
+					htmlDevice = htmlDevice.split("[STATE]").join("Not Connected");
+				}
+				return htmlDevice;
+			}
+
 			var SwitchChanged = function(elem, addr) {
 				var value = 0;
 				if (elem.checked) {
@@ -287,6 +246,11 @@
 					data = res.data.payload;
 					sensors = data.sensors;
 					devices = data.devices;
+					
+					htmlDevice = DeviceUIGenerate("TX", devices.tx);
+					document.getElementById("id_tx_device").innerHTML = htmlDevice;
+					htmlDevice = DeviceUIGenerate("RX", devices.rx);
+					document.getElementById("id_rx_device").innerHTML = htmlDevice;
 
 					var htmlSensors = `
 					<div class="table-responsive">
@@ -310,11 +274,15 @@
 					document.getElementById("sensors_count_id").innerHTML = sensors.length;
 					
               		feather.replace();
+
+					api.RegisterOnNodeChange(NodeUUID, function(res) {
+						console.log("REGISTERED", res);
+					});
 				});
 			});
 
 			$('#exampleModal').on('hide.bs.modal', function (e) {
-				clearInterval(CurrentCamera.Handle);
+				
 			})
 
 			var OpenModal = function (elem, camera_dev, camera_uid) {
