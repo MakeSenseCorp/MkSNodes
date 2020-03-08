@@ -162,9 +162,9 @@
 
 			var DeviceCell = `
 					<div class="jumbotron">
-						<h1 class="display-4" style="color: [COLOR]">[NAME]</h1>
+						<h1 id="id_[TYPE]_name" class="display-4" style="color: [COLOR]">[NAME]</h1>
 						<hr class="my-4">
-						<p class="lead">[STATE]</p>
+						<p id="id_[TYPE]_state" class="lead">[STATE]</p>
 					</div>
 			`;
 
@@ -212,6 +212,8 @@
 			var DeviceUIGenerate = function(type, device) {
 				htmlDevice = DeviceCell;
 				htmlDevice = htmlDevice.split("[NAME]").join(type);
+				htmlDevice = htmlDevice.split("[TYPE]").join(type);
+
 				if (device.state == 1) {
 					htmlDevice = htmlDevice.split("[COLOR]").join("green");
 					htmlDevice = htmlDevice.split("[STATE]").join("Connected");
@@ -236,6 +238,56 @@
 
 			var OnNodeChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", packet.data.payload.event);
+				switch(packet.data.payload.event) {
+					case "device_append": {
+						console.log(packet.data.payload);
+						switch(packet.data.payload.type) {
+							case 1: {
+								document.getElementById("id_TX_name").style.color = "green";
+								document.getElementById("id_TX_state").innerHTML = "Connected";
+							}
+							break;
+							case 2: {
+
+							}
+							break;
+							case 3:
+							case 4:
+							case 5:
+							case 6: {
+
+							}
+							break;
+							default:
+							break;
+						}
+					}
+					break;
+					case "device_remove": {
+						console.log(packet.data.payload);
+						switch(packet.data.payload.type) {
+							case 1: {
+								document.getElementById("id_TX_name").style.color = "red";
+								document.getElementById("id_TX_state").innerHTML = "Not Connected";
+							}
+							break;
+							case 2: {
+
+							}
+							break;
+							case 3:
+							case 4:
+							case 5:
+							case 6: {
+
+							}
+							break;
+							default:
+							break;
+						}
+					}
+					break;
+				}
 			}
 
 			api.ConnectGateway(function() {

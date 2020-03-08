@@ -58,24 +58,30 @@ class Context():
 
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
 	
-	def AdaptorDisconnectedCallback(self, path, type):
+	def AdaptorDisconnectedCallback(self, path, rf_type):
 		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, type, classname=self.ClassName))
-		if self.MasterTX is not None:
-			if self.MasterTX["path"] in path:
+		if rf_type == 1:
+			if self.MasterTX is not None:
 				self.MasterTX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",
-					'type': "master_tx",
+					'type': rf_type,
 					'path': path
 				})
-		if self.MasterRX is not None:
-			if self.MasterRX["path"] in path:
+		elif rf_type == 2:
+			if self.MasterRX is not None:
 				self.MasterRX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",
-					'type': "master_rx",
+					'type': rf_type,
 					'path': path
 				})
+		else:
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_remove",
+				'type': rf_type,
+				'path': path
+			})
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -133,7 +139,7 @@ class Context():
 			self.DB["confuguration"]["devices"]["tx"]["state"] = 1
 			print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
-				'event': "device_found",
+				'event': "device_append",
 				'type': rf_type,
 				'path': adapter["path"]
 			})
@@ -142,14 +148,14 @@ class Context():
 			self.DB["confuguration"]["devices"]["rx"]["state"] = 1
 			print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
-				'event': "device_found",
+				'event': "device_append",
 				'type': rf_type,
 				'path': adapter["path"]
 			})
 		elif rf_type == 3:
 			print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
-				'event': "device_found",
+				'event': "device_append",
 				'type': rf_type,
 				'path': adapter["path"]
 			})
