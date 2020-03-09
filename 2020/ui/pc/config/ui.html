@@ -71,11 +71,7 @@
 								<span class="text-muted">Configurable Sensors</span>
 								<span class="badge badge-secondary badge-pill" id="devices_count_id">0</span>
 							</h6>
-							<div class="card">
-								<div class="card-body">
-									<div id="devices_list_id"></div>
-								</div>
-							</div>
+							<div id="devices_list_id"></div>
 							<br>
 							<h6 class="d-flex justify-content-between align-items-center mb-3">
 								<span class="text-muted">Sensors</span>
@@ -169,7 +165,7 @@
 			`;
 
 			var SensorCell = `
-					<tr>
+					<tr id="id_cell_sensor_[ID]">
 						<td>[ICON]</td>
 						<td>[NAME]</td>
 						<td>[DESCRIPTION]</td>
@@ -177,6 +173,32 @@
 						<td><span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
 					</tr>
 			`;
+
+			var ConfigCell = `
+					<tr id="id_cell_config_[ID]">
+						<td>[ICON]</td>
+						<td>[NAME]</td>
+						<td>[DESCRIPTION]</td>
+						<td><span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
+					</tr>
+			`;
+
+			var ConfigUIGenerate = function(device) {
+				html = ConfigCell;
+				html = html.split("[ID]").join(device.dev);
+				html = html.split("[NAME]").join("Sensor");
+				html = html.split("[RF_TYPE]").join(device.rf_type);
+				html = html.split("[DESCRIPTION]").join("433MHz sensor");
+				html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="activity"></span>`);
+
+				switch(sensor.type) {
+					case 1:
+					html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
+					break;
+				}
+
+				return html;
+			}
 
 			var SensorUIGenerate = function(sensor) {
 				html = SensorCell;
@@ -241,7 +263,7 @@
 				switch(packet.data.payload.event) {
 					case "device_append": {
 						console.log(packet.data.payload);
-						switch(packet.data.payload.type) {
+						switch(packet.data.payload.rf_type) {
 							case 1: {
 								document.getElementById("id_TX_name").style.color = "green";
 								document.getElementById("id_TX_state").innerHTML = "Connected";
@@ -255,7 +277,12 @@
 							case 4:
 							case 5:
 							case 6: {
-
+								sensor = {
+									dev: packet.data.payload.dev,
+									rf_type: packet.data.payload.rf_type
+								}
+								document.getElementById("config_sensors_list_id").innerHTML += ConfigUIGenerate(sensor);
+								feather.replace();
 							}
 							break;
 							default:
@@ -265,7 +292,7 @@
 					break;
 					case "device_remove": {
 						console.log(packet.data.payload);
-						switch(packet.data.payload.type) {
+						switch(packet.data.payload.rf_type) {
 							case 1: {
 								document.getElementById("id_TX_name").style.color = "red";
 								document.getElementById("id_TX_state").innerHTML = "Not Connected";
@@ -279,7 +306,9 @@
 							case 4:
 							case 5:
 							case 6: {
-
+								console.log("id_cell_config_" + packet.data.payload.dev);
+								var element = document.getElementById("id_cell_config_" + packet.data.payload.dev);
+								element.innerHTML = "";
 							}
 							break;
 							default:
@@ -295,14 +324,36 @@
 				api.Gateway.OnNodeChangeEvent = OnNodeChangeEvent;
 
 				api.GetNodeSensorsInfo(NodeUUID, function(res) {
+					console.log(res.data.payload);
 					data = res.data.payload;
 					sensors = data.sensors;
 					devices = data.devices;
+					config_sensors = data.config_sensors;
 					
 					htmlDevice = DeviceUIGenerate("TX", devices.tx);
 					document.getElementById("id_tx_device").innerHTML = htmlDevice;
 					htmlDevice = DeviceUIGenerate("RX", devices.rx);
 					document.getElementById("id_rx_device").innerHTML = htmlDevice;
+
+					var htmlConfigSensors = `
+					<div class="table-responsive">
+						<table class="table table-striped table-sm">
+							<thead>
+								<tr>
+									<th>Icon</th>
+									<th>Name</th>
+									<th>Description</th>
+									<th>Settings</th>
+								</tr>
+							</thead>
+							<tbody id="config_sensors_list_id">`;
+					for (var key in config_sensors) {
+						sensor = config_sensors[key];
+						htmlConfigSensors += ConfigUIGenerate(sensor);
+					}
+					htmlConfigSensors += `</tbody></table></div>`;
+					document.getElementById("devices_list_id").innerHTML = htmlConfigSensors;
+					document.getElementById("devices_count_id").innerHTML = config_sensors.length;
 
 					var htmlSensors = `
 					<div class="table-responsive">

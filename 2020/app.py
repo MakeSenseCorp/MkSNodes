@@ -51,6 +51,7 @@ class Context():
 		self.EmailService				= ""
 		self.MasterTX 					= None
 		self.MasterRX 					= None
+		self.DeviceList 				= []
 		self.TestData 					= 500
 		self.SwitchTestValue 			= 0
 
@@ -59,13 +60,13 @@ class Context():
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
 	
 	def AdaptorDisconnectedCallback(self, path, rf_type):
-		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, type, classname=self.ClassName))
+		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, rf_type, classname=self.ClassName))
 		if rf_type == 1:
 			if self.MasterTX is not None:
 				self.MasterTX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",
-					'type': rf_type,
+					'rf_type': rf_type,
 					'path': path
 				})
 		elif rf_type == 2:
@@ -73,15 +74,23 @@ class Context():
 				self.MasterRX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",
-					'type': rf_type,
+					'rf_type': rf_type,
 					'path': path
 				})
 		else:
-			THIS.Node.EmitOnNodeChange({
-				'event': "device_remove",
-				'type': rf_type,
-				'path': path
-			})
+			adaptor = None
+			for device in self.DeviceList:
+				if device["path"] in path:
+					adaptor = device
+					break
+			if adaptor is not None:
+				THIS.Node.EmitOnNodeChange({
+					'event': "device_remove",
+					'rf_type': rf_type,
+					'path': path,
+					'dev': adaptor["path"].split('/')[2]
+				})
+				self.DeviceList.remove(adaptor)
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -94,9 +103,16 @@ class Context():
 	
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
+		devices = []
+		for device in self.DeviceList:
+			devices.append({
+				'dev': device["path"].split('/')[2],
+				'rf_type': device["rf_type"]
+			})
 		payload = {
 			'sensors': self.DB["sensors"],
-			'devices': self.DB["confuguration"]["devices"]
+			'devices': self.DB["confuguration"]["devices"],
+			'config_sensors': devices
 		}
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
@@ -132,15 +148,18 @@ class Context():
 	
 	def CheckDeviceType(self, adapter):
 		data = adapter["dev"].Send(struct.pack("BBBB", 0xDE, 0xAD, 0x1, 52))
-		magic_one, magic_two, direction, op_code, content_length, rf_type = struct.unpack("BBBBBB", data[0:6])
-		adapter["type"] = rf_type
+		direction 		= data[0]
+		op_code			= data[1]
+		content_length	= data[2]
+		rf_type 		= data[3]
+		adapter["rf_type"] = rf_type
 		if rf_type == 1:
 			self.MasterTX = adapter
 			self.DB["confuguration"]["devices"]["tx"]["state"] = 1
 			print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
-				'type': rf_type,
+				'rf_type': rf_type,
 				'path': adapter["path"]
 			})
 		elif rf_type == 2:
@@ -149,17 +168,19 @@ class Context():
 			print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
-				'type': rf_type,
+				'rf_type': rf_type,
 				'path': adapter["path"]
 			})
 		elif rf_type == 3:
 			print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
+			dev = adapter["path"].split('/')
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
-				'type': rf_type,
-				'path': adapter["path"]
+				'rf_type': rf_type,
+				'path': adapter["path"],
+				'dev': dev[2]
 			})
-			adapter["dev"].Disconnect()
+			self.DeviceList.append(adapter)
 
 	def NodeSystemLoadedHandler(self):
 		print ("({classname})# Loading system ...".format(classname=self.ClassName))		
@@ -246,8 +267,8 @@ class Context():
 
 			if self.MasterTX is not None:
 				for sensor in self.DB["sensors"]:
-					data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"]))
-					#magic_one, magic_two, direction, op_code, content_length, ack = struct.unpack("<BBBBBH", data[0:7])
+					if sensor["type"] == 1:
+						self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"]))
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
