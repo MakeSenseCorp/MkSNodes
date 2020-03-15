@@ -38,6 +38,10 @@ class Context():
 			'get_sensor_info':			self.GetSensorInfoHandler,
 			'read_sensor_info':			self.ReadSensorInfoHandler,
 			'write_sensor_info':		self.WriteSensorInfoHandler,
+			'set_sensor_addr':			self.SetSensorAddrHandler,
+			'save_sensor_to_db':		self.SaveSensorToDBHandler,
+			'append_sensor_to_db':		self.AppendSensorToDBHandler,
+			'remove_sensor_to_db':		self.RemoveSensorToDBHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -45,16 +49,12 @@ class Context():
 		}
 		# Application variables
 		self.DB							= None
-		self.SensorsLive				= {}
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
 		self.MasterTX 					= None
 		self.MasterRX 					= None
 		self.DeviceList 				= []
-		self.TestData 					= 500
-		self.SwitchTestValue 			= 0
-
 		self.HW 						= MkSConnectorUART.Connector()
 
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
@@ -101,13 +101,95 @@ class Context():
 				return sensor
 		return None
 	
+	def AppendSensorToDBHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# AppendSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
+
+		item = self.FindSensor(payload["addr"])
+		if item is None:
+			sensor = {
+				"rf_type": payload["rf_type"], 
+				"enable": 1, 
+				"addr": payload["addr"], 
+				"access_from_www": 1, 
+				"value": 0, 
+				"custom": {}, 
+				"recording": 1, 
+				"type": 1, 
+				"name": "New Sensor"
+			}
+			self.DB["sensors"].append(sensor)
+			self.File.SaveJSON("db.json", self.DB)
+			payload = {
+				'sensors': self.DB["sensors"]
+			}
+			return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status": "error"}) 
+	
+	def RemoveSensorToDBHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# RemoveSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		sensor	= self.FindSensor(payload["addr"])
+		if sensor is not None:
+			self.DB["sensors"].remove(sensor)
+			self.File.SaveJSON("db.json", self.DB)
+			payload = {
+				'sensors': self.DB["sensors"]
+			}
+			return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status": "error"})
+
+	def SaveSensorToDBHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# SaveSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		addr	= payload["addr"]
+		sensor	= self.FindSensor(addr)
+		if sensor is not None:
+			sensor["name"] 				= payload["name"]
+			sensor["recording"] 		= payload["recording"]
+			sensor["enable"] 			= payload["enable"]
+			sensor["access_from_www"] 	= payload["access_from_www"]
+			self.File.SaveJSON("db.json", self.DB)
+			payload = {
+				'sensors': self.DB["sensors"]
+			}
+			return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status": "error"})
+
+	def SetSensorAddrHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# SetSensorAddrHandler ... dev: {0}, addr: {1}".format(payload["dev"], payload["addr"], classname=self.ClassName))
+		for device in self.DeviceList:
+			if payload["dev"] in device["path"]:
+				adaptor = device
+				break
+		if adaptor is not None:
+			data = adaptor["dev"].Send(struct.pack("<BBBBBB", 0xDE, 0xAD, 0x1, 150, 1, payload["addr"]))
+			adaptor["addr"] = payload["addr"]
+
+			devices = []
+			for device in self.DeviceList:
+				devices.append({
+					'dev': device["path"].split('/')[2],
+					'rf_type': device["rf_type"],
+					'addr': device["addr"]
+				})
+			payload = {
+				'config_sensors': devices
+			}
+
+			return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status":"error"})
+		
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
 		devices = []
 		for device in self.DeviceList:
 			devices.append({
 				'dev': device["path"].split('/')[2],
-				'rf_type': device["rf_type"]
+				'rf_type': device["rf_type"],
+				'addr': device["addr"]
 			})
 		payload = {
 			'sensors': self.DB["sensors"],
@@ -152,33 +234,40 @@ class Context():
 		op_code			= data[1]
 		content_length	= data[2]
 		rf_type 		= data[3]
-		adapter["rf_type"] = rf_type
+		adapter["rf_type"] 	= rf_type
 		if rf_type == 1:
-			self.MasterTX = adapter
+			adapter["addr"] = 0
+			self.MasterTX 	= adapter
 			self.DB["confuguration"]["devices"]["tx"]["state"] = 1
 			print("({classname})# MASTER TX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
 				'rf_type': rf_type,
-				'path': adapter["path"]
+				'path': adapter["path"],
+				'addr': 0
 			})
 		elif rf_type == 2:
-			self.MasterRX = adapter
+			adapter["addr"] = 0
+			self.MasterRX 	= adapter
 			self.DB["confuguration"]["devices"]["rx"]["state"] = 1
 			print("({classname})# MASTER RX Found ...".format(classname=self.ClassName))
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
 				'rf_type': rf_type,
-				'path': adapter["path"]
+				'path': adapter["path"],
+				'addr': 0
 			})
 		elif rf_type == 3:
 			print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
-			dev = adapter["path"].split('/')
+			addr 			= data[4]
+			adapter["addr"] = addr
+			dev 			= adapter["path"].split('/')
 			THIS.Node.EmitOnNodeChange({
 				'event': "device_append",
 				'rf_type': rf_type,
 				'path': adapter["path"],
-				'dev': dev[2]
+				'dev': dev[2],
+				'addr': addr
 			})
 			self.DeviceList.append(adapter)
 
@@ -193,12 +282,6 @@ class Context():
 
 			self.DB["confuguration"]["devices"]["rx"]["state"] = 0
 			self.DB["confuguration"]["devices"]["tx"]["state"] = 0
-
-			for db_sensor in self.DB["sensors"]:
-				self.SensorsLive[db_sensor["addr"]] = {
-					'value': db_sensor["value"],
-					'access': db_sensor["access"]
-				}
 		
 		adapters = self.HW.Connect("2020")
 		for adapter in adapters:

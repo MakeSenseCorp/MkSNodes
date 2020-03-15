@@ -85,76 +85,125 @@
         </main>
 		
 		<!-- Modal -->
-		<div class="modal fade bd-example-modal-xl" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal fade bd-example-modal-xl" id="id-semsor-modal" tabindex="-1" role="dialog" aria-labelledby="id-semsor-modalLabel" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Settings</h5>
+						<h5 class="modal-title" id="id-semsor-modalLabel">Settings</h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
-					<div class="modal-body">
-						<div class="row">
-							<div class="col-4">
-								<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-								<a class="nav-link active" id="v-pills-info-tab" data-toggle="pill" href="#v-pills-info" role="tab" aria-controls="v-pills-info" aria-selected="true">Information</a>
-								<a class="nav-link" id="v-pills-rec-tab" data-toggle="pill" href="#v-pills-rec" role="tab" aria-controls="v-pills-rec" aria-selected="false">Recording</a>
-								</div>
-							</div>
-							<div class="col-8">
-								<div class="tab-content" id="v-pills-tabContent">
-									<div class="tab-pane fade show active" id="v-pills-info" role="tabpanel" aria-labelledby="v-pills-info-tab">
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="card">
-													<div class="card-body">
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">UID</span>
-															<span class="text-muted" id="id_uid">N/A</span>
-														</h7>
-														<h7 class="d-flex justify-content-between align-items-center mb-3">
-															<span class="text-muted">Name</span>
-															<a href="#" id="txt_name">No Name</a>
-														</h7>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="tab-pane fade show" id="v-pills-rec" role="tabpanel" aria-labelledby="v-v-pills-rec-tab">
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="card">
-													<div class="card-body">
-
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Save changes</button>
-					</div>
+					<div id="id_modal_content" class="modal-body"> </div>
+					<div id="id_modal_footer" class="modal-footer"></div>
 				</div>
 			</div>
 		</div>
-		</main>
 
 		[SCRIPTS]
 
         <script>
           	var GatewayIP = "[GATEWAY_IP]";
 			var NodeUUID  = "[NODE_UUID]";
+
+			function SetCheckboxState(id, val) {
+				elem = document.getElementById(id);
+				if (elem === null) {
+					return;
+				}
+
+				if (val == 1) {
+					elem.checked = true;
+				} else if (val == 0) {
+					elem.checked = false;
+				}
+			}
 			
 			// Gey makesense api instanse.
 			var api = MkSAPIBuilder.GetInstance();
 			api.SetGlobalGatewayIP(GatewayIP);
+
+			var sensorModalView = `
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">Name</span>
+									<a href="#" id="id_sensor_name">N/A</a>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">RF Type</span>
+									<span id="id_sensor_rf_type">N/A</span>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">Address</span>
+									<span id="id_sensor_addr">N/A</span>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<div class="custom-control custom-switch">
+										<input id="id_sensor_recording" type="checkbox" class="custom-control-input">
+										<label class="custom-control-label" for="id_sensor_recording">Recording (Enable/Disable)</label>
+									</div>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<div class="custom-control custom-switch">
+										<input id="id_sensor_status" type="checkbox" class="custom-control-input">
+										<label class="custom-control-label" for="id_sensor_status">Status (Enable/Disable)</label>
+									</div>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<div class="custom-control custom-switch">
+										<input id="id_sensor_global_access" type="checkbox" class="custom-control-input">
+										<label class="custom-control-label" for="id_sensor_global_access">Global Access (Enable/Disable)</label>
+									</div>
+								</h7>
+								<div id="id_sensor_custom"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			var sensorModalFooterlView = `
+				<button type="button" class="btn btn-primary" onclick="SaveSensorData('[ID]');">Save</button>
+			`;
+			var SensorCell = `
+					<tr id="id_cell_sensor_[ID]">
+						<td>[ICON]</td>
+						<td>[NAME]</td>
+						<td>[DESCRIPTION]</td>
+						<td>[SENSOR]</td>
+						<td><span onClick="OpenModal(this,'[ID]',[RF_TYPE], {name:'[NAME]',addr:[ADDR],www_access:[WWW_ACCESS],enabled:[ENABLED],recording:[RECORDING]}, 1);" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
+						<td><span onClick="DeleteSensor([ADDR]);" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="x"></span></td>
+					</tr>
+			`;
+
+			var configureSensorModalView = `
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">Device</span>
+									<span id="id_sensor_config_dev">N/A</span>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">RF Type</span>
+									<span id="id_sensor_config_rf_type">N/A</span>
+								</h7>
+								<h7 class="d-flex justify-content-between align-items-center mb-3">
+									<span class="text-muted">Address</span>
+									<a href="#" id="id_sensor_config_addr">N/A</a>
+								</h7>
+								<div id="id_sensor_config_custom"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			var configureSensorModalFooterlView = `
+				<button type="button" class="btn btn-primary" onclick="SetSensorAddress('[ID]');">Save</button>
+			`;
 
 			var DeviceCell = `
 					<div class="jumbotron">
@@ -163,31 +212,26 @@
 						<p id="id_[TYPE]_state" class="lead">[STATE]</p>
 					</div>
 			`;
-
-			var SensorCell = `
-					<tr id="id_cell_sensor_[ID]">
-						<td>[ICON]</td>
-						<td>[NAME]</td>
-						<td>[DESCRIPTION]</td>
-						<td>[SENSOR]</td>
-						<td><span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
-					</tr>
-			`;
-
 			var ConfigCell = `
 					<tr id="id_cell_config_[ID]">
 						<td>[ICON]</td>
 						<td>[NAME]</td>
 						<td>[DESCRIPTION]</td>
-						<td><span onClick="OpenModal(this,'[ID]','[RF_TYPE]');" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
+						<td><span onClick="OpenModal(this,'[ID]',[RF_TYPE], {addr:[ADDR]}, 2);" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
+						<td><span onClick="AppendSensor([ADDR],[RF_TYPE]);" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="plus"></span></td>
 					</tr>
 			`;
+
+			$(function(){
+				$.fn.editable.defaults.mode = 'inline';
+			});
 
 			var ConfigUIGenerate = function(device) {
 				html = ConfigCell;
 				html = html.split("[ID]").join(device.dev);
 				html = html.split("[NAME]").join("Sensor");
 				html = html.split("[RF_TYPE]").join(device.rf_type);
+				html = html.split("[ADDR]").join(device.addr);
 				html = html.split("[DESCRIPTION]").join("433MHz sensor");
 				html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="activity"></span>`);
 
@@ -207,6 +251,11 @@
 				html = html.split("[RF_TYPE]").join(sensor.rf_type);
 				html = html.split("[DESCRIPTION]").join("433MHz sensor");
 
+				html = html.split("[ADDR]").join(sensor.addr);
+				html = html.split("[WWW_ACCESS]").join(sensor.access_from_www);
+				html = html.split("[ENABLED]").join(sensor.enable);
+				html = html.split("[RECORDING]").join(sensor.recording);
+
 				var htmlType = "";
 				switch(sensor.type) {
 					case 1:
@@ -223,8 +272,9 @@
 					} else {
 						htmlType = htmlType.split("[STATE]").join("checked");
 					}
-					htmlType = htmlType.split("[SWITCH_ID]").join(sensor.id);
 					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
+					htmlType = htmlType.split("[SWITCH_ID]").join(sensor.addr);
+					
 					break;
 				}
 				html = html.split("[SENSOR]").join(htmlType);
@@ -244,6 +294,68 @@
 					htmlDevice = htmlDevice.split("[STATE]").join("Not Connected");
 				}
 				return htmlDevice;
+			}
+
+			var DeleteSensor = function(addr) {
+				payload = {
+					addr: addr
+				};
+				
+				api.SendCustomCommand(NodeUUID, "remove_sensor_to_db", payload, function(res) {
+					var payload = res.data.payload;
+					if (payload.sensors !== undefined) {
+						BuildUISensors(payload.sensors);
+					}
+				});
+			}
+
+			var AppendSensor = function(addr, rf_type) {
+				payload = {
+					addr: addr,
+					rf_type: rf_type
+				};
+				
+				api.SendCustomCommand(NodeUUID, "append_sensor_to_db", payload, function(res) {
+					var payload = res.data.payload;
+					if (payload.sensors !== undefined) {
+						BuildUISensors(payload.sensors);
+					}
+				});
+			}
+
+			var SetSensorAddress = function(id) {
+				// TODO - Check if address is not existed
+				addr = document.getElementById("id_sensor_config_addr").innerHTML;
+				payload = {
+					addr: parseInt(addr, 10),
+					dev: id
+				};
+				api.SendCustomCommand(NodeUUID, "set_sensor_addr", payload, function(res) {
+					var payload = res.data.payload;
+					if (payload !== undefined) {
+						BuildUIConfigSensors(payload.config_sensors);
+					}
+				});
+			}
+
+			var SaveSensorData = function(addr) {
+				name 		= document.getElementById("id_sensor_name").innerHTML;
+				recording	= (document.getElementById("id_sensor_recording").checked) ? 1 : 0;
+				enable		= (document.getElementById("id_sensor_status").checked) ? 1 : 0;
+				www_access 	= (document.getElementById("id_sensor_global_access").checked) ? 1 : 0;
+				payload = {
+					addr: parseInt(addr, 10),
+					name: name,
+					recording: recording,
+					enable: enable,
+					access_from_www: www_access
+				};
+				api.SendCustomCommand(NodeUUID, "save_sensor_to_db", payload, function(res) {
+					var payload = res.data.payload;
+					if (payload.sensors !== undefined) {
+						BuildUISensors(payload.sensors);
+					}
+				});
 			}
 
 			var SwitchChanged = function(elem, addr) {
@@ -279,7 +391,8 @@
 							case 6: {
 								sensor = {
 									dev: packet.data.payload.dev,
-									rf_type: packet.data.payload.rf_type
+									rf_type: packet.data.payload.rf_type,
+									addr: packet.data.payload.addr
 								}
 								document.getElementById("config_sensors_list_id").innerHTML += ConfigUIGenerate(sensor);
 								feather.replace();
@@ -319,64 +432,80 @@
 				}
 			}
 
+			var BuildUISensors = function(sensors) {
+				var htmlSensors = `
+				<div class="table-responsive">
+					<table class="table table-striped table-sm">
+						<thead>
+							<tr>
+								<th>Icon</th>
+								<th>Name</th>
+								<th>Description</th>
+								<th>Value</th>
+								<th>Settings</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+						<tbody>`;
+				for (var key in sensors) {
+					sensor = sensors[key];
+					htmlSensors += SensorUIGenerate(sensor);
+				}
+				htmlSensors += `</tbody></table></div>`;
+				document.getElementById("sensors_list_id").innerHTML = htmlSensors;
+				document.getElementById("sensors_count_id").innerHTML = sensors.length;
+				
+				feather.replace();
+			}
+
+			var BuildUIConfigSensors = function(config_sensors) {
+				var htmlConfigSensors = `
+				<div class="table-responsive">
+					<table class="table table-striped table-sm">
+						<thead>
+							<tr>
+								<th>Icon</th>
+								<th>Name</th>
+								<th>Description</th>
+								<th>Settings</th>
+								<th>Add</th>
+							</tr>
+						</thead>
+						<tbody id="config_sensors_list_id">`;
+				for (var key in config_sensors) {
+					sensor = config_sensors[key];
+					htmlConfigSensors += ConfigUIGenerate(sensor);
+				}
+				htmlConfigSensors += `</tbody></table></div>`;
+				document.getElementById("devices_list_id").innerHTML = htmlConfigSensors;
+				document.getElementById("devices_count_id").innerHTML = config_sensors.length;
+				
+				feather.replace();
+			}
+
+			var BuildUI = function(data) {
+				sensors = data.sensors;
+				devices = data.devices;
+				config_sensors = data.config_sensors;
+				
+				htmlDevice = DeviceUIGenerate("TX", devices.tx);
+				document.getElementById("id_tx_device").innerHTML = htmlDevice;
+				htmlDevice = DeviceUIGenerate("RX", devices.rx);
+				document.getElementById("id_rx_device").innerHTML = htmlDevice;
+
+				BuildUIConfigSensors(config_sensors);
+				BuildUISensors(sensors);
+
+				feather.replace();
+			}
+
 			api.ConnectGateway(function() {
 				console.log("Connection to Gateway was established.");
 				api.Gateway.OnNodeChangeEvent = OnNodeChangeEvent;
 
 				api.GetNodeSensorsInfo(NodeUUID, function(res) {
 					console.log(res.data.payload);
-					data = res.data.payload;
-					sensors = data.sensors;
-					devices = data.devices;
-					config_sensors = data.config_sensors;
-					
-					htmlDevice = DeviceUIGenerate("TX", devices.tx);
-					document.getElementById("id_tx_device").innerHTML = htmlDevice;
-					htmlDevice = DeviceUIGenerate("RX", devices.rx);
-					document.getElementById("id_rx_device").innerHTML = htmlDevice;
-
-					var htmlConfigSensors = `
-					<div class="table-responsive">
-						<table class="table table-striped table-sm">
-							<thead>
-								<tr>
-									<th>Icon</th>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Settings</th>
-								</tr>
-							</thead>
-							<tbody id="config_sensors_list_id">`;
-					for (var key in config_sensors) {
-						sensor = config_sensors[key];
-						htmlConfigSensors += ConfigUIGenerate(sensor);
-					}
-					htmlConfigSensors += `</tbody></table></div>`;
-					document.getElementById("devices_list_id").innerHTML = htmlConfigSensors;
-					document.getElementById("devices_count_id").innerHTML = config_sensors.length;
-
-					var htmlSensors = `
-					<div class="table-responsive">
-						<table class="table table-striped table-sm">
-							<thead>
-								<tr>
-									<th>Icon</th>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Value</th>
-									<th>Settings</th>
-								</tr>
-							</thead>
-							<tbody>`;
-					for (var key in sensors) {
-						sensor = sensors[key];
-						htmlSensors += SensorUIGenerate(sensor);
-					}
-					htmlSensors += `</tbody></table></div>`;
-					document.getElementById("sensors_list_id").innerHTML = htmlSensors;
-					document.getElementById("sensors_count_id").innerHTML = sensors.length;
-					
-              		feather.replace();
+					BuildUI(res.data.payload);
 
 					api.RegisterOnNodeChange(NodeUUID, function(res) {
 						console.log("REGISTERED", res);
@@ -384,12 +513,54 @@
 				});
 			});
 
-			$('#exampleModal').on('hide.bs.modal', function (e) {
+			$('#id-semsor-modal').on('hide.bs.modal', function (e) {
 				
 			})
 
-			var OpenModal = function (elem, camera_dev, camera_uid) {
-				$('#exampleModal').modal('show')
+			var OpenModal = function (elem, id, rf_type, obj, selector) {
+				switch(rf_type) {
+					case 1:
+						document.getElementById("id_modal_content").innerHTML 	= "";
+						document.getElementById("id_modal_footer").innerHTML 	= "";
+					break;
+					case 2:
+						document.getElementById("id_modal_content").innerHTML 	= "";
+						document.getElementById("id_modal_footer").innerHTML 	= "";
+					break;
+					case 3:
+						if (selector == 1) {
+							html = sensorModalFooterlView
+							html = html.split("[ID]").join(id);
+							document.getElementById("id_modal_content").innerHTML 			= sensorModalView;
+							document.getElementById("id_modal_footer").innerHTML 			= html;
+							document.getElementById("id_sensor_addr").innerHTML 			= obj.addr;
+							document.getElementById("id_sensor_rf_type").innerHTML 			= rf_type; 
+							document.getElementById("id_sensor_name").innerHTML 			= obj.name; 
+							$('#id_sensor_name').editable({
+								type:  'text',
+								name:  'name',
+								title: 'name'
+							});
+							SetCheckboxState("id_sensor_global_access", obj.www_access);
+							SetCheckboxState("id_sensor_status", obj.enabled);
+							SetCheckboxState("id_sensor_recording", obj.recording);
+						} else {
+							html = configureSensorModalFooterlView
+							html = html.split("[ID]").join(id);
+							document.getElementById("id_modal_content").innerHTML 			= configureSensorModalView;
+							document.getElementById("id_modal_footer").innerHTML 			= html;
+							document.getElementById("id_sensor_config_dev").innerHTML 		= id;
+							document.getElementById("id_sensor_config_addr").innerHTML 		= obj.addr;
+							document.getElementById("id_sensor_config_rf_type").innerHTML 	= rf_type; 
+							$('#id_sensor_config_addr').editable({
+								type:  'text',
+								name:  'addr',
+								title: 'addr'
+							});
+						}
+					break;
+				}
+				$('#id-semsor-modal').modal('show')
 			}
 
 			feather.replace();

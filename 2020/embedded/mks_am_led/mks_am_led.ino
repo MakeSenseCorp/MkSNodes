@@ -1,9 +1,12 @@
 #include <VirtualWire.h>
+#include <EEPROM.h>
 #include "MkSAMProt.h"
 #include "MkSProtocol.h"
 #include "MkSDeviceStructure.h"
 #include "MkSSensor.h"
 #include "MkSAMCommon.h"
+
+#define OPCODE_SET_ADDRESS 150
 
 NodeState state = { 0 };
 
@@ -24,6 +27,12 @@ MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_rx_buffer;
 uint8_t me_addr = 1;
 uint32_t ticker = 1;
 
+void init_network(void) {
+  vw_set_rx_pin(MKS_PROT_PIN);  // pin
+  vw_setup(MKS_PROT_BPS);       // bps
+  vw_rx_start();
+}
+
 void setup() {
   Serial.begin(9600);
   delay(10);
@@ -43,13 +52,15 @@ void setup() {
   uart_tx_buffer[6] = '\n';
 
   pinMode(LED_BUILTIN, OUTPUT);
-  
-  vw_set_rx_pin(MKS_PROT_PIN);  // pin
-  vw_setup(MKS_PROT_BPS);       // bps
-  vw_rx_start();
+  me_addr = EEPROM.read(0);
+  init_network();
 }
 
 void loop() {
+  //digitalWrite(LED_BUILTIN, HIGH);
+  //delay(2500);
+  //digitalWrite(LED_BUILTIN, LOW);
+  //delay(2500);
   if (Serial.available() > 0) {
     delay(100);
     int len = Serial.readBytesUntil('\n', uart_rx_buffer, MAX_LENGTH);
@@ -75,10 +86,11 @@ void loop() {
         case OPCODE_GET_DEVICE_ADDITIONAL: {
           uart_tx_header->direction      = SYNC_RESPONSE;
           uart_tx_header->op_code        = OPCODE_GET_DEVICE_ADDITIONAL;
-          uart_tx_header->content_length = 1;
-          uart_tx_buffer_length          = sizeof(mks_header) + 1;
+          uart_tx_header->content_length = 2;
+          uart_tx_buffer_length          = sizeof(mks_header) + 2;
 
-          uart_tx_buffer[sizeof(mks_header)] = DEVICE_SUB_TYPE;
+          uart_tx_buffer[sizeof(mks_header)]        = DEVICE_SUB_TYPE;
+          uart_tx_buffer[sizeof(mks_header)+1]      = me_addr;
           uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
           uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
           Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
@@ -87,6 +99,20 @@ void loop() {
         case OPCODE_PAUSE_WITH_TIMEOUT: {
           state.pause = 0x1;
           state.pauseTs = millis();
+        }
+        case OPCODE_SET_ADDRESS: {
+          uart_tx_header->direction      = SYNC_RESPONSE;
+          uart_tx_header->op_code        = OPCODE_SET_ADDRESS;
+          uart_tx_header->content_length = 1;
+          uart_tx_buffer_length          = sizeof(mks_header) + 1;
+
+          EEPROM.write(0, uart_rx_buffer[sizeof(mks_header)]);
+          me_addr = EEPROM.read(0);
+
+          uart_tx_buffer[sizeof(mks_header)]        = me_addr;
+          uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
+          uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
+          Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
         }
         break;
         default: {
@@ -99,12 +125,14 @@ void loop() {
   } else {
     if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
       if (ptr_packet->addr == me_addr) {
+        /*
         Serial.print(ptr_packet->addr);
         Serial.print(" ");
         Serial.print(ptr_packet->command);
         Serial.print(" ");
         Serial.print(ptr_packet->data);
         Serial.println();
+        */
 
         switch(ptr_packet->command) {
           case 1:
@@ -124,6 +152,11 @@ void loop() {
       }
     }
 
+    if (ticker % 100000 == 0) {
+      init_network();
+    }
+
     ticker++;
+    delay(10);
   }
 }
