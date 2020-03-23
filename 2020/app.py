@@ -82,6 +82,7 @@ class Context():
 		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, rf_type, classname=self.ClassName))
 		if rf_type == 1:
 			if self.MasterTX is not None:
+				self.DB["confuguration"]["devices"]["tx"]["state"] = 0
 				self.MasterTX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",
@@ -90,6 +91,7 @@ class Context():
 				})
 		elif rf_type == 2:
 			if self.MasterRX is not None:
+				self.DB["confuguration"]["devices"]["rx"]["state"] = 0
 				self.MasterRX = None
 				THIS.Node.EmitOnNodeChange({
 					'event': "device_remove",

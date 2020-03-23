@@ -106,6 +106,9 @@
           	var GatewayIP = "[GATEWAY_IP]";
 			var NodeUUID  = "[NODE_UUID]";
 
+			var rxState = 0;
+			var txState = 0;
+
 			function SetCheckboxState(id, val) {
 				elem = document.getElementById(id);
 				if (elem === null) {
@@ -253,35 +256,44 @@
 				var htmlType = "";
 				switch(sensor.type) {
 					case 1:
-					html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
-					htmlType = `
-						<div class="custom-control custom-switch">
-							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="SwitchChanged(this, [ADDR]);" id="switch_id_[SWITCH_ID]">
-							<label class="custom-control-label" for="switch_id_[SWITCH_ID]"></label>
-						</div>
-					`;
-					htmlType = htmlType.split("[DISABLED]").join("");
-					if (sensor.value == 0) {
-						htmlType = htmlType.split("[STATE]").join("");
-					} else {
-						htmlType = htmlType.split("[STATE]").join("checked");
-					}
-					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
-					htmlType = htmlType.split("[SWITCH_ID]").join(sensor.addr);
+						if (txState == 1) {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
+							htmlType = `
+								<div class="custom-control custom-switch">
+									<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="SwitchChanged(this, [ADDR]);" id="switch_id_[SWITCH_ID]">
+									<label class="custom-control-label" for="switch_id_[SWITCH_ID]"></label>
+								</div>
+							`;
+							htmlType = htmlType.split("[DISABLED]").join("");
+							if (sensor.value == 0) {
+								htmlType = htmlType.split("[STATE]").join("");
+							} else {
+								htmlType = htmlType.split("[STATE]").join("checked");
+							}
+							htmlType = htmlType.split("[ADDR]").join(sensor.addr);
+							htmlType = htmlType.split("[SWITCH_ID]").join(sensor.addr);
+						} else {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
+							htmlType = `<span style="color: black">DISABLED</span>`;
+						}
 					break;
 					case 2:
-					html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
-					if (sensor.value == 0) {
-						htmlType = `
-							<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
-						`;
-					} else {
-						htmlType = `
-							<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
-						`;
-					}
-					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
-					
+						if (rxState == 1) {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
+							if (sensor.value == 0) {
+								htmlType = `
+									<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
+								`;
+							} else {
+								htmlType = `
+									<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
+								`;
+							}
+							htmlType = htmlType.split("[ADDR]").join(sensor.addr);
+						} else {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
+							htmlType = `<span style="color: black">DISABLED</span>`;
+						}
 					break;
 				}
 				html = html.split("[SENSOR]").join(htmlType);
@@ -389,7 +401,8 @@
 							}
 							break;
 							case 2: {
-
+								document.getElementById("id_RX_name").style.color = "green";
+								document.getElementById("id_RX_state").innerHTML = "Connected";
 							}
 							break;
 							case 3:
@@ -408,6 +421,10 @@
 							default:
 							break;
 						}
+
+						api.GetNodeSensorsInfo(NodeUUID, function(res) {
+							BuildUI(res.data.payload);
+						});
 					}
 					break;
 					case "device_remove": {
@@ -419,7 +436,8 @@
 							}
 							break;
 							case 2: {
-
+								document.getElementById("id_RX_name").style.color = "red";
+								document.getElementById("id_RX_state").innerHTML = "Not Connected";
 							}
 							break;
 							case 3:
@@ -434,6 +452,9 @@
 							default:
 							break;
 						}
+						api.GetNodeSensorsInfo(NodeUUID, function(res) {
+							BuildUI(res.data.payload);
+						});
 					}
 					break;
 					case "sensor_value_change": {
@@ -515,6 +536,9 @@
 				sensors = data.sensors;
 				devices = data.devices;
 				config_sensors = data.config_sensors;
+
+				rxState = devices.rx.state;
+				txState = devices.tx.state;
 				
 				htmlDevice = DeviceUIGenerate("TX", devices.tx);
 				document.getElementById("id_tx_device").innerHTML = htmlDevice;
