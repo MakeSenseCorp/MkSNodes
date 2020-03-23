@@ -1,12 +1,11 @@
 {
-  "local_storage": 1, 
   "sensors": [
     {
       "rf_type": 3, 
       "enable": 1, 
       "addr": 1, 
       "access_from_www": 1, 
-      "value": 1, 
+      "value": 0, 
       "custom": {}, 
       "recording": 1, 
       "type": 1, 
@@ -22,20 +21,32 @@
       "recording": 0, 
       "type": 1, 
       "name": "Children"
+    }, 
+    {
+      "recording": 1, 
+      "enable": 1, 
+      "addr": 3, 
+      "access_from_www": 1, 
+      "value": 0, 
+      "custom": {}, 
+      "rf_type": 4, 
+      "type": 2, 
+      "name": "Garage Movement"
     }
   ], 
-  "security": 0, 
   "usb_device": {
     "enabled": 0, 
     "name": ""
   }, 
+  "local_storage": 1, 
+  "security": 0, 
   "confuguration": {
     "devices": {
       "rx": {
-        "state": 0
+        "state": 1
       }, 
       "tx": {
-        "state": 1
+        "state": 0
       }
     }
   }

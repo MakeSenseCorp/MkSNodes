@@ -58,7 +58,26 @@ class Context():
 		self.HW 						= MkSConnectorUART.Connector()
 
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
+		self.HW.AdaptorAsyncDataEvent	 = self.AdaptorAsyncDataCallback
 	
+	def AdaptorAsyncDataCallback(self, path, packet):
+		if self.MasterRX is not None:
+			if path == self.MasterRX["path"]:
+				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
+				if packet[1] == 101:
+					if len(packet) > 6:
+						THIS.Node.EmitOnNodeChange({
+							'event': "sensor_value_change",
+							'sensor': {
+								'addr': str(packet[3]),
+								'value': (int(packet[6]) << 8) | int(packet[5])
+							}
+						})
+					else:
+						print ("({classname})# [ERROR] (RF RX) {1}".format(len(packet), classname=self.ClassName))
+				else:
+					pass
+
 	def AdaptorDisconnectedCallback(self, path, rf_type):
 		print ("({classname})# (AdaptorDisconnectedCallback) {0} {1} ...".format(path, rf_type, classname=self.ClassName))
 		if rf_type == 1:
@@ -107,6 +126,7 @@ class Context():
 
 		item = self.FindSensor(payload["addr"])
 		if item is None:
+			sensor_type = int(payload["rf_type"]) - 2
 			sensor = {
 				"rf_type": payload["rf_type"], 
 				"enable": 1, 
@@ -115,7 +135,7 @@ class Context():
 				"value": 0, 
 				"custom": {}, 
 				"recording": 1, 
-				"type": 1, 
+				"type": sensor_type, 
 				"name": "New Sensor"
 			}
 			self.DB["sensors"].append(sensor)
@@ -216,9 +236,6 @@ class Context():
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {})
 	
-	def RFDataArrivedHandler(self, packet):
-		pass
-	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
 	
@@ -234,6 +251,7 @@ class Context():
 		op_code			= data[1]
 		content_length	= data[2]
 		rf_type 		= data[3]
+		print("({classname})# RF DEVICE FOUND ... {0}".format(rf_type, classname=self.ClassName))
 		adapter["rf_type"] 	= rf_type
 		if rf_type == 1:
 			adapter["addr"] = 0
@@ -258,7 +276,20 @@ class Context():
 				'addr': 0
 			})
 		elif rf_type == 3:
-			print("({classname})# SLAVE Found ...".format(classname=self.ClassName))
+			print("({classname})# SLAVE SWITCH Found ...".format(classname=self.ClassName))
+			addr 			= data[4]
+			adapter["addr"] = addr
+			dev 			= adapter["path"].split('/')
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_append",
+				'rf_type': rf_type,
+				'path': adapter["path"],
+				'dev': dev[2],
+				'addr': addr
+			})
+			self.DeviceList.append(adapter)
+		elif rf_type == 4:
+			print("({classname})# SLAVE MOTION (PIR) Found ...".format(classname=self.ClassName))
 			addr 			= data[4]
 			adapter["addr"] = addr
 			dev 			= adapter["path"].split('/')

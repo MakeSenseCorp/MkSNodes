@@ -235,12 +235,6 @@
 				html = html.split("[DESCRIPTION]").join("433MHz sensor");
 				html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="activity"></span>`);
 
-				switch(sensor.type) {
-					case 1:
-					html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
-					break;
-				}
-
 				return html;
 			}
 
@@ -274,6 +268,19 @@
 					}
 					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
 					htmlType = htmlType.split("[SWITCH_ID]").join(sensor.addr);
+					break;
+					case 2:
+					html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
+					if (sensor.value == 0) {
+						htmlType = `
+							<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
+						`;
+					} else {
+						htmlType = `
+							<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
+						`;
+					}
+					htmlType = htmlType.split("[ADDR]").join(sensor.addr);
 					
 					break;
 				}
@@ -429,6 +436,26 @@
 						}
 					}
 					break;
+					case "sensor_value_change": {
+						console.log(packet.data.payload);
+						var sensor = packet.data.payload.sensor;
+						var element = document.getElementById("senor_id_" + sensor.addr);
+
+						if (element !== undefined && element != null) {
+							if (sensor.value == "1") {
+								console.log("MOTION");
+								element.style.color = "red";
+								element.setAttribute("data-feather", "user-check");
+							} else {
+								console.log("STILL");
+								element.style.color = "black";
+								element.setAttribute("data-feather", "user");
+							}
+
+							feather.replace();
+						}
+					}
+					break;
 				}
 			}
 
@@ -459,6 +486,7 @@
 			}
 
 			var BuildUIConfigSensors = function(config_sensors) {
+				console.log("->", config_sensors);
 				var htmlConfigSensors = `
 				<div class="table-responsive">
 					<table class="table table-striped table-sm">
@@ -528,6 +556,7 @@
 						document.getElementById("id_modal_footer").innerHTML 	= "";
 					break;
 					case 3:
+					case 4:
 						if (selector == 1) {
 							html = sensorModalFooterlView
 							html = html.split("[ID]").join(id);

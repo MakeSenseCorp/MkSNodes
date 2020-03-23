@@ -7,11 +7,19 @@
 #include "MkSAMCommon.h"
 
 #define OPCODE_SET_ADDRESS 150
+#define OPCODE_SENSOR_VALUE 10
+
+#define NO_MOTION   0
+#define MOTION      1
+#define PIR_PIN     5
 
 NodeState state = { 0 };
+uint8_t pir_read_delay_index = 4;
+uint16_t prev_pir_state = NO_MOTION;
+uint16_t pir_read_delay[5] = {2000, 1000, 500, 250, 1};
 
 unsigned char DEVICE_TYPE[] = { '2','0','2','0' };
-unsigned char DEVICE_SUB_TYPE = SLAVE;
+unsigned char DEVICE_SUB_TYPE = 0x4;
 
 mks_header*   uart_tx_header;
 unsigned char uart_tx_buffer[MAX_LENGTH];
@@ -20,17 +28,15 @@ unsigned char uart_tx_buffer_length;
 mks_header*   uart_rx_header;
 unsigned char uart_rx_buffer[MAX_LENGTH];
 
-uint8_t rf_rx_buffer[MKS_PROT_BUFF_SIZE_32] = {0};
-uint8_t rf_rx_buffer_length = MKS_PROT_BUFF_SIZE_32;
-MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_rx_buffer;
+uint8_t rf_tx_buffer[MKS_PROT_BUFF_SIZE_32] = {0};
+MkSAM32BitProtocol * ptr_packet = (MkSAM32BitProtocol *)rf_tx_buffer;
 
 uint8_t me_addr = 1;
 uint32_t ticker = 1;
 
 void init_network(void) {
-  vw_set_rx_pin(MKS_PROT_PIN);  // pin
+  vw_set_tx_pin(MKS_PROT_PIN);  // pin
   vw_setup(MKS_PROT_BPS);       // bps
-  vw_rx_start();
 }
 
 void setup() {
@@ -51,9 +57,18 @@ void setup() {
   uart_tx_header->content_length  = 0x0;
   uart_tx_buffer[6] = '\n';
 
+  pinMode(PIR_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   me_addr = EEPROM.read(0);
+  ptr_packet->addr      = me_addr;
+  ptr_packet->command   = OPCODE_SENSOR_VALUE;
+  ptr_packet->data      = NO_MOTION;
   init_network();
+}
+
+void send_motion() {
+    vw_send(rf_tx_buffer, MKS_PROT_BUFF_SIZE_32); 
+    vw_wait_tx(); 
 }
 
 void loop() {
@@ -115,25 +130,24 @@ void loop() {
       }
     }
   } else {
-    if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
-      if (ptr_packet->addr == me_addr) {
-        switch(ptr_packet->command) {
-          case 1:
-            if (ptr_packet->data > 0) {
-              digitalWrite(LED_BUILTIN, HIGH);
-            } else {
-              digitalWrite(LED_BUILTIN, LOW);
-            }
-          break;
-        }
-      }
-    }
+    // PIR logic here
+    if (ticker % pir_read_delay[pir_read_delay_index] == 0) {
+        ptr_packet->data = (uint16_t)digitalRead(PIR_PIN);
+        digitalWrite(LED_BUILTIN, ptr_packet->data);
 
-    if (ticker % 100000 == 0) {
-      init_network();
+        if (pir_read_delay_index < 4) {
+            pir_read_delay_index++;
+            send_motion();
+        }
+
+        if (prev_pir_state != ptr_packet->data) {
+            prev_pir_state = ptr_packet->data;
+            pir_read_delay_index = 0;
+            send_motion();
+        }
     }
 
     ticker++;
-    delay(10);
+    delay(1);
   }
 }
