@@ -10,6 +10,8 @@
 
 NodeState state = { 0 };
 
+void(* reset_function)(void) = 0;
+
 unsigned char DEVICE_TYPE[] = { '2','0','2','0' };
 unsigned char DEVICE_SUB_TYPE = MASTER_RX;
 
@@ -29,6 +31,8 @@ uint32_t ticker = 1;
 void setup() {
   Serial.begin(9600);
   delay(10);
+
+  // Serial.println("Loading Firmware...");
   
   memset(uart_tx_buffer, 0, MAX_LENGTH);
   uart_tx_header = (mks_header *)(&uart_tx_buffer[0]);
@@ -106,36 +110,40 @@ void loop() {
     delay(1);
 
     if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
-        // Build response.
-        uart_tx_header->direction      = ASYNC;
-        uart_tx_header->op_code        = OPCODE_RX_DATA;
-        uart_tx_header->content_length = 4;
-        uart_tx_buffer_length          = sizeof(mks_header) + 4;
+      if (rf_rx_buffer_length < 4) {
+        delay(10);
+        reset_function();
+      }
+      // Build response.
+      uart_tx_header->direction      = ASYNC;
+      uart_tx_header->op_code        = OPCODE_RX_DATA;
+      uart_tx_header->content_length = 4;
+      uart_tx_buffer_length          = sizeof(mks_header) + 4;
 
-        memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)rf_rx_buffer, MKS_PROT_BUFF_SIZE_32);
+      memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)rf_rx_buffer, MKS_PROT_BUFF_SIZE_32);
 
-        uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
-        uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
-        Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
+      uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
+      uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
+      Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
     } else {
-        if (ticker % (1000 * 10) == 0) {
-            if (!state.pause) {
-                uart_tx_header->direction                 = ASYNC;
-                uart_tx_header->op_code                   = OPCODE_HEARTBEAT;
-                uart_tx_header->content_length            = 1;
-                uart_tx_buffer_length                     = sizeof(mks_header) + 1;
-                uart_tx_buffer[sizeof(mks_header)]        = MKS_ACK;
-                uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
-                uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
-                Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
-            }
-        }
-            
-        if (state.pause) {
-            if (abs(millis() - state.pauseTs) > 500) {
-                state.pause = 0x0;
-            }
-        }
+      if (ticker % (1000 * 10) == 0) {
+          if (!state.pause) {
+              uart_tx_header->direction                 = ASYNC;
+              uart_tx_header->op_code                   = OPCODE_HEARTBEAT;
+              uart_tx_header->content_length            = 1;
+              uart_tx_buffer_length                     = sizeof(mks_header) + 1;
+              uart_tx_buffer[sizeof(mks_header)]        = MKS_ACK;
+              uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
+              uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
+              Serial.write(&uart_tx_buffer[0], uart_tx_buffer_length + 2);
+          }
+      }
+          
+      if (state.pause) {
+          if (abs(millis() - state.pauseTs) > 500) {
+              state.pause = 0x0;
+          }
+      }
     }
     
     ticker++;

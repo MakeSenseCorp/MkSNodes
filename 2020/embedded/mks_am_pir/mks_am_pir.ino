@@ -147,6 +147,10 @@ void loop() {
         }
     }
 
+    if (ticker % (1000 * 10) == 0) {
+        send_motion();
+    }
+
     ticker++;
     delay(1);
   }

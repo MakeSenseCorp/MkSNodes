@@ -63,7 +63,7 @@ class Context():
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
 			if path == self.MasterRX["path"]:
-				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
+				# print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 				if packet[1] == 101:
 					if len(packet) > 6:
 						THIS.Node.EmitOnNodeChange({
