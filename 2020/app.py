@@ -63,16 +63,35 @@ class Context():
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
 			if path == self.MasterRX["path"]:
-				# print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
+				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 				if packet[1] == 101:
 					if len(packet) > 6:
-						THIS.Node.EmitOnNodeChange({
-							'event': "sensor_value_change",
-							'sensor': {
-								'addr': str(packet[3]),
-								'value': (int(packet[6]) << 8) | int(packet[5])
-							}
-						})
+						sensor = self.FindSensor(packet[3])
+						if sensor is not None:
+							if int(sensor["rf_type"]) == 5:
+								motion = int(packet[5]) & 1
+								temperature = (int(packet[5]) & 0xfe) >> 1
+								humidity = int(packet[6])
+								print(temperature, humidity)
+								THIS.Node.EmitOnNodeChange({
+									'event': "sensor_value_change",
+									'sensor': {
+										'addr': str(packet[3]),
+										'rf_type': sensor["rf_type"],
+										'motion': motion,
+										'temperature': temperature,
+										'humidity': humidity
+									}
+								})
+							else:
+								THIS.Node.EmitOnNodeChange({
+									'event': "sensor_value_change",
+									'sensor': {
+										'addr': str(packet[3]),
+										'rf_type': sensor["rf_type"],
+										'value': (int(packet[6]) << 8) | int(packet[5])
+									}
+								})
 					else:
 						print ("({classname})# [ERROR] (RF RX) {1}".format(len(packet), classname=self.ClassName))
 				else:
@@ -292,6 +311,19 @@ class Context():
 			self.DeviceList.append(adapter)
 		elif rf_type == 4:
 			print("({classname})# SLAVE MOTION (PIR) Found ...".format(classname=self.ClassName))
+			addr 			= data[4]
+			adapter["addr"] = addr
+			dev 			= adapter["path"].split('/')
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_append",
+				'rf_type': rf_type,
+				'path': adapter["path"],
+				'dev': dev[2],
+				'addr': addr
+			})
+			self.DeviceList.append(adapter)
+		elif rf_type == 5:
+			print("({classname})# SLAVE PIR and DHT11 Found ...".format(classname=self.ClassName))
 			addr 			= data[4]
 			adapter["addr"] = addr
 			dev 			= adapter["path"].split('/')

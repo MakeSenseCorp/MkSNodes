@@ -282,16 +282,40 @@
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
 							if (sensor.value == 0) {
 								htmlType = `
-									<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
+									<span id="senor_motion_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
 								`;
 							} else {
 								htmlType = `
-									<span id="senor_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
+									<span id="senor_motion_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
 								`;
 							}
 							htmlType = htmlType.split("[ADDR]").join(sensor.addr);
 						} else {
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
+							htmlType = `<span style="color: black">DISABLED</span>`;
+						}
+					break;
+					case 3:
+						if (rxState == 1) {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
+							if (sensor.motion == 0) {
+								htmlType = `
+									<span id="senor_motion_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user"></span>
+								`;
+							} else {
+								htmlType = `
+									<span id="senor_motion_id_[ADDR]" style="width: 16px; height: 16px; color: black" data-feather="user-check"></span>
+								`;
+							}
+							htmlType += `
+								<span id="senor_temperature_id_[ADDR]" style="color: black"></span>
+							`;
+							htmlType += `
+								<span id="senor_humidity_id_[ADDR]" style="color: black"></span>
+							`;
+							htmlType = htmlType.split("[ADDR]").join(sensor.addr);
+						} else {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
 					break;
@@ -389,6 +413,33 @@
 				}, function(res) { });
 			};
 
+			var UpdateMotionSesnor = function(addr, value) {
+				var element = document.getElementById("senor_motion_id_" + addr);
+				if (element !== undefined && element != null) {
+					if (value == "1") {
+						element.style.color = "red";
+						element.setAttribute("data-feather", "user-check");
+					} else {
+						element.style.color = "black";
+						element.setAttribute("data-feather", "user");
+					}
+				}
+			}
+
+			var UpdateTemperatureSesnor = function(addr, value) {
+				var element = document.getElementById("senor_temperature_id_" + addr);
+				if (element !== undefined && element != null) {
+					element.innerHTML = value + "C";
+				}
+			}
+
+			var UpdateHumiditySesnor = function(addr, value) {
+				var element = document.getElementById("senor_humidity_id_" + addr);
+				if (element !== undefined && element != null) {
+					element.innerHTML = value + "H";
+				}
+			}
+
 			var OnNodeChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", packet.data.payload.event);
 				switch(packet.data.payload.event) {
@@ -460,20 +511,21 @@
 					case "sensor_value_change": {
 						console.log(packet.data.payload);
 						var sensor = packet.data.payload.sensor;
-						var element = document.getElementById("senor_id_" + sensor.addr);
 
-						if (element !== undefined && element != null) {
-							if (sensor.value == "1") {
-								console.log("MOTION");
-								element.style.color = "red";
-								element.setAttribute("data-feather", "user-check");
-							} else {
-								console.log("STILL");
-								element.style.color = "black";
-								element.setAttribute("data-feather", "user");
-							}
-
+						if (sensor.rf_type == 3) {
+							// SWITCH
+						} else if (sensor.rf_type == 4) {
+							// MOTION
+							UpdateMotionSesnor(sensor.addr, sensor.value);
 							feather.replace();
+						} else if (sensor.rf_type == 5) {
+							// MOTION and DHT11
+							UpdateMotionSesnor(sensor.addr, sensor.motion);
+							UpdateTemperatureSesnor(sensor.addr, sensor.temperature);
+							UpdateHumiditySesnor(sensor.addr, sensor.humidity);
+							feather.replace();
+						} else {
+
 						}
 					}
 					break;
@@ -581,6 +633,7 @@
 					break;
 					case 3:
 					case 4:
+					case 5:
 						if (selector == 1) {
 							html = sensorModalFooterlView
 							html = html.split("[ID]").join(id);
