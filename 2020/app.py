@@ -63,7 +63,7 @@ class Context():
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
 			if path == self.MasterRX["path"]:
-				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
+				# print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 				if packet[1] == 101:
 					if len(packet) > 6:
 						sensor = self.FindSensor(packet[3])
@@ -72,7 +72,6 @@ class Context():
 								motion = int(packet[5]) & 1
 								temperature = (int(packet[5]) & 0xfe) >> 1
 								humidity = int(packet[6])
-								print(temperature, humidity)
 								THIS.Node.EmitOnNodeChange({
 									'event': "sensor_value_change",
 									'sensor': {
