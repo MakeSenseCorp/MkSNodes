@@ -135,19 +135,21 @@ void loop() {
         ptr_packet->data = (uint16_t)digitalRead(PIR_PIN);
         digitalWrite(LED_BUILTIN, ptr_packet->data);
 
+        /*
         if (pir_read_delay_index < 4) {
             pir_read_delay_index++;
             send_motion();
         }
+        */
 
         if (prev_pir_state != ptr_packet->data) {
             prev_pir_state = ptr_packet->data;
-            pir_read_delay_index = 0;
+            // pir_read_delay_index = 0;
             send_motion();
         }
     }
 
-    if (ticker % (1000 * 10) == 0) {
+    if (ticker % (1000 * 5) == 0) {
         send_motion();
     }
 

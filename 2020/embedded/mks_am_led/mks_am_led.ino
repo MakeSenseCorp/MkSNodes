@@ -10,6 +10,8 @@
 
 NodeState state = { 0 };
 
+void(* reset_function)(void) = 0;
+
 unsigned char DEVICE_TYPE[] = { '2','0','2','0' };
 unsigned char DEVICE_SUB_TYPE = SLAVE;
 
@@ -115,7 +117,13 @@ void loop() {
       }
     }
   } else {
+    delay(1);
     if (vw_get_message(rf_rx_buffer, &rf_rx_buffer_length)) {
+      if (rf_rx_buffer_length < 4) {
+        delay(10);
+        reset_function();
+      }
+
       if (ptr_packet->addr == me_addr) {
         switch(ptr_packet->command) {
           case 1:
@@ -129,11 +137,6 @@ void loop() {
       }
     }
 
-    if (ticker % 100000 == 0) {
-      init_network();
-    }
-
     ticker++;
-    delay(10);
   }
 }
