@@ -98,6 +98,19 @@ class Context():
 												'humidity': humidity
 											}
 										})
+									elif int(sensor["rf_type"]) == 6:
+										temperature = int(packet[5])
+										humidity = int(packet[6])
+										self.SensorsDB.WriteDB(str(packet[3]), [str(temperature), str(humidity)])
+										THIS.Node.EmitOnNodeChange({
+											'event': "sensor_value_change",
+											'sensor': {
+												'addr': str(packet[3]),
+												'rf_type': sensor["rf_type"],
+												'temperature': temperature,
+												'humidity': humidity
+											}
+										})
 									else:
 										self.SensorsDB.WriteDB(str(packet[3]), [str((int(packet[6]) << 8) | int(packet[5]))])
 										THIS.Node.EmitOnNodeChange({
@@ -342,6 +355,19 @@ class Context():
 			self.DeviceList.append(adapter)
 		elif rf_type == 5:
 			print("({classname})# SLAVE PIR and DHT11 Found ...".format(classname=self.ClassName))
+			addr 			= data[4]
+			adapter["addr"] = addr
+			dev 			= adapter["path"].split('/')
+			THIS.Node.EmitOnNodeChange({
+				'event': "device_append",
+				'rf_type': rf_type,
+				'path': adapter["path"],
+				'dev': dev[2],
+				'addr': addr
+			})
+			self.DeviceList.append(adapter)
+		elif rf_type == 6:
+			print("({classname})# SLAVE DHT11 Found ...".format(classname=self.ClassName))
 			addr 			= data[4]
 			adapter["addr"] = addr
 			dev 			= adapter["path"].split('/')

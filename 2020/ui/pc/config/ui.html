@@ -319,6 +319,21 @@
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
 					break;
+					case 4:
+						if (rxState == 1) {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
+							htmlType += `
+								<span id="senor_temperature_id_[ADDR]" style="color: black"></span>
+							`;
+							htmlType += `
+								<span id="senor_humidity_id_[ADDR]" style="color: black"></span>
+							`;
+							htmlType = htmlType.split("[ADDR]").join(sensor.addr);
+						} else {
+							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
+							htmlType = `<span style="color: black">DISABLED</span>`;
+						}
+					break;
 				}
 				html = html.split("[SENSOR]").join(htmlType);
 				return html;
@@ -524,7 +539,12 @@
 							UpdateTemperatureSesnor(sensor.addr, sensor.temperature);
 							UpdateHumiditySesnor(sensor.addr, sensor.humidity);
 							feather.replace();
-						} else {
+						} else if (sensor.rf_type == 6) {
+							// DHT11
+							UpdateTemperatureSesnor(sensor.addr, sensor.temperature);
+							UpdateHumiditySesnor(sensor.addr, sensor.humidity);
+							feather.replace();
+						}else {
 
 						}
 					}
@@ -634,6 +654,7 @@
 					case 3:
 					case 4:
 					case 5:
+					case 6:
 						if (selector == 1) {
 							html = sensorModalFooterlView
 							html = html.split("[ID]").join(id);
