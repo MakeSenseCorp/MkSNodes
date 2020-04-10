@@ -246,7 +246,6 @@
 				html = html.split("[ID]").join(sensor.addr);
 				html = html.split("[NAME]").join(sensor.name);
 				html = html.split("[RF_TYPE]").join(sensor.rf_type);
-				html = html.split("[DESCRIPTION]").join("433MHz sensor");
 
 				html = html.split("[ADDR]").join(sensor.addr);
 				html = html.split("[WWW_ACCESS]").join(sensor.access_from_www);
@@ -276,6 +275,8 @@
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: red" data-feather="sun"></span>`);
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
+
+						html = html.split("[DESCRIPTION]").join("433MHz Switch");
 					break;
 					case 2:
 						if (rxState == 1) {
@@ -294,6 +295,7 @@
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="eye"></span>`);
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
+						html = html.split("[DESCRIPTION]").join("433MHz Motion sensor (PIR)");
 					break;
 					case 3:
 						if (rxState == 1) {
@@ -320,6 +322,7 @@
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
+						html = html.split("[DESCRIPTION]").join("433MHz PIR, Temp & Humi sensor");
 					break;
 					case 4:
 						if (rxState == 1) {
@@ -337,6 +340,7 @@
 							html = html.split("[ICON]").join(`<span style="width: 16px; height: 16px; color: green" data-feather="layers"></span>`);
 							htmlType = `<span style="color: black">DISABLED</span>`;
 						}
+						html = html.split("[DESCRIPTION]").join("433MHz Temp & Humi sensor");
 					break;
 				}
 				html = html.split("[SENSOR]").join(htmlType);
