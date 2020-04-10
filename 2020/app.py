@@ -19,6 +19,7 @@ from mksdk import MkSShellExecutor
 from mksdk import MkSConnectorUART
 from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
+from mksdk import MkSDBcsv
 
 from flask import Response, request
 from flask import send_file
@@ -48,6 +49,7 @@ class Context():
 			'undefined':				self.UndefindHandler
 		}
 		# Application variables
+		self.SensorsDB                  = MkSDBcsv.Database()
 		self.DB							= None
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
@@ -56,6 +58,7 @@ class Context():
 		self.MasterRX 					= None
 		self.DeviceList 				= []
 		self.HW 						= MkSConnectorUART.Connector()
+		self.SensorLastValue            = {}
 
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
 		self.HW.AdaptorAsyncDataEvent	 = self.AdaptorAsyncDataCallback
@@ -67,32 +70,48 @@ class Context():
 				if packet[1] == 101:
 					if len(packet) > 6:
 						sensor = self.FindSensor(packet[3])
-						if sensor is not None:
-							if int(sensor["rf_type"]) == 5:
-								motion = int(packet[5]) & 1
-								temperature = (int(packet[5]) & 0xfe) >> 1
-								humidity = int(packet[6])
-								THIS.Node.EmitOnNodeChange({
-									'event': "sensor_value_change",
-									'sensor': {
-										'addr': str(packet[3]),
-										'rf_type': sensor["rf_type"],
-										'motion': motion,
-										'temperature': temperature,
-										'humidity': humidity
-									}
-								})
+						
+						try:
+							update = True
+							# Do we nned to update UI?
+							if packet[3] in self.SensorLastValue:
+								update = (self.SensorLastValue[packet[3]] != (int(packet[6]) << 8) | int(packet[5]))
+								# print ("({classname})# [UPDATE] {0} = {1} ? {2}".format(update, self.SensorLastValue[packet[3]], (int(packet[6]) << 8) | int(packet[5]), classname=self.ClassName))
+								self.SensorLastValue[packet[3]] = (int(packet[6]) << 8) | int(packet[5])
 							else:
-								THIS.Node.EmitOnNodeChange({
-									'event': "sensor_value_change",
-									'sensor': {
-										'addr': str(packet[3]),
-										'rf_type': sensor["rf_type"],
-										'value': (int(packet[6]) << 8) | int(packet[5])
-									}
-								})
+								self.SensorLastValue[packet[3]] = (int(packet[6]) << 8) | int(packet[5])
+							
+							if sensor is not None:
+								if update is True:
+									if int(sensor["rf_type"]) == 5:
+										motion = int(packet[5]) & 1
+										temperature = (int(packet[5]) & 0xfe) >> 1
+										humidity = int(packet[6])
+										self.SensorsDB.WriteDB(str(packet[3]), [str(motion), str(temperature), str(humidity)])
+										THIS.Node.EmitOnNodeChange({
+											'event': "sensor_value_change",
+											'sensor': {
+												'addr': str(packet[3]),
+												'rf_type': sensor["rf_type"],
+												'motion': motion,
+												'temperature': temperature,
+												'humidity': humidity
+											}
+										})
+									else:
+										self.SensorsDB.WriteDB(str(packet[3]), [str((int(packet[6]) << 8) | int(packet[5]))])
+										THIS.Node.EmitOnNodeChange({
+											'event': "sensor_value_change",
+											'sensor': {
+												'addr': str(packet[3]),
+												'rf_type': sensor["rf_type"],
+												'value': (int(packet[6]) << 8) | int(packet[5])
+											}
+										})
+						except Exception as e:
+							print("(MkSNode)# ERROR - AdaptorAsyncDataCallback\n(EXEPTION)# {error}".format(error=str(e)))
 					else:
-						print ("({classname})# [ERROR] (RF RX) {1}".format(len(packet), classname=self.ClassName))
+						print ("({classname})# [ERROR] (RF RX) {0}".format(len(packet), classname=self.ClassName))
 				else:
 					pass
 
