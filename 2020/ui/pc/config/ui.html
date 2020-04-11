@@ -462,6 +462,10 @@
 					element.innerHTML = value + "H";
 				}
 			}
+			
+			var UpdateSwitch = function(addr, value) {
+				SetCheckboxState("switch_id_"+addr, value);
+			}
 
 			var OnNodeChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", packet.data.payload.event);
@@ -537,6 +541,7 @@
 
 						if (sensor.rf_type == 3) {
 							// SWITCH
+							UpdateSwitch(sensor.addr, sensor.value);
 						} else if (sensor.rf_type == 4) {
 							// MOTION
 							UpdateMotionSesnor(sensor.addr, sensor.value);

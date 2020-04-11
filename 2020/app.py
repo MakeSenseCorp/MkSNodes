@@ -293,10 +293,21 @@ class Context():
 		addr  = payload["addr"]
 		value = payload["value"]
 		if self.MasterTX is not None:
-			data = self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value))
+			message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value)
+			for x in range(3):
+				data = self.MasterTX["dev"].Send(message)
+				time.sleep(0.2)
 			sensor = self.FindSensor(addr)
 			sensor["value"] = value
 			self.File.SaveJSON("db.json", self.DB)
+			THIS.Node.EmitOnNodeChange({
+				'event': "sensor_value_change",
+				'sensor': {
+					'addr': str(addr),
+					'rf_type': sensor["rf_type"],
+					'value': value
+				}
+			})
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {})
 	
