@@ -14,9 +14,7 @@
 #define PIR_PIN     5
 
 NodeState state = { 0 };
-uint8_t pir_read_delay_index = 4;
 uint16_t prev_pir_state = NO_MOTION;
-uint16_t pir_read_delay[5] = {2000, 1000, 500, 250, 1};
 
 unsigned char DEVICE_TYPE[] = { '2','0','2','0' };
 unsigned char DEVICE_SUB_TYPE = 0x4;
@@ -66,9 +64,12 @@ void setup() {
   init_network();
 }
 
-void send_motion() {
+void send_data() {
     vw_send(rf_tx_buffer, MKS_PROT_BUFF_SIZE_32); 
-    vw_wait_tx(); 
+    vw_wait_tx();
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
 void loop() {
@@ -131,26 +132,16 @@ void loop() {
     }
   } else {
     // PIR logic here
-    if (ticker % pir_read_delay[pir_read_delay_index] == 0) {
+    if (ticker % 500 == 0) {
         ptr_packet->data = (uint16_t)digitalRead(PIR_PIN);
-        digitalWrite(LED_BUILTIN, ptr_packet->data);
-
-        /*
-        if (pir_read_delay_index < 4) {
-            pir_read_delay_index++;
-            send_motion();
-        }
-        */
-
         if (prev_pir_state != ptr_packet->data) {
             prev_pir_state = ptr_packet->data;
-            // pir_read_delay_index = 0;
-            send_motion();
+            send_data();
         }
     }
 
     if (ticker % (1000 * 5) == 0) {
-        send_motion();
+        send_data();
     }
 
     ticker++;
