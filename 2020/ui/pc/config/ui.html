@@ -161,6 +161,11 @@
 										<label class="custom-control-label" for="id_sensor_global_access">Global Access (Enable/Disable)</label>
 									</div>
 								</h7>
+								<div class="row">
+									<div class="col-lg-3"><span onClick="ShowGraphMinus();" style="width: 16px; height: 16px; cursor: pointer" data-feather="chevron-left"></span></div>
+									<div class="col-lg-6" id="id_date"></div>
+									<div class="col-lg-3"><span onClick="ShowGraphPlus();" style="width: 16px; height: 16px; cursor: pointer" data-feather="chevron-right"></span></div>
+								</div>
 								<div id="id_graph_sensor"></div>
 								<div id="id_sensor_custom"></div>
 							</div>
@@ -655,6 +660,95 @@
 				
 			})
 
+			var g_date = new Date();
+			var g_current_day = 0;
+			var g_current_month = 0;
+			var g_current_year = 0;
+			var g_rf_type = 0;
+			var g_addr = 0;
+
+			var GetGraphData = function () {
+				console.log(g_current_year, g_current_month, g_current_day);
+				api.SendCustomCommand(NodeUUID, "sensors_graph", {
+					rf_type: g_rf_type,
+					addr: g_addr,
+					year: String(g_current_year),
+					month: String(g_current_month),
+					day: String(g_current_day)
+				}, function(res) {
+					var payload = res.data.payload;
+					console.log("GRAPH", payload);
+					
+					document.getElementById("id_graph_sensor").innerHTML = "";
+					for (i = 0; i < payload.sensors; i++) {
+						document.getElementById("id_graph_sensor").innerHTML += `
+							<canvas class="my-4 w-100" id="chart_` + i + `"></canvas>
+						`;
+					}
+					for (i = 0; i < payload.sensors; i++) {
+						lables_data = [];
+						graph_data = [];
+
+						console.log(document.getElementById("id_graph_sensor").innerHTML);
+
+						for (j = 0; j < payload.graph.length; j++) {
+							lables_data.push(j);
+							graph_data.push(payload.graph[j][i]);
+						}
+
+						var ctx = document.getElementById('chart_' + i)
+						var myChart = new Chart(ctx, {
+							type: 'bar',
+							data: {
+								labels: lables_data,
+								datasets: [{
+									data: graph_data,
+									lineTension: 0,
+									backgroundColor: 'transparent',
+									borderColor: '#007bff',
+									borderWidth: 4,
+									pointBackgroundColor: '#007bff'
+								}]
+							},
+							options: {
+								scales: {
+									yAxes: [{
+										ticks: {
+											beginAtZero: false
+										}
+									}]
+								},
+								legend: {
+									display: false
+								}
+							}
+						})
+					}
+				});
+			}
+
+			var ShowGraphMinus = function() {
+				g_date.setDate(g_date.getDate() - 1);
+				document.getElementById("id_date").innerHTML = g_date.toDateString();
+
+				g_current_year = g_date.getFullYear();
+				g_current_month = g_date.getMonth() + 1;
+				g_current_day = g_date.getDate();
+
+				GetGraphData();
+			}
+
+			var ShowGraphPlus = function() {
+				g_date.setDate(g_date.getDate() + 1);
+				document.getElementById("id_date").innerHTML = g_date.toDateString();
+
+				g_current_year = g_date.getFullYear();
+				g_current_month = g_date.getMonth() + 1;
+				g_current_day = g_date.getDate();
+
+				GetGraphData();
+			}
+
 			var OpenModal = function (elem, id, rf_type, obj, selector) {
 				switch(rf_type) {
 					case 1:
@@ -685,61 +779,17 @@
 							SetCheckboxState("id_sensor_global_access", obj.www_access);
 							SetCheckboxState("id_sensor_status", obj.enabled);
 							SetCheckboxState("id_sensor_recording", obj.recording);
-							api.SendCustomCommand(NodeUUID, "sensors_graph", {
-								rf_type: rf_type,
-								addr: id,
-								year: "2020",
-								month: "4",
-								day: "14"
-							}, function(res) {
-								var payload = res.data.payload;
-								console.log("GRAPH", payload);
-								
-								for (i = 0; i < payload.sensors; i++) {
-									document.getElementById("id_graph_sensor").innerHTML += `
-										<canvas class="my-4 w-100" id="chart_` + i + `"></canvas>
-									`;
-								}
-								for (i = 0; i < payload.sensors; i++) {
-									lables_data = [];
-									graph_data = [];
 
-									console.log(document.getElementById("id_graph_sensor").innerHTML);
+							
+							document.getElementById("id_date").innerHTML = g_date.toDateString();
 
-									for (j = 0; j < payload.graph.length; j++) {
-										lables_data.push(j);
-										graph_data.push(payload.graph[j][i]);
-									}
+							g_current_year = g_date.getFullYear();
+							g_current_month = g_date.getMonth() + 1;
+							g_current_day = g_date.getDate();
+							g_rf_type = rf_type;
+							g_addr = id;
 
-									var ctx = document.getElementById('chart_' + i)
-									var myChart = new Chart(ctx, {
-										type: 'bar',
-										data: {
-											labels: lables_data,
-											datasets: [{
-												data: graph_data,
-												lineTension: 0,
-												backgroundColor: 'transparent',
-												borderColor: '#007bff',
-												borderWidth: 4,
-												pointBackgroundColor: '#007bff'
-											}]
-										},
-										options: {
-											scales: {
-												yAxes: [{
-													ticks: {
-														beginAtZero: false
-													}
-												}]
-											},
-											legend: {
-												display: false
-											}
-										}
-									})
-								}
-							});
+							GetGraphData();
 						} else {
 							html = configureSensorModalFooterlView
 							html = html.split("[ID]").join(id);
@@ -756,6 +806,7 @@
 						}
 					break;
 				}
+				feather.replace();
 				$('#id-semsor-modal').modal('show')
 			}
 
