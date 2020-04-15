@@ -161,6 +161,7 @@
 										<label class="custom-control-label" for="id_sensor_global_access">Global Access (Enable/Disable)</label>
 									</div>
 								</h7>
+								<div id="id_graph_sensor"></div>
 								<div id="id_sensor_custom"></div>
 							</div>
 						</div>
@@ -684,6 +685,61 @@
 							SetCheckboxState("id_sensor_global_access", obj.www_access);
 							SetCheckboxState("id_sensor_status", obj.enabled);
 							SetCheckboxState("id_sensor_recording", obj.recording);
+							api.SendCustomCommand(NodeUUID, "sensors_graph", {
+								rf_type: rf_type,
+								addr: id,
+								year: "2020",
+								month: "4",
+								day: "14"
+							}, function(res) {
+								var payload = res.data.payload;
+								console.log("GRAPH", payload);
+								
+								for (i = 0; i < payload.sensors; i++) {
+									document.getElementById("id_graph_sensor").innerHTML += `
+										<canvas class="my-4 w-100" id="chart_` + i + `"></canvas>
+									`;
+								}
+								for (i = 0; i < payload.sensors; i++) {
+									lables_data = [];
+									graph_data = [];
+
+									console.log(document.getElementById("id_graph_sensor").innerHTML);
+
+									for (j = 0; j < payload.graph.length; j++) {
+										lables_data.push(j);
+										graph_data.push(payload.graph[j][i]);
+									}
+
+									var ctx = document.getElementById('chart_' + i)
+									var myChart = new Chart(ctx, {
+										type: 'bar',
+										data: {
+											labels: lables_data,
+											datasets: [{
+												data: graph_data,
+												lineTension: 0,
+												backgroundColor: 'transparent',
+												borderColor: '#007bff',
+												borderWidth: 4,
+												pointBackgroundColor: '#007bff'
+											}]
+										},
+										options: {
+											scales: {
+												yAxes: [{
+													ticks: {
+														beginAtZero: false
+													}
+												}]
+											},
+											legend: {
+												display: false
+											}
+										}
+									})
+								}
+							});
 						} else {
 							html = configureSensorModalFooterlView
 							html = html.split("[ID]").join(id);

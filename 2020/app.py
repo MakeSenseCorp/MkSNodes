@@ -43,6 +43,7 @@ class Context():
 			'save_sensor_to_db':		self.SaveSensorToDBHandler,
 			'append_sensor_to_db':		self.AppendSensorToDBHandler,
 			'remove_sensor_to_db':		self.RemoveSensorToDBHandler,
+			'sensors_graph': 			self.SensorGraphHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -184,6 +185,28 @@ class Context():
 				return sensor
 		return None
 	
+	def SensorGraphHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# AppendSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		rf_type = payload["rf_type"]
+		year 	= payload["year"]
+		month 	= payload["month"]
+		day 	= payload["day"]
+		addr 	= payload["addr"]
+
+		data = self.SensorsDB.ReadDB(os.path.join(year, month, day, addr))
+		graph, sensors = self.SensorsDB.SplitDataByHourSegment({
+			"year": year,
+			"month": month,
+			"day": day
+		}, data)
+
+		payload = {
+			'graph': graph,
+			'sensors': sensors
+		}
+		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+
 	def AppendSensorToDBHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		print ("({classname})# AppendSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
@@ -510,3 +533,22 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+'''
+-----
+NOTES
+-----
+
+APPEND NEW SENSOR
+-------
+Python:
+-------
+1. Add "rf_type" to CheckDeviceType().
+2. If data is not one sensor but several need to add handler to AdaptorAsyncDataCallback().
+------------------
+Javascript + HTML:
+------------------
+3. Add handler to OpenModal().
+4. Add handler to SensorUIGenerate().
+5. Add handler to OnNodeChangeEvent().
+'''
