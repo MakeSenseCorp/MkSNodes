@@ -780,7 +780,7 @@
 							SetCheckboxState("id_sensor_status", obj.enabled);
 							SetCheckboxState("id_sensor_recording", obj.recording);
 
-							
+							g_date = new Date();
 							document.getElementById("id_date").innerHTML = g_date.toDateString();
 
 							g_current_year = g_date.getFullYear();

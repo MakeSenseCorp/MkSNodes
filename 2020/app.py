@@ -194,18 +194,33 @@ class Context():
 		day 	= payload["day"]
 		addr 	= payload["addr"]
 
-		data = self.SensorsDB.ReadDB(os.path.join(year, month, day, addr))
-		graph, sensors = self.SensorsDB.SplitDataByHourSegment({
-			"year": year,
-			"month": month,
-			"day": day
-		}, data)
+		if rf_type == 3:
+			graph_type = ["change"]
+		elif rf_type == 4:
+			graph_type = ["change"]
+		elif rf_type == 5:
+			graph_type = ["change","avg","avg"]
+		elif rf_type == 6:
+			graph_type = ["avg","avg"]
 
-		payload = {
-			'graph': graph,
-			'sensors': sensors
-		}
-		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		try:
+			data = self.SensorsDB.ReadDB(os.path.join(year, month, day, addr))
+			graph, sensors = self.SensorsDB.SplitDataByHourSegment({
+				"year": year,
+				"month": month,
+				"day": day
+			}, data, graph_type)
+
+			payload = {
+				'graph': graph,
+				'sensors': sensors
+			}
+			return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		except:
+			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				'graph': [],
+				'sensors': 0
+			})
 
 	def AppendSensorToDBHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
