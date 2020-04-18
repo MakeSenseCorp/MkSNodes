@@ -20,6 +20,7 @@ from mksdk import MkSConnectorUART
 from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
 from mksdk import MkSDBcsv
+from mksdk import MkSTimer
 
 from flask import Response, request
 from flask import send_file
@@ -44,6 +45,9 @@ class Context():
 			'append_sensor_to_db':		self.AppendSensorToDBHandler,
 			'remove_sensor_to_db':		self.RemoveSensorToDBHandler,
 			'sensors_graph': 			self.SensorGraphHandler,
+			'get_timer': 				self.GetTimerHandlers,
+			'append_timer': 			self.AppendTimerHandlers,
+			'remove_timer':				self.RemoveTimerHandlers,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -63,6 +67,9 @@ class Context():
 
 		self.HW.AdaptorDisconnectedEvent = self.AdaptorDisconnectedCallback
 		self.HW.AdaptorAsyncDataEvent	 = self.AdaptorAsyncDataCallback
+
+		self.Timer 						= MkSTimer.MkSTimer()
+		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
 	
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
@@ -176,6 +183,9 @@ class Context():
 				})
 				self.DeviceList.remove(adaptor)
 
+	def OnTimerTriggerHandler(self, uuid, action):
+		print ("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName))
+
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
 
@@ -185,6 +195,32 @@ class Context():
 				return sensor
 		return None
 	
+	def GetTimerHandlers(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# GetTimerHandlers ... payload: {0}".format(payload, classname=self.ClassName))
+
+		data = self.Timer.GetTimers(str(payload["id"]))
+		if data is None or data == "":
+			data = {}
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
+	
+	def AppendTimerHandlers(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# AppendTimerHandlers ... payload: {0}".format(payload, classname=self.ClassName))
+
+		self.Timer.AddTimer(payload["addr"], payload["timer"])
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status": "ok"})
+	
+	def RemoveTimerHandlers(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# RemoveTimerHandlers ... payload: {0}".format(payload, classname=self.ClassName))
+
+		self.Timer.RemoveTimer(payload["addr"], payload["id"])
+
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {"status": "ok"}) 
+
 	def SensorGraphHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		print ("({classname})# AppendSensorToDBHandler ... payload: {0}".format(payload, classname=self.ClassName))
@@ -456,6 +492,15 @@ class Context():
 		adapters = self.HW.Connect("2020")
 		for adapter in adapters:
 			self.CheckDeviceType(adapter)
+		
+		addrs = []
+		for item in self.DB["sensors"]:
+			if item["type"] == 1:
+				addrs.append(str(item["addr"]))
+				self.Timer.CreateTimer(str(item["addr"]), ["On", "Off"])
+
+		self.Timer.LoadClocks(addrs)
+		self.Timer.Run()
 		
 		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
 	
