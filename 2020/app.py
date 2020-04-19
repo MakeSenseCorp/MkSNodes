@@ -187,13 +187,28 @@ class Context():
 		print ("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName))
 
 		if action == "On":
-			if self.MasterTX is not None:
-				message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, uuid, 1, 1)
+			value = 1
 		elif action == "Off":
-			if self.MasterTX is not None:
-				message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, uuid, 1, 0)
+			value = 0
 		else:
-			pass
+			return
+
+		if self.MasterTX is not None:
+			message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, int(uuid), 1, value)
+			for x in range(5):
+				data = self.MasterTX["dev"].Send(message)
+				time.sleep(0.2)
+			sensor = self.FindSensor(int(uuid))
+			sensor["value"] = value
+			self.File.SaveJSON("db.json", self.DB)
+			THIS.Node.EmitOnNodeChange({
+				'event': "sensor_value_change",
+				'sensor': {
+					'addr': str(uuid),
+					'rf_type': sensor["rf_type"],
+					'value': value
+				}
+			})
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -377,7 +392,7 @@ class Context():
 		value = payload["value"]
 		if self.MasterTX is not None:
 			message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value)
-			for x in range(3):
+			for x in range(5):
 				data = self.MasterTX["dev"].Send(message)
 				time.sleep(0.2)
 			sensor = self.FindSensor(addr)
