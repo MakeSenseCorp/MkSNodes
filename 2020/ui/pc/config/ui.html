@@ -794,10 +794,12 @@
 							g_rf_type = rf_type;
 							g_addr = id;
 
-							g_timer = new TimerBuilder();
-							console.log(document.getElementById("id_timer").innerHTML);
-							g_timer.Create("id_timer", "g_timer");
-							g_timer.Load(id);
+							if (rf_type == 3) {
+								g_timer = new TimerBuilder();
+								console.log(document.getElementById("id_timer").innerHTML);
+								g_timer.Create("id_timer", "g_timer");
+								g_timer.Load(id);
+							}
 
 							GetGraphData();
 						} else {
