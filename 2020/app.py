@@ -186,6 +186,15 @@ class Context():
 	def OnTimerTriggerHandler(self, uuid, action):
 		print ("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName))
 
+		if action == "On":
+			if self.MasterTX is not None:
+				message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, uuid, 1, 1)
+		elif action == "Off":
+			if self.MasterTX is not None:
+				message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, uuid, 1, 0)
+		else:
+			pass
+
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
 

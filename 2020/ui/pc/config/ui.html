@@ -252,7 +252,7 @@
 					html = this.HTML.split("[OBJECT]").join(this.ClassName);
 					document.getElementById(id).innerHTML = html;
 
-					this.Days[1] = ["idMakeSenseTimerDay_1", 0, "SAN"];
+					this.Days[1] = ["idMakeSenseTimerDay_1", 0, "SUN"];
 					this.Days[2] = ["idMakeSenseTimerDay_2", 0, "MON"];
 					this.Days[3] = ["idMakeSenseTimerDay_3", 0, "TUE"];
 					this.Days[4] = ["idMakeSenseTimerDay_4", 0, "WED"];
@@ -366,6 +366,9 @@
 
 					if (1 == this.Days[8][1]) {
 						SelectedDaysHtml = "\"All\"";
+						for (i = 1; i < 8; i++) {
+							SelectedDays.push(this.Days[i][2]);
+						}
 					} else {
 						for (i = 1; i < 8; i++) {
 							if (1 == this.Days[i][1]) {
