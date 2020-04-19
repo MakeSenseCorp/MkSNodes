@@ -114,6 +114,11 @@ void loop() {
         delay(10);
         reset_function();
       }
+
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(100);
+      digitalWrite(LED_BUILTIN, LOW);
+      
       // Build response.
       uart_tx_header->direction      = ASYNC;
       uart_tx_header->op_code        = OPCODE_RX_DATA;

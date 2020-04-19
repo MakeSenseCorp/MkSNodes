@@ -97,7 +97,11 @@ void loop() {
           memcpy((unsigned char *)&uart_tx_buffer[sizeof(mks_header)], (unsigned char *)&uart_rx_buffer[sizeof(mks_header)], MKS_PROT_BUFF_SIZE_32);
 
           vw_send(rf_tx_buffer, MKS_PROT_BUFF_SIZE_32); 
-          vw_wait_tx(); 
+          vw_wait_tx();
+
+          digitalWrite(LED_BUILTIN, HIGH);
+          delay(100);
+          digitalWrite(LED_BUILTIN, LOW);
   
           uart_tx_buffer[uart_tx_buffer_length]     = 0xAD;
           uart_tx_buffer[uart_tx_buffer_length + 1] = 0xDE;
