@@ -74,7 +74,7 @@ class Context():
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
 			if path == self.MasterRX["path"]:
-				# print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
+				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 				if packet[1] == 101:
 					if len(packet) > 6:
 						sensor = self.FindSensor(packet[3])
@@ -195,9 +195,7 @@ class Context():
 
 		if self.MasterTX is not None:
 			message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, int(uuid), 1, value)
-			for x in range(5):
-				data = self.MasterTX["dev"].Send(message)
-				time.sleep(0.2)
+			self.SendRFData(message, 5)
 			sensor = self.FindSensor(int(uuid))
 			sensor["value"] = value
 			self.File.SaveJSON("db.json", self.DB)
@@ -212,6 +210,13 @@ class Context():
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
+
+	def SendRFData(self, message, repeat):
+		if self.MasterTX is not None:
+			for x in range(repeat):
+				print ("({classname})# [{0}] (RF RX) {1}".format(self.MasterTX["path"], message, classname=self.ClassName))
+				data = self.MasterTX["dev"].Send(message)
+				time.sleep(0.2)
 
 	def FindSensor(self, addr):
 		for sensor in self.DB["sensors"]:
@@ -392,9 +397,7 @@ class Context():
 		value = payload["value"]
 		if self.MasterTX is not None:
 			message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, addr, 1, value)
-			for x in range(5):
-				data = self.MasterTX["dev"].Send(message)
-				time.sleep(0.2)
+			self.SendRFData(message, 5)
 			sensor = self.FindSensor(addr)
 			sensor["value"] = value
 			self.File.SaveJSON("db.json", self.DB)
@@ -590,7 +593,8 @@ class Context():
 			if self.MasterTX is not None:
 				for sensor in self.DB["sensors"]:
 					if sensor["type"] == 1:
-						self.MasterTX["dev"].Send(struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"]))
+						message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"])
+						self.SendRFData(message, 1)
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
