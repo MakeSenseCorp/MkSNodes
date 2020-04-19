@@ -74,8 +74,8 @@ class Context():
 	def AdaptorAsyncDataCallback(self, path, packet):
 		if self.MasterRX is not None:
 			if path == self.MasterRX["path"]:
-				print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 				if packet[1] == 101:
+					print ("({classname})# [{0}] (RF RX) {1}".format(path, packet, classname=self.ClassName))
 					if len(packet) > 6:
 						sensor = self.FindSensor(packet[3])
 						
@@ -214,7 +214,7 @@ class Context():
 	def SendRFData(self, message, repeat):
 		if self.MasterTX is not None:
 			for x in range(repeat):
-				print ("({classname})# [{0}] (RF RX) {1}".format(self.MasterTX["path"], message, classname=self.ClassName))
+				print ("({classname})# [{0}] (RF TX) {1}".format(self.MasterTX["path"], message, classname=self.ClassName))
 				data = self.MasterTX["dev"].Send(message)
 				time.sleep(0.2)
 
