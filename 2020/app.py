@@ -213,8 +213,9 @@ class Context():
 
 	def SendRFData(self, message, repeat):
 		if self.MasterTX is not None:
+			str_message = ", ".join("{:02x}".format(ord(c)) for c in message)
 			for x in range(repeat):
-				print ("({classname})# [{0}] (RF TX) {1}".format(self.MasterTX["path"], message, classname=self.ClassName))
+				print ("({classname})# [{0}] (RF TX) {1}".format(self.MasterTX["path"], str_message, classname=self.ClassName))
 				data = self.MasterTX["dev"].Send(message)
 				time.sleep(0.2)
 
