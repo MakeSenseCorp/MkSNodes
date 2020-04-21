@@ -601,10 +601,10 @@ Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.Node.Stop()
-	time.sleep(0.5)
 	THIS.HW.Disconnect()
-
+	time.sleep(0.5)
+	THIS.Node.Stop()
+	
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
 	THIS.Node.SetLocalServerStatus(True)
