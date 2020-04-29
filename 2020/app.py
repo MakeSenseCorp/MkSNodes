@@ -83,11 +83,18 @@ class Context():
 							update = True
 							# Do we nned to update UI?
 							if packet[3] in self.SensorLastValue:
-								update = (self.SensorLastValue[packet[3]] != (int(packet[6]) << 8) | int(packet[5]))
-								# print ("({classname})# [UPDATE] {0} = {1} ? {2}".format(update, self.SensorLastValue[packet[3]], (int(packet[6]) << 8) | int(packet[5]), classname=self.ClassName))
-								self.SensorLastValue[packet[3]] = (int(packet[6]) << 8) | int(packet[5])
+								value = self.SensorLastValue[packet[3]]["value"] # Key is ADDR
+								update = (value != (int(packet[6]) << 8) | int(packet[5]))
+								# print ("({classname})# [UPDATE] {0} = {1} ? {2}".format(update, value, (int(packet[6]) << 8) | int(packet[5]), classname=self.ClassName))
+								value = (int(packet[6]) << 8) | int(packet[5])
+								self.SensorLastValue[packet[3]]["ts"] = time.time()
+								self.SensorLastValue[packet[3]]["value"] = value
 							else:
-								self.SensorLastValue[packet[3]] = (int(packet[6]) << 8) | int(packet[5])
+								self.SensorLastValue[packet[3]] = {
+									'value': (int(packet[6]) << 8) | int(packet[5]),
+									'ts': time.time(),
+									'addr': packet[3]
+								}
 							
 							if sensor is not None:
 								if update is True:
@@ -526,6 +533,12 @@ class Context():
 			if item["type"] == 1:
 				addrs.append(str(item["addr"]))
 				self.Timer.CreateTimer(str(item["addr"]), ["On", "Off"])
+			
+			self.SensorLastValue[item["addr"]] = {
+				'value': item["value"],
+				'ts': time.time(),
+				'addr': item["addr"]
+			}
 
 		self.Timer.LoadClocks(addrs)
 		self.Timer.Run()
@@ -596,6 +609,20 @@ class Context():
 					if sensor["type"] == 1:
 						message = struct.pack("<BBBBBBBH", 0xDE, 0xAD, 0x1, 100, 4, sensor["addr"], 1, sensor["value"])
 						self.SendRFData(message, 1)
+
+			offline_sensors = []
+			online_sensors = []
+			for key in self.SensorLastValue:
+				if self.CurrentTimestamp - self.SensorLastValue[key]["ts"] > 30:
+					offline_sensors.append(self.SensorLastValue[key])
+				else:
+					online_sensors.append(self.SensorLastValue[key])
+			
+			THIS.Node.EmitOnNodeChange({
+				'event': "status_sensors",
+				'offline_sensors': offline_sensors,
+				'online_sensors': online_sensors
+			})
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

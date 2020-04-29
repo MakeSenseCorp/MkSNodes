@@ -186,6 +186,7 @@
 						<td>[NAME]</td>
 						<td>[DESCRIPTION]</td>
 						<td>[SENSOR]</td>
+						<td id="id_offline_sensor_[ADDR]"><span style="width: 16px; height: 16px; color: red" data-feather="alert-triangle"></span></td>
 						<td><span onClick="OpenModal(this,'[ID]',[RF_TYPE], {name:'[NAME]',addr:[ADDR],www_access:[WWW_ACCESS],enabled:[ENABLED],recording:[RECORDING]}, 1);" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></td>
 						<td><span onClick="DeleteSensor([ADDR]);" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="x"></span></td>
 					</tr>
@@ -480,6 +481,31 @@
 			var OnNodeChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", packet.data.payload.event);
 				switch(packet.data.payload.event) {
+					case "status_sensors": {
+						console.log(packet.data.payload);
+						for (key in packet.data.payload.offline_sensors) {
+							var sensor = packet.data.payload.offline_sensors[key];
+							var element = document.getElementById("id_offline_sensor_" + sensor.addr);
+							if (element !== undefined && element !== null) {
+								element.innerHTML = `<span style="width: 16px; height: 16px; color: red" data-feather="alert-triangle"></span>`;
+							} else {
+								console.log("error", "id_offline_sensor_" + sensor.addr);
+							}
+						}
+
+						for (key in packet.data.payload.online_sensors) {
+							var sensor = packet.data.payload.online_sensors[key];
+							var element = document.getElementById("id_offline_sensor_" + sensor.addr);
+							if (element !== undefined && element !== null) {
+								element.innerHTML = `<span style="width: 16px; height: 16px; color: green" data-feather="rss"></span>`;
+							} else {
+								console.log("error", "id_offline_sensor_" + sensor.addr);
+							}
+						}
+
+						feather.replace();
+					}
+					break;
 					case "device_append": {
 						console.log(packet.data.payload);
 						switch(packet.data.payload.rf_type) {
@@ -549,6 +575,11 @@
 						console.log(packet.data.payload);
 						var sensor = packet.data.payload.sensor;
 
+						var element = document.getElementById("id_offline_sensor_" + sensor.addr);
+						if (element !== undefined && element !== null) {
+							element.innerHTML = `<span style="width: 16px; height: 16px; color: green" data-feather="rss"></span>`;
+						}
+
 						if (sensor.rf_type == 3) {
 							// SWITCH
 							UpdateSwitch(sensor.addr, sensor.value);
@@ -567,7 +598,7 @@
 							UpdateTemperatureSesnor(sensor.addr, sensor.temperature);
 							UpdateHumiditySesnor(sensor.addr, sensor.humidity);
 							feather.replace();
-						}else {
+						} else {
 
 						}
 					}
@@ -585,6 +616,7 @@
 								<th>Name</th>
 								<th>Description</th>
 								<th>Value</th>
+								<th>Status</th>
 								<th>Settings</th>
 								<th>Delete</th>
 							</tr>
