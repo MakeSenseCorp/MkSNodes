@@ -1,0 +1,23 @@
+{
+  "timers": [
+    {
+      "action": "On", 
+      "start": "01:55", 
+      "enabled": 1, 
+      "id": 5, 
+      "days": [
+        "SUN", 
+        "MON", 
+        "TUE", 
+        "WED", 
+        "THU", 
+        "FRI", 
+        "SAT"
+      ]
+    }
+  ], 
+  "actions": [
+    "On", 
+    "Off"
+  ]
+}

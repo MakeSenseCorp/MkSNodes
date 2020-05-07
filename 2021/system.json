@@ -1,0 +1,35 @@
+{
+	"node":
+	{
+		"info": {
+			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d060",
+			"isHW":"False",
+			"type":2021,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"MP3 Player & Local Music Service",
+			"name":"MP3 Player",
+			"description":"MP3 Player & Local Music Service",
+			"isMasterNode":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "application",
+				"cat_2": "media",
+				"cat_3": "player"
+			}
+		},
+		"service": {
+			"depend": [	]
+		}
+	},
+	"user":
+	{
+		
+	},
+	"device":
+	{
+		
+	}
+}
