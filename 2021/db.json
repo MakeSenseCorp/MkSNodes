@@ -1,0 +1,11 @@
+{
+    "playlists": [
+        {
+            "name": "Test",
+            "songs": [
+                "1.mp3",
+                "2.mp3"
+            ]
+        }
+    ]
+}
