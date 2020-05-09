@@ -1,8 +1,7 @@
 {
-	"node":
-	{
+	"node": {
 		"info": {
-			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d060",
+			"uuid":"12345678-1234-1234-1234-123456789201",
 			"isHW":"False",
 			"type":2021,
 			"ostype":"Any",
@@ -24,12 +23,19 @@
 			"depend": [	]
 		}
 	},
-	"user":
-	{
+	"user": {
 		
 	},
-	"device":
-	{
+	"device": {
 		
+	},
+	"deploymnet": {
+		"dependencies_cmd": [
+			"apt install vlc",
+			"pip install python-vlc"
+		],
+		"script": {
+
+		}
 	}
 }

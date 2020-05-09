@@ -25,6 +25,54 @@ from mksdk import MkSTimer
 from flask import Response, request
 from flask import send_file
 
+class FolderMonitor():
+	def __init__(self, path):
+		self.ClassName					= "FolderMonitor"
+		self.Path 						= path
+		self.Items 						= []
+
+		self.WorkerThread				= None
+		self.FolderContentChangedEvent	= None
+	
+	def SetPath(self, path):
+		self.Path = path
+	
+	def GetItemsList(self):
+		return self.Items
+
+	def GetItems(self):
+		return self.File.ListAllInFolder(self.Path)
+
+	def GetItemsCompare(self):
+		ret_items = []
+		items = GetItems()
+		if len(self.Items) == 0:
+			for item in items:
+				ret_items.append({
+					"item": item,
+					"status": "append"
+				})
+			self.Items = ret_items
+			return ret_items
+		else:
+			# Find removed items
+			for item in self.Items:
+				if item not in items:
+					ret_items.append({
+						"item": item,
+						"status": "remove"
+					})
+					self.Items.remove(item)
+			# Find appended items
+			for item in items:
+				if item not in self.Items:
+					ret_items.append({
+						"item": item,
+						"status": "append"
+					})
+					self.Items.append(item)
+		return ret_items, (len(ret_items) > 0)
+
 class Context():
 	def __init__(self, node):
 		self.ClassName					= "Apllication"
@@ -46,12 +94,18 @@ class Context():
 			'undefined':				self.UndefindHandler
 		}
 		# Application variables
-		self.SensorsDB                  = MkSDBcsv.Database()
 		self.DB							= None
 		self.SecurityEnabled 			= False
 		self.SMSService					= ""
 		self.EmailService				= ""
 		self.SensorLastValue            = {}
+
+		self.LocalStorageEnabled 		= 0
+		self.USBDevice 					= None
+		self.LocalStoragePath 			= "./media/local"
+		self.USBStoragePath 			= "./media/usb"
+		self.SelectedStoragePath 		= None
+		self.SongsFolder				= None
 
 		self.Timer 						= MkSTimer.MkSTimer()
 		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
@@ -96,11 +150,30 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		print ("({classname})# Loading system ...".format(classname=self.ClassName))		
 		objFile = MkSFile.File()
-		# THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
 		jsonSensorStr = objFile.Load("db.json")
 		if jsonSensorStr != "":
 			self.DB = json.loads(jsonSensorStr)
+		
+		self.LocalStorageEnabled = self.DB["local_storage"]
+
+		# Get USB device
+		self.USBDevice = self.DB["usb_device"]
+
+		# Create file system for storing videos
+		if not os.path.exists(self.LocalStoragePath):
+			os.makedirs(self.LocalStoragePath)
+		
+		if not os.path.exists(self.USBStoragePath):
+			os.makedirs(self.USBStoragePath)
+		
+		self.SelectedStoragePath = self.LocalStoragePath
+		
+		if not os.path.exists(self.USBStoragePath):
+			os.makedirs(self.USBStoragePath)
+		
+		self.SongsFolder = FolderMonitor(os.path("{0}/songs", self.LocalStoragePath))
+		self.SongsFolder.GetItemsCompare()
 
 		# self.Timer.LoadClocks(addrs)
 		# self.Timer.Run()
@@ -159,6 +232,16 @@ class Context():
 			for idx, item in enumerate(THIS.Node.GetConnections()):
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
 			print("")
+
+			items, is_change = self.SongsFolder.GetItemsCompare()
+
+			if is_change is True:
+				THIS.Node.EmitOnNodeChange({
+						'event': "media_folder_changed",
+						'data': {
+							'songs': items
+						}
+				})
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
