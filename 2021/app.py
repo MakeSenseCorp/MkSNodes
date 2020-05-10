@@ -148,8 +148,15 @@ class Context():
 			self.Player.stop()
 			self.Player.set_mrl(os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"]))
 			self.Player.play()
+			info = {
+				"duration": self.Player.get_length(),
+				"location": 0
+			}
+			print(info)
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
+			info = {
+			}
 		elif "pause" in payload["operation"]:
 			pass
 		elif "skip_back" in payload["operation"]:
@@ -158,7 +165,8 @@ class Context():
 			pass
 		
 		data = {
-			"error" : "none"
+			"error": "none",
+			"info": info
 		}
 		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
 	
@@ -283,6 +291,16 @@ class Context():
 						'songs': items
 					}
 				})
+		
+		if (self.Node.Ticker % 5) == 0:
+			if self.Player.get_state() == vlc.State.Playing:
+				THIS.Node.EmitOnNodeChange({
+					'event': "media_info",
+					'data': {
+						"duration": self.Player.get_length(),
+						'location': self.Player.get_position()
+					}
+				})
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
@@ -316,5 +334,6 @@ p.audio_set_volume(50)
 p.set_position(0.5)
 p.get_position()
 p.get_state()
+duration = player.get_length() / 1000
 p.set_mrl("mks/mp3/2.mp3")
 """

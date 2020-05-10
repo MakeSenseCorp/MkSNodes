@@ -86,11 +86,10 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-lg-10">
-									<input type="range" class="custom-range" min="0" max="5" step="0.5" id="id-stream-offset">
+								<div class="col-lg-10" id="id-player-duration">
 								</div>
 								<div class="col-lg-2">
-									<input type="range" class="custom-range" min="0" max="5" step="0.5" id="id-stream-offset">
+									<input type="range" class="custom-range" min="0" max="5" step="0.5" id="id-volume-offset">
 								</div>
 							</div>
 							<div class="row">
@@ -166,6 +165,12 @@
 				}
 			}
 
+			var initNode = function() {
+				
+			}
+
+			initNode();
+
 			var currentPlay = function() {
 				payload = {
 					operation: "play",
@@ -199,6 +204,30 @@
 							var objCurrentActiveSong 		= document.getElementById("id_current_active_song");
 							objCurrentActiveSong.innerHTML 	= name;
 							CurrentSongContext.name 		= name;
+							html = `<input style="width: 100%" type="range" class="custom-range" min="0" max="[DURATION]" step="[STEP]" id="id-stream-offset">`;
+							html = html.split("[DURATION]").join(50000);
+							html = html.split("[STEP]").join(1);
+							console.log(html);
+							document.getElementById("id-player-duration").innerHTML = html;
+							$('#id-stream-offset').slider({
+								value : 0,
+								formatter: function(value) {
+									return value;
+								}
+							});
+
+							/*
+							html = `<input style="width: 100%" type="text" data-slider-min="0" data-slider-max="[DURATION]" data-slider-step="[STEP]" id="id-stream-offset">`;
+							html = html.split("[DURATION]").join(payload.duration);
+							html = html.split("[STEP]").join(1);
+							document.getElementById("id-player-duration").innerHTML = html;
+							$('#id-stream-offset').slider({
+								value : 0,
+								formatter: function(value) {
+									return value;
+								}
+							});
+							*/
 						}
 					}
 				});
@@ -253,6 +282,11 @@
 								break;
 							}
 						}
+					}
+					break;
+					case "media_info": {
+						//document.getElementById("id-stream-offset").setAttribute("max", packet.data.payload.data.duration);
+						$('#id-stream-offset').slider('setValue', packet.data.payload.data.location);
 					}
 					break;
 				}
