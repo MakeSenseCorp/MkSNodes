@@ -120,6 +120,8 @@ class Context():
 		self.SelectedStoragePath 		= None
 		self.SongsFolder				= None
 		self.Player 					= vlc.MediaPlayer()
+		self.CurrentPlayingSongName		= ""
+		self.CurrentPlayerState 		= "IDLE"
 
 		self.Timer 						= MkSTimer.MkSTimer()
 		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
@@ -133,9 +135,16 @@ class Context():
 	
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
+		info = {
+			'duration': self.Player.get_length(),
+			'position': self.Player.get_time(),
+			'name': self.CurrentPlayingSongName,
+			'state': self.CurrentPlayerState
+		}
 		payload = {
 			'playlists': self.DB["playlists"],
-			'songs': self.SongsFolder.GetItemsList()
+			'songs': self.SongsFolder.GetItemsList(),
+			'info': info
 		}
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
@@ -144,28 +153,49 @@ class Context():
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		print ("({classname})# PlayerOperationHandler ... payload: {0}".format(payload, classname=self.ClassName))
 
+		error 	= "none"
+		info 	= {}
+		
 		if "play" in payload["operation"]:
 			self.Player.stop()
-			self.Player.set_mrl(os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"]))
-			self.Player.play()
-			info = {
-				"duration": self.Player.get_length(),
-				"location": 0
-			}
-			print(info)
+
+			if not payload["song"]["name"]:
+				error = "No song name provided"
+				print ("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName))
+			else:
+				song_path = os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"])
+				# Check if file valid
+				if not os.path.exists(song_path):
+					error = "File not exist"
+					print ("({classname})# PlayerOperationHandler [ERROR] {0} {1}".format(error, song_path, classname=self.ClassName))
+				else:
+					self.Player.set_mrl(song_path)
+					self.Player.play()
+					# Update Node context
+					self.CurrentPlayerState 	= "PLAY"
+					self.CurrentPlayingSongName = payload["song"]["name"]
+					# Let VLC load the song content
+					time.sleep(1)
+					# Info structure respone
+					info = {
+						"duration": self.Player.get_length(),
+						"position": 0,
+						"name": payload["song"]["name"],
+						"state": self.CurrentPlayerState
+					}
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
-			info = {
-			}
+			self.CurrentPlayerState 	= "STOP"
+			self.CurrentPlayingSongName = ""
 		elif "pause" in payload["operation"]:
-			pass
+			self.CurrentPlayerState = "PAUSE"
 		elif "skip_back" in payload["operation"]:
 			pass
 		elif "skip_forward" in payload["operation"]:
 			pass
 		
 		data = {
-			"error": "none",
+			"error": error,
 			"info": info
 		}
 		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
@@ -297,8 +327,12 @@ class Context():
 				THIS.Node.EmitOnNodeChange({
 					'event': "media_info",
 					'data': {
-						"duration": self.Player.get_length(),
-						'location': self.Player.get_position()
+						'info': {
+							'duration': self.Player.get_length(),
+							'position': self.Player.get_time(),
+							'name': self.CurrentPlayingSongName,
+							'state': self.CurrentPlayerState
+						}
 					}
 				})
 
