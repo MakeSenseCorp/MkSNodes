@@ -191,6 +191,15 @@ class Context():
 			self.CurrentPlayingSongName = ""
 		elif "pause" in payload["operation"]:
 			self.CurrentPlayerState = "PAUSE"
+			self.Player.pause()
+			time.sleep(0.2)
+			info = {
+				'duration': self.Player.get_length(),
+				'position': self.Player.get_time(),
+				'name': self.CurrentPlayingSongName,
+				'state': self.CurrentPlayerState,
+				'volume': self.Player.audio_get_volume()
+			}
 		elif "skip_back" in payload["operation"]:
 			pass
 		elif "skip_forward" in payload["operation"]:

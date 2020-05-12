@@ -79,7 +79,7 @@
 										<tr>
 											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-back"></span></td>
 											<td align="center"><span onclick="currentPlay();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="play"></span></td>
-											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="pause"></span></td>
+											<td align="center"><span onclick="currentPause();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="pause"></span></td>
 											<td align="center"><span onclick="currentStop();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="square"></span></td>
 											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-forward"></span></td>
 										</tr>
@@ -281,6 +281,9 @@
 					StaticUIObjects.objCurrentRangeStreamOffset.max 	= milliseconds / 1000;
 					StaticUIObjects.objCurrentRangeStreamOffset.step 	= "1";
 					StaticUIObjects.objCurrentRangeStreamOffset.value 	= CurrentSongContext.position;
+				} else if (payload.info.state == "PAUSE") {
+					clearInterval(CurrentSongContext.play_worker_idx);
+					CurrentSongContext.state = payload.info.state;
 				}
 
 				StaticUIObjects.objCurrentVolumeOffset.value = payload.info.volume;
@@ -305,6 +308,17 @@
 							playRequestHandler(res.data.payload);
 						}
 					}
+				});
+			}
+			var currentPause = function() {
+				payload = {
+					operation: "pause",
+					song: {
+						name: CurrentSongContext.name
+					}
+				};
+				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
+					stopRequestHandler(res.data.payload);
 				});
 			}
 			var currentStop = function() {
