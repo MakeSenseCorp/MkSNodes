@@ -139,7 +139,8 @@ class Context():
 			'duration': self.Player.get_length(),
 			'position': self.Player.get_time(),
 			'name': self.CurrentPlayingSongName,
-			'state': self.CurrentPlayerState
+			'state': self.CurrentPlayerState,
+			'volume': self.Player.audio_get_volume()
 		}
 		payload = {
 			'playlists': self.DB["playlists"],
@@ -178,10 +179,11 @@ class Context():
 					time.sleep(1)
 					# Info structure respone
 					info = {
-						"duration": self.Player.get_length(),
-						"position": 0,
-						"name": payload["song"]["name"],
-						"state": self.CurrentPlayerState
+						'duration': self.Player.get_length(),
+						'position': 0,
+						'name': payload["song"]["name"],
+						'state': self.CurrentPlayerState,
+						'volume': self.Player.audio_get_volume()
 					}
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
@@ -193,7 +195,27 @@ class Context():
 			pass
 		elif "skip_forward" in payload["operation"]:
 			pass
-		
+		elif "set_time" in payload["operation"]:
+			self.Player.set_time(int(payload["song"]["time"]))
+			time.sleep(0.2)
+			info = {
+				'duration': self.Player.get_length(),
+				'position': self.Player.get_time(),
+				'name': self.CurrentPlayingSongName,
+				'state': self.CurrentPlayerState,
+				'volume': self.Player.audio_get_volume()
+			}
+		elif "set_volume" in payload["operation"]:
+			self.Player.audio_set_volume(payload["song"]["volume"])
+			time.sleep(0.2)
+			info = {
+				'duration': self.Player.get_length(),
+				'position': self.Player.get_time(),
+				'name': self.CurrentPlayingSongName,
+				'state': self.CurrentPlayerState,
+				'volume': self.Player.audio_get_volume()
+			}
+
 		data = {
 			"error": error,
 			"info": info
@@ -331,7 +353,8 @@ class Context():
 							'duration': self.Player.get_length(),
 							'position': self.Player.get_time(),
 							'name': self.CurrentPlayingSongName,
-							'state': self.CurrentPlayerState
+							'state': self.CurrentPlayerState,
+							'volume': self.Player.audio_get_volume()
 						}
 					}
 				})
