@@ -1,5 +1,22 @@
 console.log("Hello from Node config");
 
+function Utils() {
+	this.SetCheckboxState = function(id, val) {
+		elem = document.getElementById(id);
+		if (elem === null) {
+			return;
+		}
+
+		if (val == 1) {
+			elem.checked = true;
+		} else if (val == 0) {
+			elem.checked = false;
+		}
+	}
+	
+	return this;
+}
+
 function DOMTableContainer(name) {
 	this.Name = name;
 
