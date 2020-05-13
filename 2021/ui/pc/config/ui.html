@@ -77,21 +77,23 @@
 								<div class="table-responsive">
 									<table class="table table-striped table-lg">
 										<tr>
-											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-back"></span></td>
+											<td align="center"><span onclick="node.Player.Back();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-back"></span></td>
 											<td align="center"><span onclick="node.Player.Play();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="play"></span></td>
 											<td align="center"><span onclick="node.Player.Pause();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="pause"></span></td>
 											<td align="center"><span onclick="node.Player.Stop();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="square"></span></td>
-											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-forward"></span></td>
+											<td align="center"><span onclick="node.Player.Forward();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-forward"></span></td>
 										</tr>
 									</table>
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-lg-10" id="id-player-duration">
-									<input onmouseup="node.Player.ChangePlayingPosition();" style="width: 100%" type="range" class="custom-range" min="0" max="1000000" step="1" id="id-stream-offset">
-								</div>
-								<div class="col-lg-2">
-									<input onmouseup="node.Player.ChangeVolumePosition();" type="range" class="custom-range" min="0" max="100" step="1" id="id-volume-offset">
+								<div class="table-responsive">
+									<table class="table table-striped table-lg">
+										<tr>
+											<td style="width: 80%;" align="center" id="id-player-duration"><input onmouseup="node.Player.ChangePlayingPosition();" style="width: 100%" type="range" class="custom-range" min="0" max="1000000" step="1" id="id-stream-offset"></td>
+											<td style="width: 20%;" align="center"><input onmouseup="node.Player.ChangeVolumePosition();" type="range" class="custom-range" min="0" max="100" step="1" id="id-volume-offset"></td>
+										</tr>
+									</table>
 								</div>
 							</div>
 							<div class="row">
@@ -101,6 +103,7 @@
 											<td align="center"><a href="#">Select Playlist</a></td>
 											<td align="center"><a href="#">Create Playlist</a></td>
 											<td align="center"><a href="#">Select Music Folder</a></td>
+											<td align="center"><a href="#">Select Speakers</a></td>
 										</tr>
 									</table>
 								</div>
@@ -174,11 +177,15 @@
 				$('[data-toggle="tooltip"]').tooltip();
 			});
 
-			function Node(api) {
+			function Node() {
 				var self = this;
 
-				this.Player 	= new Player(api);
-				this.PlayList 	= new PlayList(api);
+				// Gey makesense api instanse.
+				this.API  		= MkSAPIBuilder.GetInstance();
+				this.Player 	= new Player(this.API);
+				this.PlayList 	= new PlayList(this.API);
+				// Update gateway IP address
+				this.API.SetGlobalGatewayIP(GatewayIP);
 
 				return this;
 			}
@@ -225,15 +232,32 @@
 					}
 					break;
 					case "media_info": {
-						console.log(packet.data.payload.data.info.state);
 						this.Player.PlayerHandlers[packet.data.payload.data.info.state](this.Player, packet.data.payload.data.info);
+						// Update volume UI object
+						this.Player.Objects.CurrentVolumeOffset.value = packet.data.payload.data.info.volume;
 					}
 					break;
 				}
 			}
 
+			Node.prototype.Connect = function() {
+				var self = this;
+				console.log("Connect Gateway");
+				this.API.ConnectGateway(function() {
+					console.log("Connection to Gateway was established.");
+					self.API.Gateway.OnNodeChangeEvent = self.OnChangeEvent.bind(self);
+					self.API.GetNodeSensorsInfo(NodeUUID, function(res) {
+						UserGetNodeSensorInfoHandler(res);
+					});
+				});
+			}
+			
 			function Player (api) {
 				self = this;
+
+				this.SongList 			= [];
+				this.SongsCount 		= 0;
+				this.PlayingSongIndex 	= 0;
 
 				this.Ctx = {
 					state: "IDLE",
@@ -260,7 +284,8 @@
 					"IDLE": 	this.IdleCallback,
 					"PAUSE": 	this.PauseCallback,
 					"PLAY": 	this.PlayCallback,
-					"STOP": 	this.StopCallback
+					"STOP": 	this.StopCallback,
+					"END":		this.EndCallback
 				}
 
 				return this;
@@ -269,7 +294,24 @@
 			Player.prototype.IdleCallback = function(ctx, info) {
 				// Init UI
 				ctx.Objects.CurrentActiveSong.innerHTML 			= "Media Name";
-				ctx.Objects.CurrentActiveSongDuration				= "00:00:00";
+				ctx.Objects.CurrentActiveSongPosition.innerHTML		= "00:00:00";
+				ctx.Objects.CurrentActiveSongDuration.innerHTML 	= " (00:00:00)";
+
+				// Init player context
+				ctx.Ctx.name 			= "";
+				ctx.Ctx.user_position 	= 0;
+				ctx.Ctx.position 		= 0;
+				ctx.Ctx.duration_ms 	= 0;
+				ctx.Ctx.play_worker_idx = 0;
+			}
+
+			Player.prototype.EndCallback = function(ctx, info) {
+				clearInterval(ctx.Ctx.play_worker_idx);
+				ctx.Ctx.play_worker_idx = 0;
+
+				// Init UI
+				ctx.Objects.CurrentActiveSong.innerHTML 			= "Media Name";
+				ctx.Objects.CurrentActiveSongPosition.innerHTML		= "00:00:00";
 				ctx.Objects.CurrentActiveSongDuration.innerHTML 	= " (00:00:00)";
 
 				// Init player context
@@ -282,7 +324,6 @@
 
 			Player.prototype.SetSong = function(song) {
 				this.Ctx.name 	= song.name;
-				this.Ctx.id 	= song.id;
 			}
 
 			Player.prototype.Play = function() {
@@ -316,6 +357,19 @@
 				ctx.Objects.CurrentRangeStreamOffset.max 	= milliseconds / 1000;
 				ctx.Objects.CurrentRangeStreamOffset.step 	= "1";
 				ctx.Objects.CurrentRangeStreamOffset.value = ctx.Ctx.position;
+
+				var song_id = CryptoJS.MD5(info.name).toString();
+				if (song_id != ctx.Ctx.id) {
+					for (key in ctx.SongList) {
+						song = ctx.SongList[key];
+						if (song.id == song_id) {
+							ctx.PlayingSongIndex 	= parseInt(key);
+							ctx.Ctx.id 				= song_id;
+							break;
+						}
+					}
+				}
+				
 			}
 
 			Player.prototype.Stop = function() {
@@ -349,11 +403,27 @@
 			}
 
 			Player.prototype.Back = function() {
-				
+				var song = null;
+				if (this.PlayingSongIndex == 0) {
+					song = this.SongList[this.SongsCount-1];
+				} else {
+					song = this.SongList[this.PlayingSongIndex-1];
+				}
+
+				this.SetSong(song);
+				this.Play();
 			}
 
 			Player.prototype.Forward = function() {
-				
+				var song = null;
+				if (this.PlayingSongIndex == this.SongsCount-1) {
+					song = this.SongList[0];
+				} else {
+					song = this.SongList[this.PlayingSongIndex+1];
+				}
+
+				this.SetSong(song);
+				this.Play();
 			}
 
 			Player.prototype.WorkerInterval = function() {
@@ -365,7 +435,6 @@
 
 				this.Objects.CurrentActiveSongPosition.innerHTML 	= "{0}:{1}:{2}".format([parseInt(hours), parseInt(minutes), parseInt(seconds)]);
 				this.Objects.CurrentRangeStreamOffset.value 		= this.Ctx.position;
-				console.log("WorkerInterval");
 			}
 
 			Player.prototype.ChangePlayingPosition = function() {
@@ -392,11 +461,8 @@
 				if (res.data.payload !== undefined) {
 					if (res.data.payload.error == "none") {
 						var info = res.data.payload.info;
-						console.log(info.state, info);
 						this.PlayerHandlers[info.state](this, info);
 						this.Ctx.state = info.state;
-						// Update volume UI object
-						this.Objects.CurrentVolumeOffset.value = info.volume;
 					}
 				}
 			}
@@ -425,35 +491,32 @@
 				return html;
 			}
 			
-			// Gey makesense api instanse.
-			var api  = MkSAPIBuilder.GetInstance();
-			var node = new Node(api);
-			api.SetGlobalGatewayIP(GatewayIP);
-
+			// Self-genrated area
+			var node = new Node();
 			node.Init();
-			api.ConnectGateway(function() {
-				console.log("Connection to Gateway was established.");
-				api.Gateway.OnNodeChangeEvent = node.OnChangeEvent.bind(node);
-
-				api.GetNodeSensorsInfo(NodeUUID, function(res) {
-					console.log(res.data.payload);
-
-					var objSongList = document.getElementById("id_song_list");
-					for (key in res.data.payload.songs) {
-						song = res.data.payload.songs[key];
-						var song_id = CryptoJS.MD5(song).toString();
-						objSongList.innerHTML += node.PlayList.GenerateSongItemView({
-							name: song,
-							id: song_id
-						});
+			node.Connect();
+			var UserGetNodeSensorInfoHandler = function(res) {
+				// User Code #1 - Start
+				var objSongList = document.getElementById("id_song_list");
+				for (key in res.data.payload.songs) {
+					song = res.data.payload.songs[key];
+					var song_id = CryptoJS.MD5(song).toString();
+					var item = {
+						name: song,
+						id: song_id
 					}
-					
-					node.Player.RouterHandler(res);
-					api.RegisterOnNodeChange(NodeUUID, function(res) {
-						console.log("UI have registered NODE successfuly", res);
-					});
+					objSongList.innerHTML += node.PlayList.GenerateSongItemView(item);
+					node.Player.SongList.push(item);
+				}
+				node.Player.SongsCount = node.Player.SongList.length;
+
+				node.Player.RouterHandler(res);
+				// User Code #1 - End
+				node.API.RegisterOnNodeChange(NodeUUID, function(res) {
+					console.log("UI have registered NODE successfuly", res);
 				});
-			});
+			}
+			// Self-genrated area
 
 			$('#id-semsor-modal').on('hide.bs.modal', function (e) {
 				

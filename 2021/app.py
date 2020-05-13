@@ -419,15 +419,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-"""
-p = vlc.MediaPlayer("mks/mp3/1.mp3")
-p.play()
-p.audio_set_volume(50)
-p.set_position(0.5)
-p.get_position()
-p.get_state()
-duration = player.get_length() / 1000
-p.set_mrl("mks/mp3/2.mp3")
-"""
