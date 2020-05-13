@@ -178,37 +178,47 @@ class Context():
 		if "play" in payload["operation"]:
 			self.Player.stop()
 
-			if not payload["song"]["name"]:
-				error = "No song name provided"
+			if payload["song"] is None:
+				error = "Incorrect structure"
 				print ("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName))
 			else:
-				song_path = os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"])
-				# Check if file valid
-				if not os.path.exists(song_path):
-					error = "File not exist"
-					print ("({classname})# PlayerOperationHandler [ERROR] {0} {1}".format(error, song_path, classname=self.ClassName))
+				if not payload["song"]["name"]:
+					error = "No song name provided"
+					print ("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName))
 				else:
-					self.Player.set_mrl(song_path)
-					self.Player.play()
-					# Update Node context
-					self.CurrentPlayerState 	= self.GetPlayerState()
-					self.CurrentPlayingSongName = payload["song"]["name"]
-					# Let VLC load the song content
-					time.sleep(1)
-					# Info structure respone
-					info = {
-						'duration': self.Player.get_length(),
-						'position': 0,
-						'name': payload["song"]["name"],
-						'state': self.CurrentPlayerState,
-						'volume': self.Player.audio_get_volume()
-					}
+					song_path = os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"])
+					# Check if file valid
+					if not os.path.exists(song_path):
+						error = "File not exist"
+						print ("({classname})# PlayerOperationHandler [ERROR] {0} {1}".format(error, song_path, classname=self.ClassName))
+					else:
+						self.Player.set_mrl(song_path)
+						self.Player.play()
+						# Let VLC load the song content
+						time.sleep(1)
+						# Update Node context
+						self.CurrentPlayerState 	= self.GetPlayerState()
+						self.CurrentPlayingSongName = payload["song"]["name"]
+						# Info structure respone
+						info = {
+							'duration': self.Player.get_length(),
+							'position': 0,
+							'name': payload["song"]["name"],
+							'state': self.CurrentPlayerState,
+							'volume': self.Player.audio_get_volume()
+						}
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
-			self.CurrentPlayerState 	= "STOP"
-			self.CurrentPlayingSongName = ""
+			self.CurrentPlayerState 	= self.GetPlayerState()
+			info = {
+				'duration': self.Player.get_length(),
+				'position': self.Player.get_time(),
+				'name': self.CurrentPlayingSongName,
+				'state': self.CurrentPlayerState,
+				'volume': self.Player.audio_get_volume()
+			}
 		elif "pause" in payload["operation"]:
-			self.CurrentPlayerState = "PAUSE"
+			self.CurrentPlayerState = self.GetPlayerState()
 			self.Player.pause()
 			time.sleep(0.2)
 			info = {

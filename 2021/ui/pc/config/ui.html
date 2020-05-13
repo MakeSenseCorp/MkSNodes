@@ -78,9 +78,9 @@
 									<table class="table table-striped table-lg">
 										<tr>
 											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-back"></span></td>
-											<td align="center"><span onclick="currentPlay();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="play"></span></td>
-											<td align="center"><span onclick="currentPause();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="pause"></span></td>
-											<td align="center"><span onclick="currentStop();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="square"></span></td>
+											<td align="center"><span onclick="node.Player.Play();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="play"></span></td>
+											<td align="center"><span onclick="node.Player.Pause();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="pause"></span></td>
+											<td align="center"><span onclick="node.Player.Stop();" style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="square"></span></td>
 											<td align="center"><span style="width: 32px; height: 32px; color: red; cursor: pointer" data-feather="skip-forward"></span></td>
 										</tr>
 									</table>
@@ -88,10 +88,10 @@
 							</div>
 							<div class="row">
 								<div class="col-lg-10" id="id-player-duration">
-									<input onmouseup="ChangePlayingPosition();" style="width: 100%" type="range" class="custom-range" min="0" max="1000000" step="1" id="id-stream-offset">
+									<input onmouseup="node.Player.ChangePlayingPosition();" style="width: 100%" type="range" class="custom-range" min="0" max="1000000" step="1" id="id-stream-offset">
 								</div>
 								<div class="col-lg-2">
-									<input onmouseup="ChangeVolumePosition();" type="range" class="custom-range" min="0" max="100" step="1" id="id-volume-offset">
+									<input onmouseup="node.Player.ChangeVolumePosition();" type="range" class="custom-range" min="0" max="100" step="1" id="id-volume-offset">
 								</div>
 							</div>
 							<div class="row">
@@ -174,209 +174,27 @@
 				$('[data-toggle="tooltip"]').tooltip();
 			});
 
-			var CurrentSongContext = {
-				state: "IDLE",
-				name: "",
-				position: 0,
-				duration_ms: 0,
-				play_worker_idx: 0,
-				user_position: 0,
-				user_volume: 50
-			};
+			function Node(api) {
+				var self = this;
 
-			var StaticUIObjects = {
-				objCurrentActiveSong: 				document.getElementById("id-current-active-song"),
-				objCurrentActiveSongDuration: 		document.getElementById("id-current-active-song-duration"),
-				objCurrentActiveSongPosition: 		document.getElementById("id-current-active-song-position"),
-				objCurrentRangeStreamOffset:		document.getElementById("id-stream-offset"),
-				objCurrentVolumeOffset:				document.getElementById("id-volume-offset")
+				this.Player 	= new Player(api);
+				this.PlayList 	= new PlayList(api);
+
+				return this;
 			}
 
-			var initNode = function() {
-				StaticUIObjects.objCurrentRangeStreamOffset.oninput = function() {
-					CurrentSongContext.user_position = this.value;
+			Node.prototype.Init = function() {
+				node.Player.Objects.CurrentRangeStreamOffset.oninput = function() {
+					node.Player.Ctx.user_position = this.value;
 				} 
 
-				StaticUIObjects.objCurrentVolumeOffset.oninput = function() {
-					CurrentSongContext.user_volume = this.value;
+				node.Player.Objects.CurrentVolumeOffset.oninput = function() {
+					node.Player.Ctx.user_volume = this.value;
 				} 
 			}
 
-			function SetCheckboxState(id, val) {
-				elem = document.getElementById(id);
-				if (elem === null) {
-					return;
-				}
-
-				if (val == 1) {
-					elem.checked = true;
-				} else if (val == 0) {
-					elem.checked = false;
-				}
-			}
-
-			var ChangePlayingPosition = function() {
-				payload = {
-					operation: "set_time",
-					song: {
-						time: CurrentSongContext.user_position * 1000
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					if (res.data.payload !== undefined) {
-						if (res.data.payload.error == "none") {
-							playRequestHandler(res.data.payload);
-						}
-					}
-				});
-			}
-
-			var ChangeVolumePosition = function() {
-				payload = {
-					operation: "set_volume",
-					song: {
-						volume: parseInt(CurrentSongContext.user_volume)
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					if (res.data.payload !== undefined) {
-						if (res.data.payload.error == "none") {
-							playRequestHandler(res.data.payload);
-						}
-					}
-				});
-			}
-
-			var playWorkerInterval = function() {
-				CurrentSongContext.position += 1;
-
-				var seconds = (CurrentSongContext.position) % 60 ;
-				var minutes = ((CurrentSongContext.position / 60) % 60);
-				var hours   = ((CurrentSongContext.position / (60*60)) % 24);
-
-				StaticUIObjects.objCurrentActiveSongPosition.innerHTML 	= "{0}:{1}:{2}".format([parseInt(hours), parseInt(minutes), parseInt(seconds)]);
-				StaticUIObjects.objCurrentRangeStreamOffset.value 		= CurrentSongContext.position;
-			}
-
-			var playRequestHandler = function(payload) {
-				if (payload.info.state == "PLAY") {
-					var milliseconds = payload.info.duration;
-
-					var seconds = (milliseconds / 1000) % 60 ;
-					var minutes = ((milliseconds / (1000*60)) % 60);
-					var hours   = ((milliseconds / (1000*60*60)) % 24);
-
-					StaticUIObjects.objCurrentActiveSong.innerHTML 			= payload.info.name;
-					StaticUIObjects.objCurrentActiveSongDuration.innerHTML 	= " ({0}:{1}:{2})".format([parseInt(hours), parseInt(minutes), parseInt(seconds)]);
-					CurrentSongContext.name 								= payload.info.name;
-
-					if (CurrentSongContext.state != "PLAY") {
-						CurrentSongContext.play_worker_idx 	= setInterval(playWorkerInterval, 1000);
-					}
-
-					CurrentSongContext.position 		= payload.info.position / 1000;
-					CurrentSongContext.duration_ms 		= milliseconds;
-					CurrentSongContext.state 			= payload.info.state;
-
-					StaticUIObjects.objCurrentRangeStreamOffset.max 	= milliseconds / 1000;
-					StaticUIObjects.objCurrentRangeStreamOffset.step 	= "1";
-					StaticUIObjects.objCurrentRangeStreamOffset.value 	= CurrentSongContext.position;
-				} else if (payload.info.state == "PAUSE") {
-					clearInterval(CurrentSongContext.play_worker_idx);
-					CurrentSongContext.state = payload.info.state;
-				}
-
-				StaticUIObjects.objCurrentVolumeOffset.value = payload.info.volume;
-			}
-
-			var pauseRequestHandler = function(payload) {
-				clearInterval(CurrentSongContext.play_worker_idx);
-				CurrentSongContext.state = "PAUSE";
-			}
-
-			var stopRequestHandler = function(payload) {
-				clearInterval(CurrentSongContext.play_worker_idx);
-				CurrentSongContext.state = "STOP";
-			}
-
-			var currentPlay = function() {
-				console.log(CurrentSongContext.name);
-				payload = {
-					operation: "play",
-					song: {
-						name: CurrentSongContext.name
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					if (res.data.payload !== undefined) {
-						if (res.data.payload.error == "none") {
-							playRequestHandler(res.data.payload);
-						}
-					}
-				});
-			}
-			var currentPause = function() {
-				payload = {
-					operation: "pause",
-					song: {
-						name: CurrentSongContext.name
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					// pauseRequestHandler(res.data.payload);
-				});
-			}
-			var currentStop = function() {
-				payload = {
-					operation: "stop",
-					song: {
-						name: CurrentSongContext.name
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					stopRequestHandler(res.data.payload);
-				});
-			}
-
-			var playUIHandler = function(name, id) {
-				payload = {
-					operation: "play",
-					song: {
-						name: name
-					}
-				};
-				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					if (res.data.payload !== undefined) {
-						if (res.data.payload.error == "none") {
-							playRequestHandler(res.data.payload);
-						}
-					}
-				});
-			}
-			var SongItemComponentHtml = `
-				<li class="media" id="id_[ID]">
-					<img  class="mr-3" alt="..." style="height: 48px;" src="data:image/jpeg;base64,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">
-					<div class="media-body">
-						<h7 class="mt-0 mb-1">[SONG_NAME]</h7>
-						<p><a href="#" onclick="playUIHandler('[SONG_NAME]', '[ID]');">Play</a></p>
-					</div>
-				</li>
-				<hr id="id_line_[ID]">
-			`;
-			var GenerateSongItemView = function(song) {
-				var html = SongItemComponentHtml;
-				html = html.split("[SONG_NAME]").join(song.name);
-				html = html.split("[ID]").join(song.id);
-				return html;
-			}
-			
-			initNode();
-			// Gey makesense api instanse.
-			var api = MkSAPIBuilder.GetInstance();
-			api.SetGlobalGatewayIP(GatewayIP);
-
-			var OnNodeChangeEvent = function(packet) {
-				console.log("OnNodeChangeEvent", packet.data.payload.event);
+			Node.prototype.OnChangeEvent = function(packet) {
+				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
 				switch(packet.data.payload.event) {
 					case "media_folder_changed": {
 						var objSongList = document.getElementById("id_song_list");
@@ -386,7 +204,7 @@
 							switch(song.status) {
 								case "append": {
 									var song_id = CryptoJS.MD5(song.item).toString();
-									objSongList.innerHTML += GenerateSongItemView({
+									objSongList.innerHTML += this.PlayList.GenerateSongItemView({
 										name: song.item,
 										id: song_id
 									});
@@ -407,52 +225,215 @@
 					}
 					break;
 					case "media_info": {
-						playerRouteHandler(packet.data.payload.data.info);
-						CurrentSongContext.position = packet.data.payload.data.info.position / 1000;
 						console.log(packet.data.payload.data.info.state);
-
-						if (CurrentSongContext.state == "IDLE" || CurrentSongContext.state == "PAUSE") {
-							playRequestHandler(packet.data.payload.data);
-						}
+						this.Player.PlayerHandlers[packet.data.payload.data.info.state](this.Player, packet.data.payload.data.info);
 					}
 					break;
 				}
 			}
 
-			var playerRouteHandler = function(info) {
-				switch(info.state) {
-					case "BUFFER": {
-						break;
+			function Player (api) {
+				self = this;
+
+				this.Ctx = {
+					state: "IDLE",
+					name: "",
+					id: 0,
+					position: 0,
+					duration_ms: 0,
+					play_worker_idx: 0,
+					user_position: 0,
+					user_volume: 50
+				};
+
+				this.Objects = {
+					CurrentActiveSong: 				document.getElementById("id-current-active-song"),
+					CurrentActiveSongDuration: 		document.getElementById("id-current-active-song-duration"),
+					CurrentActiveSongPosition: 		document.getElementById("id-current-active-song-position"),
+					CurrentRangeStreamOffset:		document.getElementById("id-stream-offset"),
+					CurrentVolumeOffset:			document.getElementById("id-volume-offset")
+				}
+
+				this.API = api;
+
+				this.PlayerHandlers = {
+					"IDLE": 	this.IdleCallback,
+					"PAUSE": 	this.PauseCallback,
+					"PLAY": 	this.PlayCallback,
+					"STOP": 	this.StopCallback
+				}
+
+				return this;
+			}
+
+			Player.prototype.IdleCallback = function(ctx, info) {
+				// Init UI
+				ctx.Objects.CurrentActiveSong.innerHTML 			= "Media Name";
+				ctx.Objects.CurrentActiveSongDuration				= "00:00:00";
+				ctx.Objects.CurrentActiveSongDuration.innerHTML 	= " (00:00:00)";
+
+				// Init player context
+				ctx.Ctx.name 			= "";
+				ctx.Ctx.user_position 	= 0;
+				ctx.Ctx.position 		= 0;
+				ctx.Ctx.duration_ms 	= 0;
+				ctx.Ctx.play_worker_idx = 0;
+			}
+
+			Player.prototype.SetSong = function(song) {
+				this.Ctx.name 	= song.name;
+				this.Ctx.id 	= song.id;
+			}
+
+			Player.prototype.Play = function() {
+				payload = {
+					operation: "play",
+					song: {
+						name: this.Ctx.name
 					}
-					case "END": {
-						break;
+				};
+				this.API.SendCustomCommand(NodeUUID, "player_operation", payload, this.RouterHandler.bind(this));
+			}
+
+			Player.prototype.PlayCallback = function(ctx, info) {
+				var milliseconds = info.duration;
+				var seconds = (milliseconds / 1000) % 60 ;
+				var minutes = ((milliseconds / (1000*60)) % 60);
+				var hours   = ((milliseconds / (1000*60*60)) % 24);
+
+				ctx.Objects.CurrentActiveSong.innerHTML 			= info.name;
+				ctx.Objects.CurrentActiveSongDuration.innerHTML 	= " ({0}:{1}:{2})".format([parseInt(hours), parseInt(minutes), parseInt(seconds)]);
+				ctx.Ctx.name 										= info.name;
+
+				if (!ctx.Ctx.play_worker_idx) {
+					ctx.Ctx.play_worker_idx = setInterval(ctx.WorkerInterval.bind(ctx), 1000);
+				}
+
+				ctx.Ctx.position 		= info.position / 1000;
+				ctx.Ctx.duration_ms 	= milliseconds;
+				ctx.Ctx.state 			= info.state;
+
+				ctx.Objects.CurrentRangeStreamOffset.max 	= milliseconds / 1000;
+				ctx.Objects.CurrentRangeStreamOffset.step 	= "1";
+				ctx.Objects.CurrentRangeStreamOffset.value = ctx.Ctx.position;
+			}
+
+			Player.prototype.Stop = function() {
+				payload = {
+					operation: "stop",
+					song: {
+						name: this.Ctx.name
 					}
-					case "ERROR": {
-						break;
+				};
+				this.API.SendCustomCommand(NodeUUID, "player_operation", payload, this.RouterHandler.bind(this));
+			}
+
+			Player.prototype.StopCallback = function(ctx, info) {
+				clearInterval(ctx.Ctx.play_worker_idx);
+				ctx.Ctx.play_worker_idx = 0;
+			}
+
+			Player.prototype.Pause = function() {
+				payload = {
+					operation: "pause",
+					song: {
+						name: this.Ctx.name
 					}
-					case "IDLE": {
-						break;
+				};
+				this.API.SendCustomCommand(NodeUUID, "player_operation", payload, this.RouterHandler.bind(this));
+			}
+
+			Player.prototype.PauseCallback = function(ctx, info) {
+				clearInterval(ctx.Ctx.play_worker_idx);
+				ctx.Ctx.play_worker_idx = 0;
+			}
+
+			Player.prototype.Back = function() {
+				
+			}
+
+			Player.prototype.Forward = function() {
+				
+			}
+
+			Player.prototype.WorkerInterval = function() {
+				this.Ctx.position += 1;
+
+				var seconds = (this.Ctx.position) % 60 ;
+				var minutes = ((this.Ctx.position / 60) % 60);
+				var hours   = ((this.Ctx.position / (60*60)) % 24);
+
+				this.Objects.CurrentActiveSongPosition.innerHTML 	= "{0}:{1}:{2}".format([parseInt(hours), parseInt(minutes), parseInt(seconds)]);
+				this.Objects.CurrentRangeStreamOffset.value 		= this.Ctx.position;
+				console.log("WorkerInterval");
+			}
+
+			Player.prototype.ChangePlayingPosition = function() {
+				payload = {
+					operation: "set_time",
+					song: {
+						time: this.Ctx.user_position * 1000
 					}
-					case "OPEN": {
-						break;
+				};
+				this.API.SendCustomCommand(NodeUUID, "player_operation", payload, this.RouterHandler.bind(this));
+			}
+
+			Player.prototype.ChangeVolumePosition = function() {
+				payload = {
+					operation: "set_volume",
+					song: {
+						volume: parseInt(this.Ctx.user_volume)
 					}
-					case "PAUSE": {
-						break;
+				};
+				this.API.SendCustomCommand(NodeUUID, "player_operation", payload, this.RouterHandler.bind(this));
+			}
+
+			Player.prototype.RouterHandler = function(res) {
+				if (res.data.payload !== undefined) {
+					if (res.data.payload.error == "none") {
+						var info = res.data.payload.info;
+						console.log(info.state, info);
+						this.PlayerHandlers[info.state](this, info);
+						this.Ctx.state = info.state;
+						// Update volume UI object
+						this.Objects.CurrentVolumeOffset.value = info.volume;
 					}
-					case "PLAY": {
-						break;
-					}
-					case "STOP": {
-						break;
-					}
-					default:
-						break;
 				}
 			}
 
+			function PlayList (api) {
+				var self = this;
+
+				this.SongItemComponentHtml = `
+					<li class="media" id="id_[ID]">
+						<img  class="mr-3" alt="..." style="height: 48px;" src="data:image/jpeg;base64,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">
+						<div class="media-body">
+							<h7 class="mt-0 mb-1">[SONG_NAME]</h7>
+							<p><a href="#" onclick="node.Player.SetSong({name:'[SONG_NAME]', id:'[ID]'});node.Player.Play();">Play</a></p>
+						</div>
+					</li>
+					<hr id="id_line_[ID]">
+				`;
+
+				return this;
+			}
+			
+			PlayList.prototype.GenerateSongItemView = function(song) {
+				var html = this.SongItemComponentHtml;
+				html = html.split("[SONG_NAME]").join(song.name);
+				html = html.split("[ID]").join(song.id);
+				return html;
+			}
+			
+			// Gey makesense api instanse.
+			var api  = MkSAPIBuilder.GetInstance();
+			var node = new Node(api);
+			api.SetGlobalGatewayIP(GatewayIP);
+
+			node.Init();
 			api.ConnectGateway(function() {
 				console.log("Connection to Gateway was established.");
-				api.Gateway.OnNodeChangeEvent = OnNodeChangeEvent;
+				api.Gateway.OnNodeChangeEvent = node.OnChangeEvent.bind(node);
 
 				api.GetNodeSensorsInfo(NodeUUID, function(res) {
 					console.log(res.data.payload);
@@ -461,19 +442,13 @@
 					for (key in res.data.payload.songs) {
 						song = res.data.payload.songs[key];
 						var song_id = CryptoJS.MD5(song).toString();
-						objSongList.innerHTML += GenerateSongItemView({
+						objSongList.innerHTML += node.PlayList.GenerateSongItemView({
 							name: song,
 							id: song_id
 						});
 					}
 					
-					/*
-					if (CurrentSongContext.state == "IDLE") {
-						playRequestHandler(res.data.payload);
-					}
-					*/
-					playerRouteHandler(res.data.payload.info);
-
+					node.Player.RouterHandler(res);
 					api.RegisterOnNodeChange(NodeUUID, function(res) {
 						console.log("UI have registered NODE successfuly", res);
 					});
@@ -484,9 +459,7 @@
 				
 			})
 
-			var OpenModal = function (elem, id, rf_type, obj, selector) {
-				$('#id-semsor-modal').modal('show')
-			}
+			// $('#id-semsor-modal').modal('show');
 
 			feather.replace();
         </script>
