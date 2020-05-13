@@ -172,8 +172,15 @@ class Context():
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 		print ("({classname})# PlayerOperationHandler ... payload: {0}".format(payload, classname=self.ClassName))
 
-		error 	= "none"
-		info 	= {}
+		self.CurrentPlayerState = self.GetPlayerState()
+		error = "none"
+		info = {
+			'duration': self.Player.get_length(),
+			'position': self.Player.get_time(),
+			'volume': self.Player.audio_get_volume(),
+			'name': self.CurrentPlayingSongName,
+			'state': self.CurrentPlayerState
+		}
 		
 		if "play" in payload["operation"]:
 			self.Player.stop()
@@ -200,58 +207,29 @@ class Context():
 						self.CurrentPlayerState 	= self.GetPlayerState()
 						self.CurrentPlayingSongName = payload["song"]["name"]
 						# Info structure respone
-						info = {
-							'duration': self.Player.get_length(),
-							'position': 0,
-							'name': payload["song"]["name"],
-							'state': self.CurrentPlayerState,
-							'volume': self.Player.audio_get_volume()
-						}
+						info["duration"] 	= self.Player.get_length()
+						info["position"] 	= 0
+						info["volume"] 		= self.Player.audio_get_volume()
+						info["name"] 		= payload["song"]["name"]
+						info["state"] 		= self.CurrentPlayerState
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
-			self.CurrentPlayerState 	= self.GetPlayerState()
-			info = {
-				'duration': self.Player.get_length(),
-				'position': self.Player.get_time(),
-				'name': self.CurrentPlayingSongName,
-				'state': self.CurrentPlayerState,
-				'volume': self.Player.audio_get_volume()
-			}
+			self.CurrentPlayerState = self.GetPlayerState()
+			info["state"] 			= self.CurrentPlayerState
 		elif "pause" in payload["operation"]:
 			self.CurrentPlayerState = self.GetPlayerState()
 			self.Player.pause()
 			time.sleep(0.2)
-			info = {
-				'duration': self.Player.get_length(),
-				'position': self.Player.get_time(),
-				'name': self.CurrentPlayingSongName,
-				'state': self.CurrentPlayerState,
-				'volume': self.Player.audio_get_volume()
-			}
-		elif "skip_back" in payload["operation"]:
-			pass
-		elif "skip_forward" in payload["operation"]:
-			pass
+			self.CurrentPlayerState = self.GetPlayerState()
+			info["state"] 			= self.CurrentPlayerState
 		elif "set_time" in payload["operation"]:
 			self.Player.set_time(int(payload["song"]["time"]))
 			time.sleep(0.2)
-			info = {
-				'duration': self.Player.get_length(),
-				'position': self.Player.get_time(),
-				'name': self.CurrentPlayingSongName,
-				'state': self.CurrentPlayerState,
-				'volume': self.Player.audio_get_volume()
-			}
+			info["position"] = self.Player.get_time()
 		elif "set_volume" in payload["operation"]:
 			self.Player.audio_set_volume(payload["song"]["volume"])
 			time.sleep(0.2)
-			info = {
-				'duration': self.Player.get_length(),
-				'position': self.Player.get_time(),
-				'name': self.CurrentPlayingSongName,
-				'state': self.CurrentPlayerState,
-				'volume': self.Player.audio_get_volume()
-			}
+			info["volume"] = self.Player.audio_get_volume()
 
 		data = {
 			"error": error,
