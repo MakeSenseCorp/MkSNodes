@@ -126,6 +126,24 @@ class Context():
 		self.Timer 						= MkSTimer.MkSTimer()
 		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
 
+	def GetPlayerState(self):
+		state = self.Player.get_state()
+		if state == vlc.State.Buffering:
+			return "BUFFER"
+		elif state == vlc.State.Ended:
+			return "END"
+		elif state == vlc.State.Error:
+			return "ERROR"
+		elif state == vlc.State.NothingSpecial:
+			return "IDLE"
+		elif state == vlc.State.Opening:
+			return "OPEN"
+		elif state == vlc.State.Paused:
+			return "PAUSE"
+		elif state == vlc.State.Playing:
+			return "PLAY"
+		elif state == vlc.State.Stopped:
+			return "STOP"
 
 	def OnTimerTriggerHandler(self, uuid, action):
 		print ("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName))
@@ -173,7 +191,7 @@ class Context():
 					self.Player.set_mrl(song_path)
 					self.Player.play()
 					# Update Node context
-					self.CurrentPlayerState 	= "PLAY"
+					self.CurrentPlayerState 	= self.GetPlayerState()
 					self.CurrentPlayingSongName = payload["song"]["name"]
 					# Let VLC load the song content
 					time.sleep(1)
@@ -354,19 +372,19 @@ class Context():
 				})
 		
 		if (self.Node.Ticker % 5) == 0:
-			if self.Player.get_state() == vlc.State.Playing:
-				THIS.Node.EmitOnNodeChange({
-					'event': "media_info",
-					'data': {
-						'info': {
-							'duration': self.Player.get_length(),
-							'position': self.Player.get_time(),
-							'name': self.CurrentPlayingSongName,
-							'state': self.CurrentPlayerState,
-							'volume': self.Player.audio_get_volume()
-						}
+			self.CurrentPlayerState = self.GetPlayerState()
+			THIS.Node.EmitOnNodeChange({
+				'event': "media_info",
+				'data': {
+					'info': {
+						'duration': self.Player.get_length(),
+						'position': self.Player.get_time(),
+						'name': self.CurrentPlayingSongName,
+						'state': self.CurrentPlayerState,
+						'volume': self.Player.audio_get_volume()
 					}
-				})
+				}
+			})
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

@@ -289,6 +289,11 @@
 				StaticUIObjects.objCurrentVolumeOffset.value = payload.info.volume;
 			}
 
+			var pauseRequestHandler = function(payload) {
+				clearInterval(CurrentSongContext.play_worker_idx);
+				CurrentSongContext.state = "PAUSE";
+			}
+
 			var stopRequestHandler = function(payload) {
 				clearInterval(CurrentSongContext.play_worker_idx);
 				CurrentSongContext.state = "STOP";
@@ -318,7 +323,7 @@
 					}
 				};
 				api.SendCustomCommand(NodeUUID, "player_operation", payload, function(res) {
-					stopRequestHandler(res.data.payload);
+					// pauseRequestHandler(res.data.payload);
 				});
 			}
 			var currentStop = function() {
@@ -402,13 +407,46 @@
 					}
 					break;
 					case "media_info": {
+						playerRouteHandler(packet.data.payload.data.info);
 						CurrentSongContext.position = packet.data.payload.data.info.position / 1000;
+						console.log(packet.data.payload.data.info.state);
 
-						if (CurrentSongContext.state == "IDLE") {
+						if (CurrentSongContext.state == "IDLE" || CurrentSongContext.state == "PAUSE") {
 							playRequestHandler(packet.data.payload.data);
 						}
 					}
 					break;
+				}
+			}
+
+			var playerRouteHandler = function(info) {
+				switch(info.state) {
+					case "BUFFER": {
+						break;
+					}
+					case "END": {
+						break;
+					}
+					case "ERROR": {
+						break;
+					}
+					case "IDLE": {
+						break;
+					}
+					case "OPEN": {
+						break;
+					}
+					case "PAUSE": {
+						break;
+					}
+					case "PLAY": {
+						break;
+					}
+					case "STOP": {
+						break;
+					}
+					default:
+						break;
 				}
 			}
 
@@ -428,10 +466,13 @@
 							id: song_id
 						});
 					}
-
+					
+					/*
 					if (CurrentSongContext.state == "IDLE") {
 						playRequestHandler(res.data.payload);
 					}
+					*/
+					playerRouteHandler(res.data.payload.info);
 
 					api.RegisterOnNodeChange(NodeUUID, function(res) {
 						console.log("UI have registered NODE successfuly", res);
