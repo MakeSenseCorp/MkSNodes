@@ -1,0 +1,14 @@
+1. BUGFIX - Slave node did not reappend on Gateway disconnection.
+2. Makesense startup
+    a. Create Guardian proceess (will be executed by systemd)
+        - https://www.linode.com/docs/quick-answers/linux/start-service-at-boot/
+    b. After Master Node launched by Gardian, Master loads all Slave nodes in list.
+3. Create new Interuction Test Node
+    a. NEW FEATURE - Node abilities list.
+    b. Search for nodes in network. (Currently get list from gateway)
+    c. Get abilities from each node.
+    d. Present UI for each ability.
+4. BUGFIX - ORangePI and few other machines loos their WiFi connection.
+5. NEW FEATURE - Tunneling
+    a. Slave-Slave Tunneling (Socketing)
+    b. Master-Slave Tunneling (Adaptor Slave)

@@ -1,0 +1,19 @@
+ID                  NAME                            TYPE                STATE
+-----------------------------------------------------------------------------
+MASTER              Master                          MASTER              IN_USE
+100                 Test Node                       SERVICE             NOT_IN_USE
+101                 SMS Service                     SERVICE             NOT_IN_USE
+102                 Email Service                   SERVICE             NOT_IN_USE
+103                 IP Scanner Service              SERVICE             IN_USE              
+1981                Switcher                        NODE                NOT_IN_USE
+1982                Youtube Player                  NODE                NOT_IN_USE
+2017                HJT Cameras Manager             NODE                IN_USE
+2018                Sonoff Manager                  NODE                NOT_IN_USE
+2019                UVC Cameras Manager             NODE                IN_USE
+2020                433Mhz Controller Manager       NODE                IN_USE
+2021                MP3 Player                      NODE                DEVELOPMENT
+1001981             TDD Runner                      NODE                NOT_IN_USE
+
+Total Nodes
+-----------
+        13
