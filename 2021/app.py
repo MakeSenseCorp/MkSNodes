@@ -120,6 +120,8 @@ class Context():
 		self.SelectedStoragePath 		= None
 		self.SongsFolder				= None
 		self.Player 					= vlc.MediaPlayer()
+		self.SoundCards					= []
+		self.CurrentInterface 			= None
 		self.CurrentPlayingSongName		= ""
 		self.CurrentPlayerState 		= "IDLE"
 
@@ -212,6 +214,8 @@ class Context():
 						info["volume"] 		= self.Player.audio_get_volume()
 						info["name"] 		= payload["song"]["name"]
 						info["state"] 		= self.CurrentPlayerState
+
+						self.Player.audio_output_device_set(None, self.CurrentInterface)
 		elif "stop" in payload["operation"]:
 			self.Player.stop()
 			self.CurrentPlayerState = self.GetPlayerState()
@@ -291,6 +295,24 @@ class Context():
 		self.SongsFolder = FolderMonitor(os.path.join(self.SelectedStoragePath, "songs"))
 		self.SongsFolder.GetItemsCompare()
 
+		ifaces = [	'alsa_output.pci-0000_00_1b.0.analog-stereo', 
+					'bluez_sink.79_8F_BC_00_35_85.a2dp_sink', 
+					'alsa_output.usb-Plantronics_Plantronics_C520-M_EEBA9F757CA8EF49A0CBAA3AC0D6E280-00.analog-stereo']
+		interfaces = self.Player.audio_output_device_enum()
+		if interfaces:
+			iface = interfaces
+			while iface:
+				iface = iface.contents
+				if "bluez_sink.79_8F_BC_00_35_85" in iface.device:
+					self.Player.audio_output_device_set(None, iface.device)
+					self.CurrentInterface = iface.device
+					print ("({classname})# Bluetooth device was selected...".format(classname=self.ClassName))
+				self.SoundCards.append(iface.device)
+				iface = iface.next
+
+		vlc.libvlc_audio_output_device_list_release(interfaces)
+		print(self.SoundCards)
+
 		# self.Timer.LoadClocks(addrs)
 		# self.Timer.Run()
 		
@@ -360,6 +382,7 @@ class Context():
 				})
 		
 		if (self.Node.Ticker % 5) == 0:
+			print(self.Player.audio_output_device_get())
 			self.CurrentPlayerState = self.GetPlayerState()
 			THIS.Node.EmitOnNodeChange({
 				'event': "media_info",
