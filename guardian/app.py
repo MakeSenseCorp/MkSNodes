@@ -4,13 +4,15 @@ import sys
 import signal
 import json
 import time
-import thread
+if sys.version_info[0] < 3:
+	import thread
+else:
+	import _thread
 import threading
-import re
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
-from mksdk import MkSMasterNode
+from mksdk import MkSStandaloneNode
 from mksdk import MkSShellExecutor
 from mksdk import MkSExternalProcess
 from mksdk import MkSUtils
@@ -32,6 +34,7 @@ class Context():
 		self.ServicesDB 					= None
 		self.RunningServices				= []
 		self.NetworkDevicesList 			= []
+		self.Node.DebugMode 				= True
 
 	def UndefindHandler(self, packet):
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
@@ -52,14 +55,13 @@ class Context():
 	
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
-			#print ("(Master Appplication)# [Gateway] Data arrived.")
 			command = packet['data']['header']['command']
 			message = self.RequestHandlers[command](sock, packet)
 			THIS.Node.Network.SendWebSocket(message)
 		except Exception as e:
 			print("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
-						classname=self.ClassName,
-						error=str(e)))
+				classname=self.ClassName,
+				error=str(e)))
 	
 	def WSConnectedHandler(self):
 		print ("({classname})# Connection to Gateway was established.".format(classname=self.ClassName))
@@ -68,18 +70,20 @@ class Context():
 		print ("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName))
 
 	def NodeSystemLoadedHandler(self):
-		print ("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
 
+		self.Node.LogMSG("({classname})# Loading MASTER Node ...".format(classname=self.ClassName))
+		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
+		node = MkSExternalProcess.ExternalProcess()
+		node.CallProcess("python app.py", master_path, "")
+		self.Node.LogMSG("({classname})# MATER Node Loaded ...".format(classname=self.ClassName))
+
 	def OnNodeWorkTick(self):
-		if time.time() - self.CurrentTimestamp > self.Interval:			
-			self.CheckingForUpdate = True
-			self.CurrentTimestamp = time.time()
+		if (self.Node.Ticker % 20) == 0:
+			print("({classname})# MASTER is ALIVE ...".format(classname=self.ClassName))
 
-			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
-
-Node = MkSMasterNode.MasterNode()
+Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
@@ -89,7 +93,7 @@ def main():
 	signal.signal(signal.SIGINT, signal_handler)
 
 	THIS.Node.SetLocalServerStatus(True)
-	THIS.Node.SetWebServiceStatus(True)
+	THIS.Node.SetWebServiceStatus(False)
 
 	# Node callbacks
 	THIS.Node.GatewayDataArrivedCallback			= THIS.WSDataArrivedHandler

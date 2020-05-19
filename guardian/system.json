@@ -2,33 +2,42 @@
 	"node":
 	{
 		"info": {
-			"uuid":"bc6de837-9863-72a9-c789-a0aae7e9d020",
+			"uuid":"00000000-0000-0000-0000-000000000001",
 			"isHW":"False",
-			"type":1,
+			"type":2,
 			"ostype":"Linux",
 			"osversion":"Unknown",
-			"brandname":"Master",
-			"name":"Master",
-			"description":"Master Node",
-			"isMasterNode":"True",
+			"brandname":"Guardian",
+			"name":"Guardian",
+			"description":"N/A",
+			"isMasterNode":"False",
 			"isLocalServerEnabled":"True",
 			"isWebEnabled":"True",
-			"boardType": "OrangePI Zero",
+			"boardType": "N/A",
 			"is_application_ui_enabled": "False",
 			"tagging": {
-				"cat_1": "application",
-				"cat_2": "admin",
-				"cat_3": "master"
+				"cat_1": "N/A",
+				"cat_2": "N/A",
+				"cat_3": "N/A"
 			}
 		},
 		"service": {
 			"depend": [
-				103
 			]
 		}
 	},
 	"user":
 	{
 		
+	},
+	"device": {
+		
+	},
+	"deploymnet": {
+		"dependencies_cmd": [
+		],
+		"script": {
+
+		}
 	}
 }
