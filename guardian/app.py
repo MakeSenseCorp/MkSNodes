@@ -29,15 +29,24 @@ class Context():
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
+			'get_node_status':				self.GetNodeStatusHandler
 		}
 		self.InstalledNodesDB				= None
 		self.ServicesDB 					= None
 		self.RunningServices				= []
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
+		# Members
+		self.MasterConnection				= False
+		self.MasterStatus					= None
 
-	def UndefindHandler(self, packet):
+	def UndefindHandler(self, sock, packet):
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
+	
+	def GetNodeStatusHandler(self, sock, packet):
+		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		print ("({classname})# Master status '{0}'".format(payload,classname=self.ClassName))
+		self.MasterStatus = payload
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -69,19 +78,36 @@ class Context():
 	def WSConnectionClosedHandler(self):
 		print ("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName))
 
+	def LoadMAsterNode(self):
+		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
+		node = MkSExternalProcess.ExternalProcess()
+		node.CallProcess("python app.py", master_path, "")
+
+	def ConnectMaster(self):
+		status = self.Node.ConnectRawSocket(self.Node.MyLocalIP, 16999)
+		if status is True:
+			print("({classname})# Connected to MASTER ...".format(classname=self.ClassName))
+			self.MasterConnection = True
+
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
 
 		self.Node.LogMSG("({classname})# Loading MASTER Node ...".format(classname=self.ClassName))
-		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
-		node = MkSExternalProcess.ExternalProcess()
-		node.CallProcess("python app.py", master_path, "")
-		self.Node.LogMSG("({classname})# MATER Node Loaded ...".format(classname=self.ClassName))
+		#self.LoadMAsterNode()
+		self.Node.LogMSG("({classname})# MASTER Node Loaded ...".format(classname=self.ClassName))
+		self.ConnectMaster()
 
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 20) == 0:
-			print("({classname})# MASTER is ALIVE ...".format(classname=self.ClassName))
+			if self.MasterConnection is True:
+				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
+				packet  = self.Node.BasicProtocol.AppendMagic(message)
+				if self.Node.SendMessageOverRawSocket(self.Node.MyLocalIP, 16999, packet) is False:
+					self.MasterConnection 	= False
+					self.MasterStatus 		= None
+			else:
+				pass
 
 Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
