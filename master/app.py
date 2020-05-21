@@ -38,6 +38,7 @@ class Context():
 		self.InstalledNodesDB				= None
 		self.ServicesDB 					= None
 		self.RunningServices				= []
+		self.RunningNodes					= []
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
 
@@ -252,41 +253,45 @@ class Context():
 	def WSConnectionClosedHandler(self):
 		self.Node.LogMSG("(Master Appplication)# Connection to Gateway was lost.")
 
+	def LoadServices(self):
+		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
+		if strServicesJson == "":
+			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName))
+			return
+		
+		self.ServicesDB = json.loads(strServicesJson)
+		services = self.ServicesDB["on_boot_services"]
+		for service in services:
+			if (service["enabled"] == 1):
+				self.Node.LogMSG("({classname})# Start service name {0}".format(service["name"],classname=self.ClassName))
+				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
+				node = MkSExternalProcess.ExternalProcess()
+				node.CallProcess("python app.py", service_path, "")
+				self.RunningServices.append(node)
+	
+	def LoadNodes(self):
+		strNodesJson = self.File.Load(os.path.join(self.Node.MKSPath,"nodes.json"))
+		if strNodesJson == "":
+			self.Node.LogMSG("({classname})# ERROR - Cannot find nodes.json or it is empty.".format(classname=self.ClassName))
+			return
+		
+		self.InstalledNodesDB = json.loads(strNodesJson)
+		nodes = self.InstalledNodesDB["installed_nodes"]
+		for node in nodes:
+			if (node["enabled"] == 1):
+				self.Node.LogMSG("({classname})# Start service name {0}".format(node["name"],classname=self.ClassName))
+				node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
+				node = MkSExternalProcess.ExternalProcess()
+				node.CallProcess("python app.py", node_path, "")
+				self.RunningNodes.append(node)
+
 	def NodeSystemLoadedHandler(self):
-		self.Node.LogMSG("(Master Appplication)# Node system was succesfully loaded.")
 		self.SystemLoaded = True
-		
-		# Loading on master boot service database
-		if MkSGlobals.OS_TYPE in ["linux", "linux2"]:
-			MKS_PATH = os.environ['HOME'] + "/mks/"
-		else:
-			MKS_PATH = "C:\\mks\\"
-		
-		self.Node.LogMSG("(Master Appplication)# Loading on master boot service database.")
-		jsonStr = self.File.Load(MKS_PATH + "services.json")
-		if jsonStr != "":
-			self.ServicesDB = json.loads(jsonStr)
-			if (self.ServicesDB is not None):
-				services = self.ServicesDB["on_boot_services"]
-				for service in services:
-					if (service["enabled"] == 1):
-						self.Node.LogMSG("(Master Appplication)# Start service name ", service["name"])
-						node = MkSExternalProcess.ExternalProcess()
-						self.RunningServices.append(node)
-						if MkSGlobals.OS_TYPE in ["linux", "linux2"]:
-							node.CallProcess("python app.py", "../" + str(service["type"]), "")
-						else:
-							node.CallProcess("python app.py", "..\\" + str(service["type"]), "")
-		else:
-			self.Node.LogMSG("(Master Appplication)# ERROR - Cannot find service.json or it is empty.")
-		
+		# Load services nodes
+		self.LoadServices()
 		# Load all installed nodes
-		self.Node.LogMSG("(Master Appplication)# Load all installed nodes.")
-		jsonStr = self.File.Load(MKS_PATH + "nodes.json")
-		if jsonStr != "":
-			self.InstalledNodesDB = json.loads(jsonStr)
-		else:
-			self.Node.LogMSG("(Master Appplication)# ERROR - Cannot find nodes.json or it is empty.")
+		self.LoadNodes()
+		self.Node.LogMSG("(Master Appplication)# Node system was succesfully loaded.")
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			

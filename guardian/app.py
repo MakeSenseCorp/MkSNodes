@@ -120,8 +120,7 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
-		#self.StartSystem()
-		self.ConnectMaster()
+		self.StartSystem()
 		
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:
@@ -135,7 +134,7 @@ class Context():
 					self.MasterStatus 			= None
 					self.MissedMessagesCount 	= 0
 			else:
-				pass #self.StartSystem()
+				self.StartSystem()
 
 Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
