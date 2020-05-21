@@ -39,12 +39,13 @@ class Context():
 		self.ServicesDB 					= None
 		self.RunningServices				= []
 		self.NetworkDevicesList 			= []
+		self.Node.DebugMode 				= True
 
 	def UndefindHandler(self, packet):
-		print ("UndefindHandler")
+		self.Node.LogMSG("UndefindHandler")
 
 	def OnNodeChangeHandler(self, sock, packet):
-		print ("({classname})# Node change event recieved ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName))
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
 
@@ -56,9 +57,9 @@ class Context():
 		})
 	
 	def GetOnlineDevicesHandler(self, sock, packet):
-		print ("({classname})# Online network device list ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName))
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
-		print(payload)
+		self.Node.LogMSG(payload)
 	
 	def GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
@@ -201,7 +202,7 @@ class Context():
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
 	def SetServiceInfoHandler(self, sock, packet):
-		print ("SetServiceInfoHandler", packet)
+		self.Node.LogMSG("SetServiceInfoHandler", packet)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		uuid 	= payload["uuid"]
 		enabled = payload["enabled"]
@@ -241,18 +242,18 @@ class Context():
 			message = self.RequestHandlers[command](sock, packet)
 			THIS.Node.Network.SendWebSocket(message)
 		except Exception as e:
-			print("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
+			self.Node.LogMSG("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
 						classname=self.ClassName,
 						error=str(e)))
 	
 	def WSConnectedHandler(self):
-		print ("(Master Appplication)# Connection to Gateway was established.")
+		self.Node.LogMSG("(Master Appplication)# Connection to Gateway was established.")
 
 	def WSConnectionClosedHandler(self):
-		print ("(Master Appplication)# Connection to Gateway was lost.")
+		self.Node.LogMSG("(Master Appplication)# Connection to Gateway was lost.")
 
 	def NodeSystemLoadedHandler(self):
-		print ("(Master Appplication)# Node system was succesfully loaded.")
+		self.Node.LogMSG("(Master Appplication)# Node system was succesfully loaded.")
 		self.SystemLoaded = True
 		
 		# Loading on master boot service database
@@ -261,7 +262,7 @@ class Context():
 		else:
 			MKS_PATH = "C:\\mks\\"
 		
-		print ("(Master Appplication)# Loading on master boot service database.")
+		self.Node.LogMSG("(Master Appplication)# Loading on master boot service database.")
 		jsonStr = self.File.Load(MKS_PATH + "services.json")
 		if jsonStr != "":
 			self.ServicesDB = json.loads(jsonStr)
@@ -269,7 +270,7 @@ class Context():
 				services = self.ServicesDB["on_boot_services"]
 				for service in services:
 					if (service["enabled"] == 1):
-						print("(Master Appplication)# Start service name ", service["name"])
+						self.Node.LogMSG("(Master Appplication)# Start service name ", service["name"])
 						node = MkSExternalProcess.ExternalProcess()
 						self.RunningServices.append(node)
 						if MkSGlobals.OS_TYPE in ["linux", "linux2"]:
@@ -277,15 +278,15 @@ class Context():
 						else:
 							node.CallProcess("python app.py", "..\\" + str(service["type"]), "")
 		else:
-			print("(Master Appplication)# ERROR - Cannot find service.json or it is empty.")
+			self.Node.LogMSG("(Master Appplication)# ERROR - Cannot find service.json or it is empty.")
 		
 		# Load all installed nodes
-		print ("(Master Appplication)# Load all installed nodes.")
+		self.Node.LogMSG("(Master Appplication)# Load all installed nodes.")
 		jsonStr = self.File.Load(MKS_PATH + "nodes.json")
 		if jsonStr != "":
 			self.InstalledNodesDB = json.loads(jsonStr)
 		else:
-			print("(Master Appplication)# ERROR - Cannot find nodes.json or it is empty.")
+			self.Node.LogMSG("(Master Appplication)# ERROR - Cannot find nodes.json or it is empty.")
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
@@ -293,14 +294,14 @@ class Context():
 			self.CurrentTimestamp = time.time()
 
 			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type))
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	for service in THIS.RunningServices:
-		print("(Master Appplication)# Stop service.")
+		self.Node.LogMSG("(Master Appplication)# Stop service.")
 		service.KillProcess()
 		time.sleep(2)
 	THIS.Node.Stop()
@@ -320,10 +321,10 @@ def main():
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 
 	# Run Node
-	print("(Master Application)# Start Node ...")
+	THIS.Node.LogMSG("(Master Application)# Start Node ...")
 	THIS.Node.Run(THIS.OnNodeWorkTick)
 	
-	print("(Master Application)# Exit Node ...")
+	THIS.Node.LogMSG("(Master Application)# Exit Node ...")
 
 if __name__ == "__main__":
 	main()
