@@ -367,8 +367,10 @@ class Context():
 			self.CurrentTimestamp = time.time()
 
 			print("\nTables:")
-			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
+			connections = THIS.Node.GetConnections()
+			for idx, key in enumerate(connections):
+				node = connections[key]
+				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),node.LocalType,node.UUID,node.IP,node.Port,node.Type))
 			print("")
 
 			# Search for change in MP3 folder
@@ -382,7 +384,7 @@ class Context():
 				})
 		
 		if (self.Node.Ticker % 5) == 0:
-			print(self.Player.audio_output_device_get())
+			# print(self.Player.audio_output_device_get())
 			self.CurrentPlayerState = self.GetPlayerState()
 			THIS.Node.EmitOnNodeChange({
 				'event': "media_info",

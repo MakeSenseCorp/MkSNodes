@@ -38,8 +38,8 @@ class Context():
 		self.Node.DebugMode 				= True
 		# Members
 		self.MasterConnection				= False
+		self.MasterSocket					= None
 		self.MasterStatus					= None
-		self.MissedMessagesCount			= 0
 
 	def UndefindHandler(self, sock, packet):
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
@@ -84,14 +84,6 @@ class Context():
 		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
 		node = MkSExternalProcess.ExternalProcess()
 		node.CallProcess("python app.py", master_path, "")
-
-	def ConnectMaster(self):
-		status = self.Node.ConnectRawSocket(self.Node.MyLocalIP, 16999)
-		if status is True:
-			print("({classname})# Connected to MASTER ...".format(classname=self.ClassName))
-			self.MasterConnection = True
-		else:
-			print("({classname})# WARRNING - CANNOT connect MASTER ...".format(classname=self.ClassName))
 	
 	def GetPythonProcs(self, mypid):
 		procs = []
@@ -115,24 +107,22 @@ class Context():
 		time.sleep(2)
 		self.LoadMasterNode()
 		time.sleep(2)
-		self.ConnectMaster()
+		self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
+		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
 
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
 		self.StartSystem()
+		#self.MasterSocket, self.MasterConnection = self.Node.ConnectNode()
 		
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:
+			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
 			if self.MasterConnection is True:
 				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
 				packet  = self.Node.BasicProtocol.AppendMagic(message)
-				if self.Node.SendMessageOverRawSocket(self.Node.MyLocalIP, 16999, packet) is False:
-					self.MissedMessagesCount += 1
-				if self.MissedMessagesCount > 1:
-					self.MasterConnection 		= False
-					self.MasterStatus 			= None
-					self.MissedMessagesCount 	= 0
+				self.Node.AppendTXRequest(self.MasterSocket, packet)
 			else:
 				self.StartSystem()
 
@@ -159,6 +149,7 @@ def main():
 	# Run Node
 	print("(Node)# Start Node ...")
 	THIS.Node.Run(THIS.OnNodeWorkTick)
+	time.sleep(3)
 	
 	print("(Node)# Exit Node ...")
 

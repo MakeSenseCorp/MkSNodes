@@ -64,17 +64,19 @@ class Context():
 	
 	def GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
-			connections = []
-			for item in THIS.Node.GetConnections():
-				connections.append({
-					'local_type':	item.LocalType,
-					'uuid':			item.UUID,
-					'ip':			item.IP,
-					'port':			item.Port,
-					'type':			item.Type
+			conns = []
+			connections = THIS.Node.GetConnections()
+			for key in connections:
+				node = connections[key]
+				conns.append({
+					'local_type':	node.LocalType,
+					'uuid':			node.UUID,
+					'ip':			node.IP,
+					'port':			node.Port,
+					'type':			node.Type
 				})
 			payload = {
-				'connections': connections
+				'connections': conns
 			}
 
 			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
@@ -297,16 +299,23 @@ class Context():
 		if time.time() - self.CurrentTimestamp > self.Interval:			
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
+			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
+			self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName))
 
-			for idx, item in enumerate(THIS.Node.GetConnections()):
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type))
+			connections = THIS.Node.GetConnections()
+			for idx, key in enumerate(connections):
+				node = connections[key]
+				#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
+				#packet  = self.Node.BasicProtocol.AppendMagic(message)
+				#self.Node.AppendTXRequest(item.Socket, packet) # Response will update "enabled" or "ts" field in local DB
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.LocalType, node.UUID, node.IP, node.Port, node.Type))
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	for service in THIS.RunningServices:
-		self.Node.LogMSG("(Master Appplication)# Stop service.")
+		THIS.Node.LogMSG("(Master Appplication)# Stop service.")
 		service.KillProcess()
 		time.sleep(2)
 	THIS.Node.Stop()
