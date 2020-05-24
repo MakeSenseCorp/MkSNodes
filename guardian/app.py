@@ -66,8 +66,7 @@ class Context():
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
 			command = packet['data']['header']['command']
-			message = self.RequestHandlers[command](sock, packet)
-			THIS.Node.Network.SendWebSocket(message)
+			return self.RequestHandlers[command](sock, packet)
 		except Exception as e:
 			print("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
 				classname=self.ClassName,
@@ -130,7 +129,7 @@ Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.Node.Stop()
+	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)

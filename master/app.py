@@ -242,8 +242,7 @@ class Context():
 		try:
 			#print ("(Master Appplication)# [Gateway] Data arrived.")
 			command = packet['data']['header']['command']
-			message = self.RequestHandlers[command](sock, packet)
-			THIS.Node.Network.SendWebSocket(message)
+			return self.RequestHandlers[command](sock, packet)
 		except Exception as e:
 			self.Node.LogMSG("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
 						classname=self.ClassName,
@@ -318,7 +317,7 @@ def signal_handler(signal, frame):
 		THIS.Node.LogMSG("(Master Appplication)# Stop service.")
 		service.KillProcess()
 		time.sleep(2)
-	THIS.Node.Stop()
+	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
