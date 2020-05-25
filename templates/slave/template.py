@@ -130,7 +130,7 @@ Node 	= MkSNode.Node("[NAME OF YOUR NODE]", Service)
 THIS 	= Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.Node.Stop()
+	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)

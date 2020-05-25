@@ -112,8 +112,9 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
-		self.StartSystem()
-		#self.MasterSocket, self.MasterConnection = self.Node.ConnectNode()
+		#self.StartSystem()
+		self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
+		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
 		
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:
@@ -123,7 +124,8 @@ class Context():
 				packet  = self.Node.BasicProtocol.AppendMagic(message)
 				self.Node.AppendTXRequest(self.MasterSocket, packet)
 			else:
-				self.StartSystem()
+				pass
+				#self.StartSystem()
 
 Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
