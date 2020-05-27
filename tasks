@@ -3,6 +3,7 @@
     a. Create Guardian proceess (will be executed by systemd)
         - https://www.linode.com/docs/quick-answers/linux/start-service-at-boot/
     b. After Master Node launched by Gardian, Master loads all Slave nodes in list.
+2.1.    FEATURE - Master can install nodes packages.
 3. Create new Interuction Test Node
     a. NEW FEATURE - Node abilities list.
     b. Search for nodes in network. (Currently get list from gateway)
@@ -12,3 +13,7 @@
 5. NEW FEATURE - Tunneling
     a. Slave-Slave Tunneling (Socketing)
     b. Master-Slave Tunneling (Adaptor Slave)
+
+
+sudo mount -t cifs -o username=unicorn //15.17.216.51/ykiveish /home/ykiveish/mks/remote-fs
+google-chrome --app=http://15.17.216.51:8080/ --new-window --incognito --disable-pinch --no-user-gesture-required --overscroll-history-navigation=0 --kiosk

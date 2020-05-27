@@ -283,7 +283,7 @@ class Context():
 				self.Node.LogMSG("({classname})# Start service name {0}".format(node["name"],classname=self.ClassName))
 				node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
 				node = MkSExternalProcess.ExternalProcess()
-				node.CallProcess("python app.py", node_path, "")
+				node.CallProcess("python app.py &", node_path, "")
 				self.RunningNodes.append(node)
 
 	def NodeSystemLoadedHandler(self):

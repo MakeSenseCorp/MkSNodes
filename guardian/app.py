@@ -82,7 +82,7 @@ class Context():
 		print("({classname})# Loading MASTER ...".format(classname=self.ClassName))
 		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
 		node = MkSExternalProcess.ExternalProcess()
-		node.CallProcess("python app.py", master_path, "")
+		node.CallProcess("python app.py &", master_path, "")
 	
 	def GetPythonProcs(self, mypid):
 		procs = []
@@ -112,9 +112,9 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 		self.SystemLoaded = True
-		#self.StartSystem()
-		self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
-		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
+		self.StartSystem()
+		#self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
+		#self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
 		
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:

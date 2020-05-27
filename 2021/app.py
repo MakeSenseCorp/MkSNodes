@@ -366,12 +366,12 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			print("\nTables:")
+			self.Node.LogMSG("\nTables:")
 			connections = THIS.Node.GetConnections()
 			for idx, key in enumerate(connections):
 				node = connections[key]
-				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),node.LocalType,node.UUID,node.IP,node.Port,node.Type))
-			print("")
+				self.Node.LogMSG ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),node.LocalType,node.UUID,node.IP,node.Port,node.Type))
+			self.Node.LogMSG("")
 
 			# Search for change in MP3 folder
 			items, is_change = self.SongsFolder.GetItemsCompare()
