@@ -306,7 +306,7 @@ class Context():
 				node = connections[key]
 				#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
 				#packet  = self.Node.BasicProtocol.AppendMagic(message)
-				#self.Node.AppendTXRequest(item.Socket, packet) # Response will update "enabled" or "ts" field in local DB
+				#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
 				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.LocalType, node.UUID, node.IP, node.Port, node.Type))
 
 Node = MkSMasterNode.MasterNode()

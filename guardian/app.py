@@ -122,7 +122,7 @@ class Context():
 			if self.MasterConnection is True:
 				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
 				packet  = self.Node.BasicProtocol.AppendMagic(message)
-				self.Node.AppendTXRequest(self.MasterSocket, packet)
+				self.Node.Transceiver.Send({"sock":self.MasterSocket, "packet":packet})
 			else:
 				pass
 				#self.StartSystem()
