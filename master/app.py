@@ -301,13 +301,13 @@ class Context():
 			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
 			self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName))
 
-			connections = THIS.Node.GetConnections()
+			connections = THIS.Node.GetConnectedNodes()
 			for idx, key in enumerate(connections):
 				node = connections[key]
 				#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
 				#packet  = self.Node.BasicProtocol.AppendMagic(message)
 				#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.LocalType, node.UUID, node.IP, node.Port, node.Type))
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.IP, node.Obj["listener_port"], node.Obj["type"]))
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
