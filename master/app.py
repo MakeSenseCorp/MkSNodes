@@ -24,16 +24,16 @@ class Context():
 		self.Node							= node
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
-			'on_node_change':				self.OnNodeChangeHandler,
-			'get_connections_list':			self.GetConnectionsListRequestHandler,
-			'get_installed_nodes_list':		self.GetInstalledNodesListRequestHandler,
-			'get_master_public_info':		self.GetMasterPublicInfoHandler,
-			'get_services_info': 			self.GetServicesInfoHandler,
-			'set_service_info': 			self.SetServiceInfoHandler,
+			'on_node_change':				self.Request_OnNodeChangeHandler,
+			'get_connections_list':			self.Request_GetConnectionsListRequestHandler,
+			'get_installed_nodes_list':		self.Request_GetInstalledNodesListRequestHandler,
+			'get_master_public_info':		self.Request_GetMasterPublicInfoHandler,
+			'get_services_info': 			self.Request_GetServicesInfoHandler,
+			'set_service_info': 			self.Request_SetServiceInfoHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
-			'get_online_devices':			self.GetOnlineDevicesHandler,
+			'get_online_devices':			self.Response_GetOnlineDevicesHandler,
 		}
 		self.InstalledNodesDB				= None
 		self.ServicesDB 					= None
@@ -45,7 +45,7 @@ class Context():
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler")
 
-	def OnNodeChangeHandler(self, sock, packet):
+	def Request_OnNodeChangeHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName))
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
@@ -57,23 +57,23 @@ class Context():
 			'error': 'none'
 		})
 	
-	def GetOnlineDevicesHandler(self, sock, packet):
+	def Response_GetOnlineDevicesHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName))
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG(payload)
 	
-	def GetConnectionsListRequestHandler(self, sock, packet):
+	def Request_GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
 			conns = []
-			connections = THIS.Node.GetConnections()
+			connections = THIS.Node.GetConnectedNodes()
 			for key in connections:
 				node = connections[key]
 				conns.append({
-					'local_type':	node.LocalType,
-					'uuid':			node.UUID,
+					'local_type':	node.Obj["local_type"],
+					'uuid':			node.Obj["uuid"],
 					'ip':			node.IP,
 					'port':			node.Port,
-					'type':			node.Type
+					'type':			node.Obj["type"]
 				})
 			payload = {
 				'connections': conns
@@ -81,7 +81,7 @@ class Context():
 
 			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 
-	def GetInstalledNodesListRequestHandler(self, sock, packet):
+	def Request_GetInstalledNodesListRequestHandler(self, sock, packet):
 		if self.InstalledNodesDB is None:
 			installed = []
 		else:
@@ -92,7 +92,7 @@ class Context():
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def GetMasterPublicInfoHandler(self, sock, packet):
+	def Request_GetMasterPublicInfoHandler(self, sock, packet):
 		# Read
 		# 	Temperature						cat /sys/class/thermal/thermal_zone0/temp
 		#	CPU/RAM Usage, 10 Tasks List	top -n 1
@@ -193,7 +193,7 @@ class Context():
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def GetServicesInfoHandler(self, sock, packet):
+	def Request_GetServicesInfoHandler(self, sock, packet):
 		if self.ServicesDB is None:
 			installed = []
 		else:
@@ -204,7 +204,7 @@ class Context():
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
-	def SetServiceInfoHandler(self, sock, packet):
+	def Request_SetServiceInfoHandler(self, sock, packet):
 		self.Node.LogMSG("SetServiceInfoHandler", packet)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		uuid 	= payload["uuid"]
@@ -218,8 +218,7 @@ class Context():
 		
 		self.ServicesDB["on_boot_services"] = dbOnBootServices
 		# Save new switch to database
-		MKS_PATH = os.environ['HOME'] + "/mks/"
-		self.Node.SetFileContent(MKS_PATH + "services.json", json.dumps(self.ServicesDB))
+		self.Node.SetFileContent(os.path.join(self.Node.MKSPath,"services.json"), json.dumps(self.ServicesDB))
 		
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
@@ -267,7 +266,7 @@ class Context():
 				self.Node.LogMSG("({classname})# Start service name {0}".format(service["name"],classname=self.ClassName))
 				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
 				node = MkSExternalProcess.ExternalProcess()
-				node.CallProcess("python app.py", service_path, "")
+				node.CallProcess("python app.py &", service_path, "")
 				self.RunningServices.append(node)
 	
 	def LoadNodes(self):
@@ -292,7 +291,7 @@ class Context():
 		self.LoadServices()
 		# Load all installed nodes
 		self.LoadNodes()
-		self.Node.LogMSG("(Master Appplication)# Node system was succesfully loaded.")
+		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
