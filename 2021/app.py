@@ -261,8 +261,8 @@ class Context():
 	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
 		self.Node.LogMSG("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
 
-	def OnGetNodeInfoHandler(self, info, online):
-		self.Node.LogMSG("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
+	def OnGetNodeInfoHandler(self, info):
+		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName))
 	
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName))		
@@ -370,7 +370,7 @@ class Context():
 			connections = THIS.Node.GetConnectedNodes()
 			for idx, key in enumerate(connections):
 				node = connections[key]
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.IP, node.Obj["listener_port"], node.Obj["type"]))
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]))
 			self.Node.LogMSG("")
 
 			# Search for change in MP3 folder
