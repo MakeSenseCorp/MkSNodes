@@ -120,9 +120,10 @@ class Context():
 		if (self.Node.Ticker % 10) == 0:
 			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
 			if self.MasterConnection is True:
+				#self.Node.SendBySocket(self.MasterSocket, "get_node_status", {})
 				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
 				packet  = self.Node.BasicProtocol.AppendMagic(message)
-				self.Node.Transceiver.Send({"sock":self.MasterSocket, "packet":packet})
+				self.Node.SocketServer.Send(self.MasterSocket.Socket, packet)
 			else:
 				pass
 				#self.StartSystem()
