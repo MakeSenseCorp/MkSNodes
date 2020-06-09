@@ -237,6 +237,22 @@ class Context():
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 	
+	def OnTerminateConnectionHandler(self, conn):
+		self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler]".format(classname=self.ClassName),5)
+		if conn.Obj["info"] is not None:
+			if conn.Obj["info"]["is_service"] == "True":
+				pass
+			else:
+				self.RemoveFromRunningNodes(conn.Obj["uuid"])
+				nodes = self.InstalledNodesDB["installed_nodes"]
+				for node in nodes:
+					if node["uuid"] == conn.Obj["uuid"]:
+						self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
+						node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
+						proc = MkSExternalProcess.ExternalProcess()
+						proc.CallProcess("python app.py &", node_path, "")
+						return
+
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
 			#print ("(Master Appplication)# [Gateway] Data arrived.")
@@ -263,12 +279,28 @@ class Context():
 		services = self.ServicesDB["on_boot_services"]
 		for service in services:
 			if (service["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service name {0}".format(service["name"],classname=self.ClassName),5)
+				self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
 				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
 				node = MkSExternalProcess.ExternalProcess()
 				node.CallProcess("python app.py &", service_path, "")
-				self.RunningServices.append(node)
+				#self.RunningServices.append(node)
 	
+	def RemoveFromRunningNodes(self, uuid):
+		remove_node = None
+		for node in self.RunningNodes:
+			if node["uuid"] == uuid:
+				remove_node = node
+		if remove_node is not None:
+			self.RunningNodes.remove(node)
+	
+	def RemoveFromRunningServices(self, uuid):
+		remove_node = None
+		for node in self.RunningServices:
+			if node["uuid"] == uuid:
+				remove_node = node
+		if remove_node is not None:
+			self.RunningServices.remove(node)
+
 	def LoadNodes(self):
 		strNodesJson = self.File.Load(os.path.join(self.Node.MKSPath,"nodes.json"))
 		if strNodesJson == "":
@@ -279,11 +311,11 @@ class Context():
 		nodes = self.InstalledNodesDB["installed_nodes"]
 		for node in nodes:
 			if (node["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service name {0}".format(node["name"],classname=self.ClassName),5)
+				self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
 				node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
 				node = MkSExternalProcess.ExternalProcess()
 				node.CallProcess("python app.py &", node_path, "")
-				self.RunningNodes.append(node)
+				#self.RunningNodes.append(node)
 
 	def NodeSystemLoadedHandler(self):
 		self.SystemLoaded = True
@@ -331,6 +363,7 @@ def main():
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
 	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
+	THIS.Node.OnTerminateConnectionCallback			= THIS.OnTerminateConnectionHandler
 
 	# Run Node
 	THIS.Node.LogMSG("(Master Application)# Start Node ...",5)

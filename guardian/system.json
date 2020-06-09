@@ -14,6 +14,7 @@
 			"name":"Guardian",
 			"description":"N/A",
 			"isMasterNode":"False",
+			"is_service":"False",
 			"isLocalServerEnabled":"True",
 			"isWebEnabled":"True",
 			"boardType": "N/A",
