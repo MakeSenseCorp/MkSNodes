@@ -1,8 +1,11 @@
 {
 	"node":
 	{
+		"system": {
+			"log_level": 3
+		},
 		"info": {
-			"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d020",
+			"uuid":"12345678-1234-1234-1234-123456789100",
 			"isHW":"False",
 			"type":1,
 			"ostype":"Linux",
@@ -13,7 +16,7 @@
 			"isMasterNode":"True",
 			"isLocalServerEnabled":"True",
 			"isWebEnabled":"True",
-			"boardType": "OrangePI Zero",
+			"boardType": "VirtualBox",
 			"is_application_ui_enabled": "False",
 			"tagging": {
 				"cat_1": "application",
@@ -30,5 +33,15 @@
 	"user":
 	{
 		
+	},
+	"device": {
+		
+	},
+	"deploymnet": {
+		"dependencies_cmd": [
+		],
+		"script": {
+
+		}
 	}
 }

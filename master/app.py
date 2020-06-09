@@ -43,10 +43,10 @@ class Context():
 		self.Node.DebugMode 				= True
 
 	def UndefindHandler(self, packet):
-		self.Node.LogMSG("UndefindHandler")
+		self.Node.LogMSG("UndefindHandler",5)
 
 	def Request_OnNodeChangeHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
 
@@ -58,9 +58,9 @@ class Context():
 		})
 	
 	def Response_GetOnlineDevicesHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG(payload)
+		self.Node.LogMSG(payload,5)
 	
 	def Request_GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
@@ -205,7 +205,7 @@ class Context():
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
 	def Request_SetServiceInfoHandler(self, sock, packet):
-		self.Node.LogMSG("SetServiceInfoHandler", packet)
+		self.Node.LogMSG("({classname})# [SetServiceInfoHandler] {0}".format(packet,classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		uuid 	= payload["uuid"]
 		enabled = payload["enabled"]
@@ -245,25 +245,25 @@ class Context():
 		except Exception as e:
 			self.Node.LogMSG("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
 						classname=self.ClassName,
-						error=str(e)))
+						error=str(e)),3)
 	
 	def WSConnectedHandler(self):
-		self.Node.LogMSG("(Master Appplication)# Connection to Gateway was established.")
+		self.Node.LogMSG("({classname})# Connection to Gateway was established.".format(classname=self.ClassName),5)
 
 	def WSConnectionClosedHandler(self):
-		self.Node.LogMSG("(Master Appplication)# Connection to Gateway was lost.")
+		self.Node.LogMSG("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName),5)
 
 	def LoadServices(self):
 		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
 		if strServicesJson == "":
-			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName))
+			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
 			return
 		
 		self.ServicesDB = json.loads(strServicesJson)
 		services = self.ServicesDB["on_boot_services"]
 		for service in services:
 			if (service["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service name {0}".format(service["name"],classname=self.ClassName))
+				self.Node.LogMSG("({classname})# Start service name {0}".format(service["name"],classname=self.ClassName),5)
 				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
 				node = MkSExternalProcess.ExternalProcess()
 				node.CallProcess("python app.py &", service_path, "")
@@ -272,14 +272,14 @@ class Context():
 	def LoadNodes(self):
 		strNodesJson = self.File.Load(os.path.join(self.Node.MKSPath,"nodes.json"))
 		if strNodesJson == "":
-			self.Node.LogMSG("({classname})# ERROR - Cannot find nodes.json or it is empty.".format(classname=self.ClassName))
+			self.Node.LogMSG("({classname})# ERROR - Cannot find nodes.json or it is empty.".format(classname=self.ClassName),3)
 			return
 		
 		self.InstalledNodesDB = json.loads(strNodesJson)
 		nodes = self.InstalledNodesDB["installed_nodes"]
 		for node in nodes:
 			if (node["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service name {0}".format(node["name"],classname=self.ClassName))
+				self.Node.LogMSG("({classname})# Start service name {0}".format(node["name"],classname=self.ClassName),5)
 				node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
 				node = MkSExternalProcess.ExternalProcess()
 				node.CallProcess("python app.py &", node_path, "")
@@ -291,14 +291,14 @@ class Context():
 		self.LoadServices()
 		# Load all installed nodes
 		self.LoadNodes()
-		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
-			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
-			self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName))
+			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName),5)
+			self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName),5)
 
 			connections = THIS.Node.GetConnectedNodes()
 			for idx, key in enumerate(connections):
@@ -306,14 +306,14 @@ class Context():
 				#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
 				#packet  = self.Node.BasicProtocol.AppendMagic(message)
 				#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.IP, node.Obj["listener_port"], node.Obj["type"]))
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.IP, node.Obj["listener_port"], node.Obj["type"]),5)
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	for service in THIS.RunningServices:
-		THIS.Node.LogMSG("(Master Appplication)# Stop service.")
+		THIS.Node.LogMSG("(Master Appplication)# Stop service.",5)
 		service.KillProcess()
 		time.sleep(2)
 	THIS.Node.Stop("Accepted signal from other app")
@@ -333,10 +333,10 @@ def main():
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 
 	# Run Node
-	THIS.Node.LogMSG("(Master Application)# Start Node ...")
+	THIS.Node.LogMSG("(Master Application)# Start Node ...",5)
 	THIS.Node.Run(THIS.OnNodeWorkTick)
 	
-	THIS.Node.LogMSG("(Master Application)# Exit Node ...")
+	THIS.Node.LogMSG("(Master Application)# Exit Node ...",5)
 
 if __name__ == "__main__":
 	main()

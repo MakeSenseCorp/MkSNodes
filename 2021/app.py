@@ -148,13 +148,13 @@ class Context():
 			return "STOP"
 
 	def OnTimerTriggerHandler(self, uuid, action):
-		self.Node.LogMSG("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# OnTimerTriggerHandler ...".format(classname=self.ClassName),5)
 
 	def UndefindHandler(self, sock, packet):
-		self.Node.LogMSG("UndefindHandler")
+		self.Node.LogMSG("UndefindHandler",5)
 	
 	def GetSensorInfoHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName),5)
 		info = {
 			'duration': self.Player.get_length(),
 			'position': self.Player.get_time(),
@@ -172,7 +172,7 @@ class Context():
 	
 	def PlayerOperationHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG("({classname})# PlayerOperationHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		self.Node.LogMSG("({classname})# PlayerOperationHandler ... payload: {0}".format(payload, classname=self.ClassName),5)
 
 		self.CurrentPlayerState = self.GetPlayerState()
 		error = "none"
@@ -189,17 +189,17 @@ class Context():
 
 			if payload["song"] is None:
 				error = "Incorrect structure"
-				self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName))
+				self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName),3)
 			else:
 				if not payload["song"]["name"]:
 					error = "No song name provided"
-					self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName))
+					self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0}".format(error, classname=self.ClassName),3)
 				else:
 					song_path = os.path.join(self.SelectedStoragePath, "songs", payload["song"]["name"])
 					# Check if file valid
 					if not os.path.exists(song_path):
 						error = "File not exist"
-						self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0} {1}".format(error, song_path, classname=self.ClassName))
+						self.Node.LogMSG("({classname})# PlayerOperationHandler [ERROR] {0} {1}".format(error, song_path, classname=self.ClassName),3)
 					else:
 						self.Player.set_mrl(song_path)
 						self.Player.play()
@@ -243,29 +243,29 @@ class Context():
 	
 	def PlaylistOperationHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG("({classname})# PlaylistOperationHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		self.Node.LogMSG("({classname})# PlaylistOperationHandler ... payload: {0}".format(payload, classname=self.ClassName),5)
 		
 		data = {}
 		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
 	
 	def CriticalOperationHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG("({classname})# CriticalOperationHandler ... payload: {0}".format(payload, classname=self.ClassName))
+		self.Node.LogMSG("({classname})# CriticalOperationHandler ... payload: {0}".format(payload, classname=self.ClassName),5)
 		
 		data = {}
 		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
 	
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
-		self.Node.LogMSG("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
+		self.Node.LogMSG("({classname})# [OnMasterAppendNodeHandler] {0} {1} {2} {3}".format(str(uuid), str(type), str(ip), str(port), classname=self.ClassName),5)
 	
 	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
-		self.Node.LogMSG("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
+		self.Node.LogMSG("({classname})# [OnMasterRemoveNodeHandler]{0} {1} {2} {3}".format(str(uuid), str(type), str(ip), str(port), classname=self.ClassName),5)
 
 	def OnGetNodeInfoHandler(self, info):
-		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName))
+		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
 	
 	def NodeSystemLoadedHandler(self):
-		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName))		
+		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName),5)		
 		objFile = MkSFile.File()
 		# Loading local database
 		jsonSensorStr = objFile.Load("db.json")
@@ -306,17 +306,17 @@ class Context():
 				if "bluez_sink.79_8F_BC_00_35_85" in iface.device:
 					self.Player.audio_output_device_set(None, iface.device)
 					self.CurrentInterface = iface.device
-					self.Node.LogMSG("({classname})# Bluetooth device was selected...".format(classname=self.ClassName))
+					self.Node.LogMSG("({classname})# Bluetooth device was selected...".format(classname=self.ClassName),5)
 				self.SoundCards.append(iface.device)
 				iface = iface.next
 
 		vlc.libvlc_audio_output_device_list_release(interfaces)
-		self.Node.LogMSG(self.SoundCards)
+		self.Node.LogMSG(self.SoundCards,5)
 
 		# self.Timer.LoadClocks(addrs)
 		# self.Timer.Run()
 		
-		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName),5)
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -333,7 +333,7 @@ class Context():
 			self.ResponseHandlers[command](sock, packet)
 	
 	def OnGetNodesListHandler(self, uuids):
-		self.Node.LogMSG("OnGetNodesListHandler", uuids)
+		self.Node.LogMSG("({classname})# [OnGetNodesListHandler]".format(uuids,classname=self.ClassName),5)
 
 	def GetNodeInfoHandler(self, key):
 		return json.dumps({
@@ -366,12 +366,12 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			self.Node.LogMSG("\nTables:")
+			self.Node.LogMSG("\nTables:",5)
 			connections = THIS.Node.GetConnectedNodes()
 			for idx, key in enumerate(connections):
 				node = connections[key]
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]))
-			self.Node.LogMSG("")
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
+			self.Node.LogMSG("",5)
 
 			# Search for change in MP3 folder
 			items, is_change = self.SongsFolder.GetItemsCompare()
@@ -418,7 +418,7 @@ def main():
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
-	THIS.Node.LogMSG("({classname})# Exit node.".format(classname=THIS.Node.ClassName))
+	THIS.Node.LogMSG("({classname})# Exit node.".format(classname=THIS.Node.ClassName),5)
 
 if __name__ == "__main__":
     main()

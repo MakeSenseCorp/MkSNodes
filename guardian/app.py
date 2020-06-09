@@ -37,9 +37,9 @@ class Context():
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
 		# Members
-		self.MasterConnection				= False
-		self.MasterSocket					= None
-		self.MasterStatus					= None
+		self.MasterConnected				= False
+		self.MasterConnection				= None
+		self.MasterInfo						= None
 
 	def UndefindHandler(self, sock, packet):
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
@@ -47,7 +47,7 @@ class Context():
 	def GetNodeStatusHandler(self, sock, packet):
 		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 		print ("({classname})# Master status '{0}'".format(payload,classname=self.ClassName))
-		self.MasterStatus = payload
+		self.MasterInfo = payload
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -63,6 +63,11 @@ class Context():
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 	
+	def OnTerminateConnectionHandler(self, conn):
+		self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler]".format(classname=self.ClassName),5)
+		if conn.Socket == self.MasterConnection.Socket:
+			self.MasterConnected = False
+
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
 			command = packet['data']['header']['command']
@@ -106,27 +111,23 @@ class Context():
 		time.sleep(2)
 		self.LoadMasterNode()
 		time.sleep(2)
-		self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
-		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
+		self.MasterConnection, self.MasterConnected = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
+		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnected, classname=self.ClassName),5)
 
 	def NodeSystemLoadedHandler(self):
-		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
 		self.SystemLoaded = True
 		self.StartSystem()
-		#self.MasterSocket, self.MasterConnection = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
-		#self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnection, classname=self.ClassName))
 		
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:
-			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName))
-			if self.MasterConnection is True:
-				#self.Node.SendBySocket(self.MasterSocket, "get_node_status", {})
+			self.Node.LogMSG("({classname})# [HeartBeat] ({0})".format(self.Node.Ticker, classname=self.ClassName),5)
+			if self.MasterConnected is True:
 				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
 				packet  = self.Node.BasicProtocol.AppendMagic(message)
-				self.Node.SocketServer.Send(self.MasterSocket.Socket, packet)
+				self.Node.SocketServer.Send(self.MasterConnection.Socket, packet)
 			else:
-				pass
-				#self.StartSystem()
+				self.StartSystem()
 
 Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
@@ -147,6 +148,7 @@ def main():
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
 	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
+	THIS.Node.OnTerminateConnectionCallback			= THIS.OnTerminateConnectionHandler
 
 	# Run Node
 	print("(Node)# Start Node ...")
