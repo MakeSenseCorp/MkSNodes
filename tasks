@@ -17,3 +17,10 @@
 
 sudo mount -t cifs -o username=unicorn //15.17.216.51/ykiveish /home/ykiveish/mks/remote-fs
 google-chrome --app=http://15.17.216.51:8080/ --new-window --incognito --disable-pinch --no-user-gesture-required --overscroll-history-navigation=0 --kiosk
+
+sudo cp mks.service /etc/systemd/system
+sudo chmod 644 /etc/systemd/system/mks.service
+mkdir -p  ~/.config/systemd/user/
+systemctl --user enable --now mks.service
+systemctl --user daemon-reload
+systemctl --user list-unit-files mks.service
