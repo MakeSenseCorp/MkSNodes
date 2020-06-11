@@ -1,0 +1,10 @@
+[Unit]
+Description=Example systemd service.
+
+[Service]
+User=ykiveish
+Type=simple
+ExecStart=/bin/bash /home/ykiveish/mks/mks.sh
+
+[Install]
+WantedBy=multi-user.target
