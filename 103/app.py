@@ -47,7 +47,7 @@ class Context():
 		self.SearchNetworks()
 	
 	def SearchNetworks(self):
-		print ("({classname})# Searching for networks ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Searching for networks ...".format(classname=self.ClassName),5)
 		items = self.Utilities.GetSystemIPs()
 		for item in items:
 			if ("127.0.0" not in item[0] and "" != item[0]):
@@ -67,7 +67,7 @@ class Context():
 				if (self.ThreadWorking is False):
 					return
 				ip = network + str(client)
-				print ("({classname})# Ping {0} ...".format(ip,classname=self.ClassName))
+				self.Node.LogMSG("({classname})# Ping {0} ...".format(ip,classname=self.ClassName),5)
 				res = MkSUtils.Ping(ip)
 				self.ThreadLock.acquire()
 				if (res is True):
@@ -80,10 +80,10 @@ class Context():
 				time.sleep(0.5)
 
 	def UndefindHandler(self, message_type, source, data):
-		print ("UndefindHandler")
+		self.Node.LogMSG("UndefindHandler",5)
 	
 	def GetOnlineDevicesHandler(self, sock, packet):
-		print ("({classname})# Online device request ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Online device request ...".format(classname=self.ClassName),5)
 		
 		listOfDevice = []
 		for key in self.OnlineDevices:
@@ -94,7 +94,7 @@ class Context():
 		})
 	
 	def NodeSystemLoadedHandler(self):
-		print ("({classname})# Node system loaded ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Node system loaded ...".format(classname=self.ClassName),5)
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -110,49 +110,26 @@ class Context():
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 
-	def GetNodeInfoHandler(self, key):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def SetNodeInfoHandler(self, key, id):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def GetSensorsInfoHandler(self, key):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def SetSensorInfoHandler(self, key, id, value):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
-		THIS.Node.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
-		THIS.Node.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 				endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
-		THIS.Node.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
-		THIS.Node.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
-
 	def WorkingHandler(self):
 		try:
 			if time.time() - self.CurrentTimestamp > self.Interval:
 				self.CurrentTimestamp = time.time()
 
-				print("\nTables:")
-				for idx, item in enumerate(THIS.Node.GetConnections()):
-					print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
-				print("")
+				self.Node.LogMSG("\nTables:",5)
+				connections = THIS.Node.GetConnectedNodes()
+				for idx, key in enumerate(connections):
+					node = connections[key]
+					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
+				self.Node.LogMSG("",5)
+
 				network_device_to_delete = []
 				for key in self.OnlineDevices:
 					network_device = self.OnlineDevices[key]
 					if (MkSUtils.Ping(network_device["ip"]) is False):
-						print("Offline device " + network_device["ip"])
+						self.Node.LogMSG("Offline device " + network_device["ip"],5)
 						network_device_to_delete.append(key)
 					else:
-						print ("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]))
+						self.Node.LogMSG("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]),5)
 				
 				for key in network_device_to_delete:
 					del self.OnlineDevices[key]
@@ -164,14 +141,14 @@ class Context():
 					'online_devices': listOfDevice
 				})
 		except Exception as e:
-			print ("({classname})# WorkingHandler ERROR ... \n{0}".format(e,classname=self.ClassName))
+			self.Node.LogMSG("({classname})# WorkingHandler ERROR ... \n{0}".format(e,classname=self.ClassName),5)
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
 	THIS.ThreadWorking = False
-	THIS.Node.Stop()
+	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
@@ -179,13 +156,12 @@ def main():
 	
 	# Node callbacks
 	THIS.Node.NodeSystemLoadedCallback						= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnLocalServerListenerStartedCallback 			= THIS.OnLocalServerListenerStartedHandler	
 	THIS.Node.OnApplicationRequestCallback					= THIS.OnApplicationCommandRequestHandler
 	THIS.Node.OnApplicationResponseCallback					= THIS.OnApplicationCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	THIS.ThreadWorking = False
-	print ("Exit Node ...")
+	THIS.Node.LogMSG("Exit Node ...",5)
 
 if __name__ == "__main__":
     main()

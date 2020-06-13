@@ -87,7 +87,7 @@ class Context():
 		print("({classname})# Loading MASTER ...".format(classname=self.ClassName))
 		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
 		node = MkSExternalProcess.ExternalProcess()
-		node.CallProcess("python app.py &", master_path, "")
+		node.CallProcess("python app.py --type 1 &", master_path, "")
 	
 	def GetPythonProcs(self, mypid):
 		procs = []
@@ -153,7 +153,8 @@ def main():
 	# Run Node
 	print("(Node)# Start Node ...")
 	THIS.Node.Run(THIS.OnNodeWorkTick)
-	time.sleep(3)
+	print("(Node)# Wait (5 Sec)")
+	time.sleep(5)
 	
 	print("(Node)# Exit Node ...")
 

@@ -41,6 +41,7 @@ class Context():
 		self.RunningNodes					= []
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
+		self.Shutdown 						= False
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
@@ -239,19 +240,20 @@ class Context():
 	
 	def OnTerminateConnectionHandler(self, conn):
 		self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler]".format(classname=self.ClassName),5)
-		if conn.Obj["info"] is not None:
-			if conn.Obj["info"]["is_service"] == "True":
-				pass
-			else:
-				self.RemoveFromRunningNodes(conn.Obj["uuid"])
-				nodes = self.InstalledNodesDB["installed_nodes"]
-				for node in nodes:
-					if node["uuid"] == conn.Obj["uuid"]:
-						self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
-						node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
-						proc = MkSExternalProcess.ExternalProcess()
-						proc.CallProcess("python app.py &", node_path, "")
-						return
+		if self.Shutdown is False:
+			if conn.Obj["info"] is not None:
+				if conn.Obj["info"]["is_service"] == "True":
+					pass
+				else:
+					self.RemoveFromRunningNodes(conn.Obj["uuid"])
+					nodes = self.InstalledNodesDB["installed_nodes"]
+					for node in nodes:
+						if node["uuid"] == conn.Obj["uuid"]:
+							self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
+							node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
+							proc = MkSExternalProcess.ExternalProcess()
+							proc.CallProcess("python app.py &", node_path, "")
+							return
 
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
@@ -313,8 +315,9 @@ class Context():
 			if (node["enabled"] == 1):
 				self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
 				node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
-				node = MkSExternalProcess.ExternalProcess()
-				node.CallProcess("python app.py &", node_path, "")
+				proc = MkSExternalProcess.ExternalProcess()
+				proc_str = "python app.py --type {0} &".format(node["type"])
+				proc.CallProcess(proc_str, node_path, "")
 				#self.RunningNodes.append(node)
 
 	def NodeSystemLoadedHandler(self):
@@ -344,10 +347,24 @@ Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	for service in THIS.RunningServices:
-		THIS.Node.LogMSG("(Master Appplication)# Stop service.",5)
-		service.KillProcess()
-		time.sleep(2)
+	THIS.Shutdown = True
+	shutdown_connections = []
+	# TODO - Could be an issue with not locking this list. (multithreading)
+	connections = THIS.Node.GetConnectedNodes()
+	for key in connections:
+		node = connections[key]
+		shutdown_connections.append({
+			"sock": node.Socket,
+			"uuid": node.Obj["uuid"]
+		})
+	
+	for item in shutdown_connections:
+		if item["uuid"] != THIS.Node.UUID:
+			message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", item["uuid"], THIS.Node.UUID, "shutdown", {}, {})
+			packet  = THIS.Node.BasicProtocol.AppendMagic(message)
+			THIS.Node.SocketServer.Send(item["sock"], packet)
+	
+	time.sleep(2)
 	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
@@ -368,8 +385,7 @@ def main():
 	# Run Node
 	THIS.Node.LogMSG("(Master Application)# Start Node ...",5)
 	THIS.Node.Run(THIS.OnNodeWorkTick)
-	
-	THIS.Node.LogMSG("(Master Application)# Exit Node ...",5)
+	time.sleep(1)
 
 if __name__ == "__main__":
 	main()
