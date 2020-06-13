@@ -114,8 +114,8 @@
               var html = `<ul class="list-group mb-3">`;
               data.online_devices.forEach(function(element) {
                 row = MAchineIPRow;
-                row = row.split("[IP]").join(element[0]);
-                row = row.split("[TIME]").join(element[1]);
+                row = row.split("[IP]").join(element.ip);
+                row = row.split("[TIME]").join(element.datetime);
                 html = html + row;
               });
             

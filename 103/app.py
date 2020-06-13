@@ -87,7 +87,7 @@ class Context():
 		
 		listOfDevice = []
 		for key in self.OnlineDevices:
-			listOfDevice.append(self.OnlineDevices[key]["ip"])
+			listOfDevice.append(self.OnlineDevices[key])
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'online_devices': listOfDevice

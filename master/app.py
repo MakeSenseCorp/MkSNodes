@@ -270,22 +270,6 @@ class Context():
 
 	def WSConnectionClosedHandler(self):
 		self.Node.LogMSG("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName),5)
-
-	def LoadServices(self):
-		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
-		if strServicesJson == "":
-			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
-			return
-		
-		self.ServicesDB = json.loads(strServicesJson)
-		services = self.ServicesDB["on_boot_services"]
-		for service in services:
-			if (service["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
-				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
-				node = MkSExternalProcess.ExternalProcess()
-				node.CallProcess("python app.py &", service_path, "")
-				#self.RunningServices.append(node)
 	
 	def RemoveFromRunningNodes(self, uuid):
 		remove_node = None
@@ -294,14 +278,6 @@ class Context():
 				remove_node = node
 		if remove_node is not None:
 			self.RunningNodes.remove(node)
-	
-	def RemoveFromRunningServices(self, uuid):
-		remove_node = None
-		for node in self.RunningServices:
-			if node["uuid"] == uuid:
-				remove_node = node
-		if remove_node is not None:
-			self.RunningServices.remove(node)
 
 	def LoadNodes(self):
 		strNodesJson = self.File.Load(os.path.join(self.Node.MKSPath,"nodes.json"))
@@ -322,8 +298,6 @@ class Context():
 
 	def NodeSystemLoadedHandler(self):
 		self.SystemLoaded = True
-		# Load services nodes
-		self.LoadServices()
 		# Load all installed nodes
 		self.LoadNodes()
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)

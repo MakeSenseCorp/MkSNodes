@@ -83,6 +83,22 @@ class Context():
 	def WSConnectionClosedHandler(self):
 		print ("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName))
 
+	def LoadServices(self):
+		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
+		if strServicesJson == "":
+			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
+			return
+		
+		self.ServicesDB = json.loads(strServicesJson)
+		services = self.ServicesDB["on_boot_services"]
+		for service in services:
+			if (service["enabled"] == 1):
+				self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
+				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
+				proc = MkSExternalProcess.ExternalProcess()
+				proc_str = "python app.py --type {0} &".format(service["type"])
+				proc.CallProcess(proc_str, service_path, "")
+	
 	def LoadMasterNode(self):
 		print("({classname})# Loading MASTER ...".format(classname=self.ClassName))
 		master_path = os.path.join(self.Node.MKSPath,"nodes","master")
@@ -113,6 +129,7 @@ class Context():
 		time.sleep(2)
 		self.MasterConnection, self.MasterConnected = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
 		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnected, classname=self.ClassName),5)
+		self.LoadServices()
 
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
@@ -129,6 +146,7 @@ class Context():
 			else:
 				self.StartSystem()
 
+# TODO - Need state machine for guardian work.
 Node = MkSStandaloneNode.StandaloneNode(17999)
 THIS = Context(Node)
 
