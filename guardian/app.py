@@ -39,15 +39,25 @@ class Context():
 		# Members
 		self.MasterConnected				= False
 		self.MasterConnection				= None
-		self.MasterInfo						= None
+		self.ServicesLoaded 				= False
 
 	def UndefindHandler(self, sock, packet):
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
 	
 	def GetNodeStatusHandler(self, sock, packet):
+		print ("({classname})# [GetNodeStatusHandler]".format(classname=self.ClassName))
 		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
-		print ("({classname})# Master status '{0}'".format(payload,classname=self.ClassName))
-		self.MasterInfo = payload
+		source = self.Node.BasicProtocol.GetSourceFromJson(packet)
+
+		if self.MasterConnection.Obj["uuid"] == source or "MASTER" == source:
+			print ("({classname})# Master status '{0}'".format(payload,classname=self.ClassName))
+			if self.ServicesLoaded is False:
+				self.LoadServices()
+				self.ServicesLoaded = True
+		else:
+			conn = self.Node.SocketServer.GetConnectionBySock(sock)
+			if conn is not None:
+				print ("({classname})# Node '{0}' status '{1}'".format(conn.Obj["uuid"],payload,classname=self.ClassName))
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -82,6 +92,11 @@ class Context():
 
 	def WSConnectionClosedHandler(self):
 		print ("({classname})# Connection to Gateway was lost.".format(classname=self.ClassName))
+
+	def RequestStatus(self, uuid):
+		message = self.Node.BasicProtocol.BuildRequest("DIRECT", uuid, self.Node.UUID, "get_node_status", {}, {})
+		packet  = self.Node.BasicProtocol.AppendMagic(message)
+		self.Node.SocketServer.Send(self.MasterConnection.Socket, packet)
 
 	def LoadServices(self):
 		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
@@ -123,13 +138,13 @@ class Context():
 			self.TerminateProc(int(proc[0]))
 	
 	def StartSystem(self):
+		self.ServicesLoaded = False
 		self.TerminatePythonProcs()
 		time.sleep(2)
 		self.LoadMasterNode()
 		time.sleep(2)
 		self.MasterConnection, self.MasterConnected = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
 		self.Node.LogMSG("({classname})# [StartSystem] {0}".format(self.MasterConnected, classname=self.ClassName),5)
-		self.LoadServices()
 
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
@@ -139,12 +154,18 @@ class Context():
 	def OnNodeWorkTick(self):
 		if (self.Node.Ticker % 10) == 0:
 			self.Node.LogMSG("({classname})# [HeartBeat] ({0})".format(self.Node.Ticker, classname=self.ClassName),5)
-			if self.MasterConnected is True:
-				message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_status", {}, {})
-				packet  = self.Node.BasicProtocol.AppendMagic(message)
-				self.Node.SocketServer.Send(self.MasterConnection.Socket, packet)
-			else:
-				self.StartSystem()
+			if (self.Node.Ticker % 30) == 0:
+				if self.MasterConnected is True:
+					self.RequestStatus("MASTER")
+					# Send status to services
+					if self.ServicesLoaded is True:
+						for key in THIS.Node.Services:
+							if "" != THIS.Node.Services[key]["uuid"]:
+								self.Node.LogMSG("({classname})# Request Status Service {0}".format(THIS.Node.Services[key]["uuid"], classname=self.ClassName),5)
+								self.RequestStatus(THIS.Node.Services[key]["uuid"])
+						# Check if service closed
+				else:
+					self.StartSystem()
 
 # TODO - Need state machine for guardian work.
 Node = MkSStandaloneNode.StandaloneNode(17999)
