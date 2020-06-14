@@ -45,19 +45,17 @@ class Context():
 		print ("({classname})# UndefindHandler".format(classname=self.ClassName))
 	
 	def GetNodeStatusHandler(self, sock, packet):
-		print ("({classname})# [GetNodeStatusHandler]".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# [GetNodeStatusHandler]".format(classname=self.ClassName),5)
 		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 		source = self.Node.BasicProtocol.GetSourceFromJson(packet)
 
 		if self.MasterConnection.Obj["uuid"] == source or "MASTER" == source:
-			print ("({classname})# Master status '{0}'".format(payload,classname=self.ClassName))
+			self.Node.LogMSG("({classname})# Master status '{0}'".format(payload,classname=self.ClassName),5)
 			if self.ServicesLoaded is False:
 				self.LoadServices()
 				self.ServicesLoaded = True
 		else:
-			conn = self.Node.SocketServer.GetConnectionBySock(sock)
-			if conn is not None:
-				print ("({classname})# Node '{0}' status '{1}'".format(conn.Obj["uuid"],payload,classname=self.ClassName))
+			self.Node.LogMSG("({classname})# Status '{0}'".format(payload,classname=self.ClassName),5)
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
