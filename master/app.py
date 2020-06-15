@@ -26,8 +26,9 @@ class Context():
 		self.RequestHandlers				= {
 			'on_node_change':				self.Request_OnNodeChangeHandler,
 			'get_connections_list':			self.Request_GetConnectionsListRequestHandler,
-			'get_installed_nodes_list':		self.Request_GetInstalledNodesListRequestHandler,
 			'get_master_public_info':		self.Request_GetMasterPublicInfoHandler,
+			'get_installed_nodes_list':		self.Request_GetInstalledNodesListRequestHandler,
+			'set_installed_node_info':		self.Request_SetInstalledNodeInfoRequestHandler,
 			'get_services_info': 			self.Request_GetServicesInfoHandler,
 			'set_service_info': 			self.Request_SetServiceInfoHandler,
 			'undefined':					self.UndefindHandler
@@ -91,6 +92,25 @@ class Context():
 			'installed_nodes': installed,
 		}
 
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+	
+	def Request_SetInstalledNodeInfoRequestHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_SetInstalledNodeInfoRequestHandler] {0}".format(packet,classname=self.ClassName),5)
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		uuid 	= payload["uuid"]
+		enabled = payload["enabled"]
+
+		installed = self.InstalledNodesDB["installed_nodes"]
+		for item in installed:
+			if (item["uuid"] == uuid):
+				item["enabled"] = enabled
+				break
+		
+		self.InstalledNodesDB["installed_nodes"] = installed
+		# Save new switch to database
+		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
+		
+		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
 	def Request_GetMasterPublicInfoHandler(self, sock, packet):
@@ -200,13 +220,13 @@ class Context():
 		else:
 			installed = self.ServicesDB["on_boot_services"]
 		payload = {
-			'installed_nodes': installed,
+			'on_boot_services': installed,
 		}
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
 	
 	def Request_SetServiceInfoHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# [SetServiceInfoHandler] {0}".format(packet,classname=self.ClassName),5)
+		self.Node.LogMSG("({classname})# [Request_SetServiceInfoHandler] {0}".format(packet,classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		uuid 	= payload["uuid"]
 		enabled = payload["enabled"]
@@ -219,7 +239,7 @@ class Context():
 		
 		self.ServicesDB["on_boot_services"] = dbOnBootServices
 		# Save new switch to database
-		self.Node.SetFileContent(os.path.join(self.Node.MKSPath,"services.json"), json.dumps(self.ServicesDB))
+		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"services.json"), self.ServicesDB)
 		
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
@@ -300,6 +320,13 @@ class Context():
 		self.SystemLoaded = True
 		# Load all installed nodes
 		self.LoadNodes()
+		# Load services DB
+		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
+		if strServicesJson == "":
+			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
+			return
+		
+		self.ServicesDB = json.loads(strServicesJson)
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
 
 	def OnNodeWorkTick(self):

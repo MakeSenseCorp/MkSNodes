@@ -137,8 +137,6 @@ class Context():
 	
 	def StartSystem(self):
 		self.ServicesLoaded = False
-		self.TerminatePythonProcs()
-		time.sleep(2)
 		self.LoadMasterNode()
 		time.sleep(2)
 		self.MasterConnection, self.MasterConnected = self.Node.ConnectNode(self.Node.MyLocalIP, 16999)
@@ -189,6 +187,8 @@ def main():
 
 	# Run Node
 	print("(Node)# Start Node ...")
+	THIS.TerminatePythonProcs()
+	time.sleep(2)
 	THIS.Node.Run(THIS.OnNodeWorkTick)
 	print("(Node)# Wait (5 Sec)")
 	time.sleep(5)

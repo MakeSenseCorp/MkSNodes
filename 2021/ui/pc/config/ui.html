@@ -196,12 +196,16 @@
 			function Node() {
 				var self = this;
 
-				// Gey makesense api instanse.
+				// Get makesense api instanse.
 				this.API  		= MkSAPIBuilder.GetInstance();
 				this.Player 	= new Player(this.API);
 				this.PlayList 	= new PlayList(this.API);
 				// Update gateway IP address
 				this.API.SetGlobalGatewayIP(GatewayIP);
+				// Default handler
+				this.API.OnUnexpectedDataArrived = function (packet) {
+					console.log(packet);
+				}
 
 				return this;
 			}
@@ -512,10 +516,11 @@
 			node.Init();
 			node.Connect();
 			var UserGetNodeSensorInfoHandler = function(res) {
+				var payload = res.data.payload;
 				// User Code #1 - Start
 				var objSongList = document.getElementById("id_song_list");
-				for (key in res.data.payload.songs) {
-					song = res.data.payload.songs[key];
+				for (key in payload.songs) {
+					song = payload.songs[key];
 					var song_id = CryptoJS.MD5(song).toString();
 					var item = {
 						name: song,
@@ -532,7 +537,7 @@
 					console.log("UI have registered NODE successfuly", res);
 				});
 			}
-			// Self-genrated area
+			// Self-generated area
 
 			$('#id-semsor-modal').on('hide.bs.modal', function (e) {
 				
