@@ -31,6 +31,8 @@ class Context():
 			'set_installed_node_info':		self.Request_SetInstalledNodeInfoRequestHandler,
 			'get_services_info': 			self.Request_GetServicesInfoHandler,
 			'set_service_info': 			self.Request_SetServiceInfoHandler,
+			'reboot':						self.Request_RebootHandler,
+			'shutdown':						self.Request_ShutdownHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
@@ -46,6 +48,28 @@ class Context():
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
+
+	def Request_RebootHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_RebootHandler]".format(classname=self.ClassName),5)
+		connections = THIS.Node.GetConnectedNodes()
+		for key in connections:
+			node = connections[key]
+			if node.Obj["type"] == 2:
+				self.Node.LogMSG("({classname})# [Request_RebootHandler] REBOOT".format(classname=self.ClassName),5)
+				# Send reboot request to defender
+				message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", node.Obj["uuid"], THIS.Node.UUID, "reboot", {}, {})
+				local_packet  = THIS.Node.BasicProtocol.AppendMagic(message)
+				THIS.Node.SocketServer.Send(node.Socket, local_packet)
+				# Return message to requestor
+				payload = { 'status': 'OK' }
+				return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		payload = { 'status': 'FAILD' }
+		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+	
+	def Request_ShutdownHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_ShutdownHandler]".format(classname=self.ClassName),5)
+		self.ShutdownProcess()
+		self.Node.Exit()
 
 	def Request_OnNodeChangeHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName),5)
@@ -316,6 +340,26 @@ class Context():
 				proc.CallProcess(proc_str, node_path, "")
 				#self.RunningNodes.append(node)
 
+	def ShutdownProcess(self):
+		self.Shutdown = True
+		shutdown_connections = []
+		# TODO - Could be an issue with not locking this list. (multithreading)
+		connections = THIS.Node.GetConnectedNodes()
+		for key in connections:
+			node = connections[key]
+			shutdown_connections.append({
+				"sock": node.Socket,
+				"uuid": node.Obj["uuid"]
+			})
+		
+		for item in shutdown_connections:
+			if item["uuid"] != THIS.Node.UUID:
+				message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", item["uuid"], THIS.Node.UUID, "shutdown", {}, {})
+				packet  = THIS.Node.BasicProtocol.AppendMagic(message)
+				THIS.Node.SocketServer.Send(item["sock"], packet)
+		
+		time.sleep(5)
+
 	def NodeSystemLoadedHandler(self):
 		self.SystemLoaded = True
 		# Load all installed nodes
@@ -348,24 +392,7 @@ Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.Shutdown = True
-	shutdown_connections = []
-	# TODO - Could be an issue with not locking this list. (multithreading)
-	connections = THIS.Node.GetConnectedNodes()
-	for key in connections:
-		node = connections[key]
-		shutdown_connections.append({
-			"sock": node.Socket,
-			"uuid": node.Obj["uuid"]
-		})
-	
-	for item in shutdown_connections:
-		if item["uuid"] != THIS.Node.UUID:
-			message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", item["uuid"], THIS.Node.UUID, "shutdown", {}, {})
-			packet  = THIS.Node.BasicProtocol.AppendMagic(message)
-			THIS.Node.SocketServer.Send(item["sock"], packet)
-	
-	time.sleep(2)
+	THIS.ShutdownProcess()
 	THIS.Node.Stop("Accepted signal from other app")
 
 def main():

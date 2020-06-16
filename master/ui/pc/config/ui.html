@@ -129,6 +129,13 @@
 																</div>
 															</div>
 														</div>
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted"><a href="#" onclick="node.Machine.Reboot()">Reboot</a></span>
+																</h6>
+															</div>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -471,6 +478,11 @@
 					}, function(res) { });
 				}
 			};
+
+			PC.prototype.Reboot = function() {
+				this.API.SendCustomCommand(NodeUUID, "reboot", {
+				}, function(res) { });
+			}
 
 			function NodeUI (api) {
 				self = this;
