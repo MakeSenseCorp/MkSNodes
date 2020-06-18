@@ -27,7 +27,8 @@ class Context():
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
 			'undefined':					self.UndefindHandler,
-			'reboot':						self.RebootHandler
+			'services_mngr':				self.Request_ServiceMngrHandler,
+			'reboot':						self.Request_RebootHandler
 		}
 		self.ResponseHandlers				= {
 			'get_node_status':				self.GetNodeStatusHandler
@@ -86,8 +87,8 @@ class Context():
 			self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler] Master node offline".format(classname=self.ClassName),5)
 			self.MasterConnected = False
 
-	def RebootHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# [RebootHandler]".format(classname=self.ClassName),5)
+	def Request_RebootHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_RebootHandler]".format(classname=self.ClassName),5)
 		# Check if UUID belong to MASTER
 		message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", THIS.Node.UUID, "shutdown", {}, {})
 		local_packet  = self.Node.BasicProtocol.AppendMagic(message)
@@ -97,6 +98,25 @@ class Context():
 		self.TerminatePythonProcs()
 		time.sleep(2)
 		self.StartSystem()
+
+		payload = { 'status': 'OK' }
+		return self.Node.BasicProtocol.BuildResponse(packet, payload)
+	
+	def Request_ServiceMngrHandler(self, sock, packet):
+		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		self.Node.LogMSG("({classname})# [Request_ServiceMngrHandler] {0}".format(payload,classname=self.ClassName),5)
+		command 		= payload["command"]
+		service 		= payload["service"]
+		service_type 	= service["type"]
+		name 			= service["name"]
+		uuid 			= service["uuid"]
+		pid 			= service["pid"]
+
+		if "enable" in command:
+			if str(service["enabled"]) == "1":
+				self.StartService(service)
+			else:
+				self.StopService(service)
 
 		payload = { 'status': 'OK' }
 		return self.Node.BasicProtocol.BuildResponse(packet, payload)
@@ -124,22 +144,47 @@ class Context():
 		else:
 			self.Node.LogMSG("({classname})# [RequestStatus] Master node offline".format(classname=self.ClassName),5)
 			self.MasterConnected = False
+	
+	def StartService(self, service):
+		try:
+			self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
+			service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
+			proc = MkSExternalProcess.ExternalProcess()
+			proc_str = "python app.py --type {0} &".format(service["type"])
+			self.Node.LogMSG("({classname})# Start service - {0}".format(proc_str,classname=self.ClassName),5)
+			proc.CallProcess(proc_str, service_path, "")
+		except Exception as e:
+			self.LogException("[StartService]",e,3)
+		
+	def StopService(self, service):
+		try:
+			message = self.Node.BasicProtocol.BuildRequest("DIRECT", service["uuid"], THIS.Node.UUID, "shutdown", {}, {})
+			local_packet  = self.Node.BasicProtocol.AppendMagic(message)
+			self.Node.SocketServer.Send(self.MasterConnection.Socket, local_packet)
+			time.sleep(2)
+			if service["pid"] > 0:
+				self.TerminateProc(service["pid"])
+		except Exception as e:
+			self.LogException("[StopService]",e,3)
 
 	def LoadServices(self):
-		strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
-		if strServicesJson == "":
-			self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
-			return
-		
-		self.ServicesDB = json.loads(strServicesJson)
-		services = self.ServicesDB["on_boot_services"]
-		for service in services:
-			if (service["enabled"] == 1):
-				self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
-				service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
-				proc = MkSExternalProcess.ExternalProcess()
-				proc_str = "python app.py --type {0} &".format(service["type"])
-				proc.CallProcess(proc_str, service_path, "")
+		try:
+			strServicesJson = self.File.Load(os.path.join(self.Node.MKSPath,"services.json"))
+			if strServicesJson == "":
+				self.Node.LogMSG("({classname})# ERROR - Cannot find service.json or it is empty.".format(classname=self.ClassName),3)
+				return
+			
+			self.ServicesDB = json.loads(strServicesJson)
+			services = self.ServicesDB["on_boot_services"]
+			for service in services:
+				if (service["enabled"] == 1):
+					self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
+					service_path = os.path.join(self.Node.MKSPath,"nodes",str(service["type"]))
+					proc = MkSExternalProcess.ExternalProcess()
+					proc_str = "python app.py --type {0} &".format(service["type"])
+					proc.CallProcess(proc_str, service_path, "")
+		except Exception as e:
+			self.LogException("[LoadServices]",e,3)
 	
 	def LoadMasterNode(self):
 		print("({classname})# Loading MASTER ...".format(classname=self.ClassName))

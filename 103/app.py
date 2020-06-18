@@ -65,6 +65,7 @@ class Context():
 		while (self.ThreadWorking is True):
 			for client in range:
 				if (self.ThreadWorking is False):
+					self.Node.LogMSG("({classname})# Exit this thread {0}".format(threading.get_ident(),classname=self.ClassName),5)
 					return
 				ip = network + str(client)
 				self.Node.LogMSG("({classname})# Ping {0} ...".format(ip,classname=self.ClassName),5)

@@ -255,15 +255,64 @@ class Context():
 		uuid 	= payload["uuid"]
 		enabled = payload["enabled"]
 		
+		service_found = None
 		dbOnBootServices = self.ServicesDB["on_boot_services"]
 		for item in dbOnBootServices:
 			if (item["uuid"] == uuid):
 				item["enabled"] = enabled
+				service_found = item
+				self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
 				break
 		
-		self.ServicesDB["on_boot_services"] = dbOnBootServices
-		# Save new switch to database
-		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"services.json"), self.ServicesDB)
+		if service_found is not None:
+			self.Node.LogMSG("({classname})# [DEBUG #2]".format(classname=self.ClassName),5)
+			self.ServicesDB["on_boot_services"] = dbOnBootServices
+			# Save new switch to database
+			self.File.SaveJSON(os.path.join(self.Node.MKSPath,"services.json"), self.ServicesDB)
+			if enabled == 0:
+				# Find service need attention
+				connections = THIS.Node.GetConnectedNodes()
+				service_need_attention = None
+				for key in connections:
+					node = connections[key]
+					if node.Obj["type"] == service_found["type"]:
+						service_need_attention = {
+							"uuid": node.Obj["uuid"],
+							"name": node.Obj["name"],
+							"type": node.Obj["type"],
+							"pid": node.Obj["pid"]
+						}
+						self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
+						break
+			else:
+				service_need_attention = {
+					"uuid": item["uuid"],
+					"name": item["name"],
+					"type": item["type"],
+					"pid": 0
+				}
+			
+			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
+			if service_need_attention is not None:
+				self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
+				# Find guardian instance and send message
+				connections = THIS.Node.GetConnectedNodes()
+				for key in connections:
+					node = connections[key]
+					if node.Obj["type"] == 2:
+						self.Node.LogMSG("({classname})# [DEBUG #6]".format(classname=self.ClassName),5)
+						message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", node.Obj["uuid"], THIS.Node.UUID, "services_mngr", {
+							"command": "enable",
+							"service": {
+								"enabled": enabled,
+								"uuid": service_need_attention["uuid"],
+								"name": service_need_attention["name"],
+								"type": service_need_attention["type"],
+								"pid": service_need_attention["pid"]
+							}
+						}, {})
+						local_packet  = THIS.Node.BasicProtocol.AppendMagic(message)
+						THIS.Node.SocketServer.Send(node.Socket, local_packet)
 		
 		payload = { 'error': 'ok' }
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
