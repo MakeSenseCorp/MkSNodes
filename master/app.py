@@ -69,7 +69,7 @@ class Context():
 	def Request_ShutdownHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_ShutdownHandler]".format(classname=self.ClassName),5)
 		self.ShutdownProcess()
-		self.Node.Exit()
+		self.Node.Exit("Request_ShutdownHandler")
 
 	def Request_OnNodeChangeHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName),5)
@@ -261,11 +261,9 @@ class Context():
 			if (item["uuid"] == uuid):
 				item["enabled"] = enabled
 				service_found = item
-				self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
 				break
 		
 		if service_found is not None:
-			self.Node.LogMSG("({classname})# [DEBUG #2]".format(classname=self.ClassName),5)
 			self.ServicesDB["on_boot_services"] = dbOnBootServices
 			# Save new switch to database
 			self.File.SaveJSON(os.path.join(self.Node.MKSPath,"services.json"), self.ServicesDB)
@@ -282,7 +280,6 @@ class Context():
 							"type": node.Obj["type"],
 							"pid": node.Obj["pid"]
 						}
-						self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
 						break
 			else:
 				service_need_attention = {
@@ -292,15 +289,12 @@ class Context():
 					"pid": 0
 				}
 			
-			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
 			if service_need_attention is not None:
-				self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
 				# Find guardian instance and send message
 				connections = THIS.Node.GetConnectedNodes()
 				for key in connections:
 					node = connections[key]
 					if node.Obj["type"] == 2:
-						self.Node.LogMSG("({classname})# [DEBUG #6]".format(classname=self.ClassName),5)
 						message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", node.Obj["uuid"], THIS.Node.UUID, "services_mngr", {
 							"command": "enable",
 							"service": {
@@ -436,6 +430,10 @@ class Context():
 				#packet  = self.Node.BasicProtocol.AppendMagic(message)
 				#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
 				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.IP, node.Obj["listener_port"], node.Obj["type"]),5)
+			
+			for idx, key in enumerate(self.Node.Services):
+				service = self.Node.Services[key]
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx), service["uuid"], service["name"], service["enabled"], service["registered"]),5)
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)

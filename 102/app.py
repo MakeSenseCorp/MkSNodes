@@ -12,7 +12,7 @@ import logging
 import urllib2
 import urllib
 import Queue
-import smtplib
+import smtplib, ssl
 import base64
 
 from email.MIMEMultipart import MIMEMultipart
@@ -20,16 +20,12 @@ from email.MIMEText import MIMEText
 from email.MIMEImage import MIMEImage
 
 from mksdk import MkSFile
-from mksdk import MkSNode
 from mksdk import MkSSlaveNode
-from mksdk import MkSLocalHWConnector
-from mksdk import MkSUSBAdaptor
-from mksdk import MkSProtocol
-
-from flask import Response, request
+from mksdk import MkSUtils
 
 class Context():
 	def __init__(self, node):
+		self.ClassName 					= "EMail Service"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
@@ -40,11 +36,11 @@ class Context():
 		self.Handlers					= {
 			'undefined':				self.UndefindHandler
 		}
-		self.CustomRequestHandlers		= {
-			'send_email_html':					self.SendEmailHtmlHandler,
-			'send_email_html_with_image':		self.SendEmailHtmlWithImageHandler
+		self.RequestHandlers			= {
+			'send_email_html':					self.Request_SendEmailHtmlHandler,
+			'send_email_html_with_image':		self.Request_SendEmailHtmlWithImageHandler
 		}
-		self.CustomResponseHandlers		= {
+		self.ResponseHandlers			= {
 		}
 		self.Orders 					= Queue.Queue()
 		self.NodesDict					= {}
@@ -53,7 +49,7 @@ class Context():
 		self.GmailPassword 				= "makesense100$"
 
 	def UndefindHandler(self, message_type, source, data):
-		print ("UndefindHandler")
+		self.Node.LogMSG("({classname})# [UndefindHandler]".format(classname=self.ClassName),5)
 	
 	# { 
 	# 	u'direction': u'proxy_request', 
@@ -75,42 +71,54 @@ class Context():
 	# 	}
 	# }
 	
-	def SendEmailHtmlHandler(self, sock, packet):
-		print ("SendEmailHtmlHandler", packet)
+	def Request_SendEmailHtmlHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_SendEmailHtmlHandler]".format(classname=self.ClassName),5)
+		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 		
-		to 		= packet["payload"]["data"]["json"]["to"]
-		subject = packet["payload"]["data"]["json"]["subject"]
-		body 	= packet["payload"]["data"]["json"]["body"]
+		to 		= payload["message"]["to"]
+		subject = payload["message"]["subject"]
+		body 	= payload["message"]["body"]
 
 		# to = ["yevgeniy.kiveisha@gmail.com"]
 		# subject = "Makesense message"
 		# body = "Hey, \nJust want to let you know security cameras detected motyion."
-		email_text = """\
-			From: %s
-			To: %s
-			Subject: %s
-
-			%s
-			""" % (self.GmailUser, ", ".join(to), subject, body)
+		#email_text = """\
+		#	From: %s
+		#	To: %s
+		#	Subject: %s
+		#
+		#	%s
+		#	""" % (self.GmailUser, to, subject, body)
+		
+		self.Node.LogMSG("({classname})# {0}".format(body, classname=self.ClassName),5)
+		context = ssl.create_default_context()
 
 		try:
-			server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-			server.ehlo()
+			#server = smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context)
+			self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
+			server = smtplib.SMTP('smtp.gmail.com',587)
+			self.Node.LogMSG("({classname})# [DEBUG #2]".format(classname=self.ClassName),5)
+			#server.ehlo()
+			server.starttls(context=context)
+			self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
 			server.login(self.GmailUser, self.GmailPassword)
-			server.sendmail(self.GmailUser, to, email_text)
+			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
+			server.sendmail(self.GmailUser, to, body)
+			self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
 			server.close()
 
-			print ('Email sent')
+			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
 		except Exception as e:
-			print ('Something went wrong...', e)
+			self.Node.LogException("[Request_SendEmailHtmlHandler]",e,3)
 	
-	def SendEmailHtmlWithImageHandler(self, sock, packet):
-		print ("SendEmailHtmlHandler", packet)
+	def Request_SendEmailHtmlWithImageHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_SendEmailHtmlWithImageHandler]".format(classname=self.ClassName),5)
+		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 
-		to 		= packet["payload"]["data"]["json"]["to"]
-		subject = packet["payload"]["data"]["json"]["subject"]
-		body 	= packet["payload"]["data"]["json"]["body"]
-		image 	= packet["payload"]["data"]["json"]["image"]
+		to 		= payload["message"]["to"]
+		subject = payload["message"]["subject"]
+		body 	= payload["message"]["body"]
+		image 	= payload["message"]["image"]
 
 		# to = "yevgeniy.kiveisha@gmail.com"
 
@@ -151,146 +159,56 @@ class Context():
 			server.sendmail(self.GmailUser, to, msgRoot.as_string())
 			server.close()
 
-			print ('Email sent!')
+			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
+			self.Node.LogMSG("({classname})# Node system loaded ...".format(classname=self.ClassName),5)
 		except Exception as e:
-			print ('Something went wrong...', e)
+			self.LogException("[Request_SendEmailHtmlWithImageHandler]",e,3)
 
 		return
 
-	# Websockets
-	def WSDataArrivedHandler(self, message_type, source, data):
-		command = data['device']['command']
-		self.Handlers[command](message_type, source, data)
-
-	def WSConnectedHandler(self):
-		print ("WSConnectedHandler")
-
-	def WSConnectionClosedHandler(self):
-		print ("WSConnectionClosedHandler")
-
 	def NodeSystemLoadedHandler(self):
-		print ("NodeSystemLoadedHandler")
+		self.Node.LogMSG("({classname})# Node system loaded ...".format(classname=self.ClassName),5)
 	
-	def OnMasterFoundHandler(self, masters):
-		print ("OnMasterFoundHandler")
-
-	def OnMasterSearchHandler(self):
-		print ("OnMasterSearchHandler")
-
-	def OnMasterDisconnectedHandler(self):
-		print ("OnMasterDisconnectedHandler")
-
-	def OnDeviceConnectedHandler(self):
-		print ("OnDeviceConnectedHandler")
-
-	def OnLocalServerStartedHandler(self):
-		print ("OnLocalServerStartedHandler")
-
-	def OnAceptNewConnectionHandler(self, sock):
-		print ("OnAceptNewConnectionHandler")
-
-	def OnTerminateConnectionHandler(self, sock):
-		print ("OnTerminateConnectionHandler")
-
-	def OnGetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnGetSensorInfoRequestHandler")
-
-	def OnSetSensorInfoRequestHandler(self, packet, sock):
-		print ("OnSetSensorInfoRequestHandler")
-	
-	def OnCustomCommandRequestHandler(self, sock, json_data):
-		print ("OnCustomCommandRequestHandler")
-		command = json_data['command']
-		if command in self.CustomRequestHandlers:
-			self.CustomRequestHandlers[command](sock, json_data)
-
-	def OnCustomCommandResponseHandler(self, sock, json_data):
-		print ("OnCustomCommandResponseHandler")
-		command = json_data['command']
-		if command in self.CustomResponseHandlers:
-			self.CustomResponseHandlers[command](sock, json_data)
-
-	def GetNodeInfoHandler(self, key):
-		return json.dumps({
-			'response':'OK'
+	def OnApplicationCommandRequestHandler(self, sock, packet):
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.RequestHandlers:
+			return self.RequestHandlers[command](sock, packet)
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'error': '-1'
 		})
 
-	def SetNodeInfoHandler(self, key, id):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def GetSensorsInfoHandler(self, key):
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def SetSensorInfoHandler(self, key, id, value):
-		return json.dumps({
-			'response':'OK'
-		})
-	
-	def SetAddRequestHandler(self, key):
-		print ("[WEB API] SetAddRequestHandler")
-
-		fields 		= [k for k in request.form]
-		jsonData 	= json.loads(fields[0])
-		req   		= jsonData["request"]
-		data  		= jsonData["json"]
-
-		print (req, data)
-
-		return json.dumps({
-			'response':'OK'
-		})
-
-	def OnLocalServerListenerStartedHandler(self, sock, ip, port):
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_info/<key>", 						endpoint_name="get_node_info", 			handler=THIS.GetNodeInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_info/<key>/<id>", 					endpoint_name="set_node_info", 			handler=THIS.SetNodeInfoHandler, 	method=['POST'])
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/get/node_sensors_info/<key>", 				endpoint_name="get_node_sensors", 		handler=THIS.GetSensorsInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/node_sensor_info/<key>/<id>/<value>", 	endpoint_name="set_node_sensor_value", 	handler=THIS.SetSensorInfoHandler)
-		THIS.Node.LocalServiceNode.AppendFaceRestTable(endpoint="/set/add_request/<key>", 						endpoint_name="add_request", 			handler=THIS.SetAddRequestHandler, 	method=['POST'])
+	def OnApplicationCommandResponseHandler(self, sock, packet):
+		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
+		if command in self.ResponseHandlers:
+			self.ResponseHandlers[command](sock, packet)
 
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
-			print ("WorkingHandler")
-
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			for idx, item in enumerate(THIS.Node.LocalServiceNode.GetConnections()):
-				print ("  ", str(idx), item.LocalType, item.UUID, item.IP, item.Port, item.Type)
+			self.Node.LogMSG("\nTables:",5)
+			connections = THIS.Node.GetConnectedNodes()
+			for idx, key in enumerate(connections):
+				node = connections[key]
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
+			self.Node.LogMSG("",5)
 
-Service = MkSSlaveNode.SlaveNode()
-Node 	= MkSNode.Node("EMail Service", Service)
-THIS 	= Context(Node)
+Node = MkSSlaveNode.SlaveNode()
+THIS = Context(Node)
 
 def signal_handler(signal, frame):
-	THIS.Node.Stop()
+	THIS.Node.Stop("Accepted signal from other app")
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.OnWSDataArrived 										= THIS.WSDataArrivedHandler
-	THIS.Node.OnWSConnected 										= THIS.WSConnectedHandler
-	THIS.Node.OnWSConnectionClosed 									= THIS.WSConnectionClosedHandler
-	THIS.Node.OnNodeSystemLoaded									= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnDeviceConnected										= THIS.OnDeviceConnectedHandler
-	# Local service callbacks (TODO - please bubble these callbacks via Node)
-	THIS.Node.LocalServiceNode.OnMasterFoundCallback				= THIS.OnMasterFoundHandler
-	THIS.Node.LocalServiceNode.OnMasterSearchCallback				= THIS.OnMasterSearchHandler
-	THIS.Node.LocalServiceNode.OnMasterDisconnectedCallback			= THIS.OnMasterDisconnectedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerStartedCallback			= THIS.OnLocalServerStartedHandler
-	THIS.Node.LocalServiceNode.OnLocalServerListenerStartedCallback = THIS.OnLocalServerListenerStartedHandler
-	THIS.Node.LocalServiceNode.OnAceptNewConnectionCallback			= THIS.OnAceptNewConnectionHandler
-	THIS.Node.LocalServiceNode.OnTerminateConnectionCallback 		= THIS.OnTerminateConnectionHandler
-	THIS.Node.LocalServiceNode.OnGetSensorInfoRequestCallback 		= THIS.OnGetSensorInfoRequestHandler
-	THIS.Node.LocalServiceNode.OnSetSensorInfoRequestCallback 		= THIS.OnSetSensorInfoRequestHandler
-	# TODO - On file upload event.
-	THIS.Node.LocalServiceNode.OnCustomCommandRequestCallback		= THIS.OnCustomCommandRequestHandler
-	THIS.Node.LocalServiceNode.OnCustomCommandResponseCallback		= THIS.OnCustomCommandResponseHandler
+	THIS.Node.NodeSystemLoadedCallback						= THIS.NodeSystemLoadedHandler
+	THIS.Node.OnApplicationRequestCallback					= THIS.OnApplicationCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback					= THIS.OnApplicationCommandResponseHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	print ("Exit Node ...")

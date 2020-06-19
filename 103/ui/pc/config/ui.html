@@ -57,77 +57,77 @@
         <![endif]-->
     </head>
     <body>
-        <main role="main" class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="card">
-              <div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Nodes List (<a href="#" onclick="GetOnlineMachines()">Refresh</a>)</span>
-										<span class="badge badge-secondary badge-pill" id="online_machines_count_id">0</span>
-									</h6>
-									<div id="online_machines_id"></div>
-								</div>
-					</div>
-				</div>
-			</div>
-        </main>
+      <main role="main" class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="d-flex justify-content-between align-items-center mb-3">
+                      <span class="text-muted">Nodes List (<a href="#" onclick="GetOnlineMachines()">Refresh</a>)</span>
+                      <span class="badge badge-secondary badge-pill" id="online_machines_count_id">0</span>
+                    </h6>
+                    <div id="online_machines_id"></div>
+                  </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
-        <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
-        <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
-		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
-        <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
-        <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+      <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
+      <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
+      <script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+      <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
+      <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+      
+      <script src="mksdk-js/MkSAPI.js"></script>
+      <script src="mksdk-js/MkSCommon.js"></script>
+      <script src="mksdk-js/MkSGateway.js"></script>
+      <script src="mksdk-js/MkSWebface.js"></script>
+
+      <script>
+        var GatewayIP = "[GATEWAY_IP]";
+        var NodeUUID  = "[NODE_UUID]";
         
-        <script src="mksdk-js/MkSAPI.js"></script>
-        <script src="mksdk-js/MkSCommon.js"></script>
-        <script src="mksdk-js/MkSGateway.js"></script>
-        <script src="mksdk-js/MkSWebface.js"></script>
+        // Gey makesense api instanse.
+        var api = MkSAPIBuilder.GetInstance();
+        api.SetGlobalGatewayIP(GatewayIP);
+        
+            var MAchineIPRow = `
+              <li class="list-group-item d-flex justify-content-between lh-condensed">
+                <div>
+                  <small class="my-0">[IP]</small>
+                </div>
+                <div>
+                  <small class="my-0">[TIME]</small>
+                </div>
+              </li>
+            `;
 
-        <script>
-			var GatewayIP = "[GATEWAY_IP]";
-			var NodeUUID  = "[NODE_UUID]";
-			
-			// Gey makesense api instanse.
-			var api = MkSAPIBuilder.GetInstance();
-			api.SetGlobalGatewayIP(GatewayIP);
-		  
-          var MAchineIPRow = `
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <small class="my-0">[IP]</small>
-              </div>
-              <div>
-                <small class="my-0">[TIME]</small>
-              </div>
-            </li>
-          `;
+            // Gey makesense api instanse.
+            var api = MkSAPIBuilder.GetInstance();
 
-          // Gey makesense api instanse.
-          var api = MkSAPIBuilder.GetInstance();
-
-          var GetOnlineMachines = function() {
-            api.SendCustomCommand(NodeUUID, "get_online_devices", {}, function(res) {
-              console.log(res.data.payload);
-              var data = res.data.payload;
-              document.getElementById("online_machines_count_id").innerHTML = data.online_devices.length;
-              var html = `<ul class="list-group mb-3">`;
-              data.online_devices.forEach(function(element) {
-                row = MAchineIPRow;
-                row = row.split("[IP]").join(element.ip);
-                row = row.split("[TIME]").join(element.datetime);
-                html = html + row;
+            var GetOnlineMachines = function() {
+              api.SendCustomCommand(NodeUUID, "get_online_devices", {}, function(res) {
+                console.log(res.data.payload);
+                var data = res.data.payload;
+                document.getElementById("online_machines_count_id").innerHTML = data.online_devices.length;
+                var html = `<ul class="list-group mb-3">`;
+                data.online_devices.forEach(function(element) {
+                  row = MAchineIPRow;
+                  row = row.split("[IP]").join(element.ip);
+                  row = row.split("[TIME]").join(element.datetime);
+                  html = html + row;
+                });
+              
+                html = html + `</ul>`;
+                document.getElementById("online_machines_id").innerHTML = html;
+                feather.replace();
               });
-            
-              html = html + `</ul>`;
-              document.getElementById("online_machines_id").innerHTML = html;
-              feather.replace();
-            });
-          }
+            }
 
-          api.ConnectGateway(function() {
-            GetOnlineMachines();
-          });
-        </script>
-    </body>
+            api.ConnectGateway(function() {
+              GetOnlineMachines();
+            });
+      </script>
+  </body>
 </html>

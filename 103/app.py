@@ -12,12 +12,7 @@ from datetime import datetime
 
 from mksdk import MkSFile
 from mksdk import MkSSlaveNode
-from mksdk import MkSLocalHWConnector
-from mksdk import MkSUSBAdaptor
-from mksdk import MkSProtocol
 from mksdk import MkSUtils
-
-from flask import Response, request
 
 class Context():
 	def __init__(self, node):
