@@ -1,25 +1,47 @@
 {
 	"node":
 	{
-		"uuid":"ac6de837-9863-72a9-c789-a0aae7e9d023",
-		"isHW":"False",
-		"type":102,
-		"ostype":"Any",
-		"osversion":"Any",
-		"brandname":"EMail Service",
-		"name":"EMail Service",
-		"description":"Email Service",
-        "isMasterNode":"False",
-        "isLocalServerEnabled":"True",
-        "isWebEnabled":"True",
-		"is_application_ui_enabled": "False"
+		"system": {
+			"log_level": 3,
+			"log_to_file": "True"
+		},
+		"info": {
+			"uuid":"12345678-1234-1234-1234-123456789111",
+			"isHW":"False",
+			"type":102,
+			"ostype":"Any",
+			"osversion":"Any",
+			"brandname":"EMail Service",
+			"name":"EMail Service",
+			"description":"Email Service",
+			"isMasterNode":"False",
+			"is_service":"True",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "False",
+			"tagging": {
+				"cat_1": "service",
+				"cat_2": "network",
+				"cat_3": "ip_scanner"
+			}
+		},
+		"service": {
+			"depend": [
+
+			]
+		}
 	},
-	"user":
-	{
+	"user": {
 		
 	},
-	"device":
-	{
+	"device": {
 		
+	},
+	"deploymnet": {
+		"dependencies_cmd": [
+		],
+		"script": {
+
+		}
 	}
 }
