@@ -78,33 +78,21 @@ class Context():
 		to 		= payload["message"]["to"]
 		subject = payload["message"]["subject"]
 		body 	= payload["message"]["body"]
-
-		# to = ["yevgeniy.kiveisha@gmail.com"]
-		# subject = "Makesense message"
-		# body = "Hey, \nJust want to let you know security cameras detected motyion."
-		#email_text = """\
-		#	From: %s
-		#	To: %s
-		#	Subject: %s
-		#
-		#	%s
-		#	""" % (self.GmailUser, to, subject, body)
-		
-		self.Node.LogMSG("({classname})# {0}".format(body, classname=self.ClassName),5)
 		context = ssl.create_default_context()
 
 		try:
-			#server = smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context)
 			self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
-			server = smtplib.SMTP('smtp.gmail.com',587)
-			self.Node.LogMSG("({classname})# [DEBUG #2]".format(classname=self.ClassName),5)
-			#server.ehlo()
-			server.starttls(context=context)
+			#server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+			#server = smtplib.SMTP('smtp.gmail.com',587)
+			server = smtplib.SMTP('smtp.gmail.com:587')
 			self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
-			server.login(self.GmailUser, self.GmailPassword)
+			server.ehlo()
+			server.starttls()
 			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
-			server.sendmail(self.GmailUser, to, body)
+			server.login(self.GmailUser, self.GmailPassword)
 			self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
+			server.sendmail(self.GmailUser, to, body)
+			self.Node.LogMSG("({classname})# [DEBUG #6]".format(classname=self.ClassName),5)
 			server.close()
 
 			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
