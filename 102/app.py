@@ -75,24 +75,27 @@ class Context():
 		self.Node.LogMSG("({classname})# [Request_SendEmailHtmlHandler]".format(classname=self.ClassName),5)
 		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 		
-		to 		= payload["message"]["to"]
+		to 		= [payload["message"]["to"]]
 		subject = payload["message"]["subject"]
 		body 	= payload["message"]["body"]
 		context = ssl.create_default_context()
 
+		email_text = """\
+		From: %s
+		To: %s
+		Subject: %s
+
+		%s
+		""" % ("mks", ", ".join(to), subject, body)
+
 		try:
-			self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
 			#server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
 			#server = smtplib.SMTP('smtp.gmail.com',587)
 			server = smtplib.SMTP('smtp.gmail.com:587')
-			self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
 			server.ehlo()
 			server.starttls()
-			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
 			server.login(self.GmailUser, self.GmailPassword)
-			self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
-			server.sendmail(self.GmailUser, to, body)
-			self.Node.LogMSG("({classname})# [DEBUG #6]".format(classname=self.ClassName),5)
+			server.sendmail(self.GmailUser, to, email_text)
 			server.close()
 
 			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
