@@ -80,13 +80,7 @@ class Context():
 		body 	= payload["message"]["body"]
 		context = ssl.create_default_context()
 
-		email_text = """\
-		From: %s
-		To: %s
-		Subject: %s
-
-		%s
-		""" % ("mks", ", ".join(to), subject, body)
+		message = 'Subject: {}\n\n{}'.format(subject, body)
 
 		try:
 			#server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -95,7 +89,7 @@ class Context():
 			server.ehlo()
 			server.starttls()
 			server.login(self.GmailUser, self.GmailPassword)
-			server.sendmail(self.GmailUser, to, email_text)
+			server.sendmail(self.GmailUser, to, message)
 			server.close()
 
 			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
