@@ -79,7 +79,7 @@
                     <label for="id-mail-content">Mail Body</label>
                     <textarea class="form-control" id="id-mail-content" rows="3"></textarea>
                   </div>
-                  <button onclick="node.Service.SendMail();" type="button" class="btn btn-primary">Send</button>
+                  <button id="id-send-mail" onclick="node.Service.SendMail();" type="button" class="btn btn-primary">Send</button>
                 </form>
               </div>
           </div>
@@ -130,23 +130,30 @@
 
             this.API = api;
             this.Objects = {
-              EmailAddress: 	document.getElementById("id-mail-address"),
-              EmailContent: 	document.getElementById("id-mail-content")
+              EmailAddress: 	  document.getElementById("id-mail-address"),
+              EmailContent: 	  document.getElementById("id-mail-content"),
+              EmailSendButton:  document.getElementById("id-send-mail")
             }
 
             return this;
           }
 
           Service.prototype.SendMail = function() {
+            self = this;
             payload = {
               message: {
-                to: this.Objects.EmailAddress.value,
+                to: [this.Objects.EmailAddress.value],
                 subject: "Makesense",
                 body: this.Objects.EmailContent.value
               }
             };
             console.log(payload);
-            this.API.SendCustomCommand(NodeUUID, "send_email_html", payload, function(res) {});
+            this.API.SendCustomCommand(NodeUUID, "send_email_html", payload, function(res) {
+              payload = res.data.payload;
+              self.Objects.EmailSendButton.disabled = false;
+            });
+
+            this.Objects.EmailSendButton.disabled = true;
           }
 
           function Node() {

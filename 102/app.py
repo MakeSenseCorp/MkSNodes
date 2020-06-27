@@ -51,31 +51,11 @@ class Context():
 	def UndefindHandler(self, message_type, source, data):
 		self.Node.LogMSG("({classname})# [UndefindHandler]".format(classname=self.ClassName),5)
 	
-	# { 
-	# 	u'direction': u'proxy_request', 
-	# 	u'command': u'send_email', 
-	# 	u'piggybag': 0, 
-	# 	u'payload': {
-	# 		u'header': {
-	# 			u'source': u'ac6de837-9863-72a9-c789-a0aae7e9d021', 
-	# 			u'destination': u'ac6de837-9863-72a9-c789-a0aae7e9d023'
-	# 		}, u'data': {
-	# 			u'json': {
-	# 				u'body': u'Hello', 
-	# 				u'to': [u'yevgeniy.kiveisha@gmail.com'], 
-	# 				u'type': u'text', 
-	# 				u'subject': u'Test'
-	# 			}, 
-	# 			u'request': u'task_order'
-	# 		}
-	# 	}
-	# }
-	
 	def Request_SendEmailHtmlHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_SendEmailHtmlHandler]".format(classname=self.ClassName),5)
 		payload = self.Node.BasicProtocol.GetPayloadFromJson(packet)
 		
-		to 		= [payload["message"]["to"]]
+		to 		= payload["message"]["to"]
 		subject = payload["message"]["subject"]
 		body 	= payload["message"]["body"]
 		context = ssl.create_default_context()
@@ -95,6 +75,13 @@ class Context():
 			self.Node.LogMSG("({classname})# Mail was sent.".format(classname=self.ClassName),5)
 		except Exception as e:
 			self.Node.LogException("[Request_SendEmailHtmlHandler]",e,3)
+			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				'status': 'FAILED'
+			})
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'status': 'OK'
+		})
 	
 	def Request_SendEmailHtmlWithImageHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_SendEmailHtmlWithImageHandler]".format(classname=self.ClassName),5)
