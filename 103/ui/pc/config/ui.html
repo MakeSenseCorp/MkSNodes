@@ -92,10 +92,13 @@
         var api = MkSAPIBuilder.GetInstance();
         api.SetGlobalGatewayIP(GatewayIP);
         
-            var MAchineIPRow = `
+            var MachineIPRow = `
               <li class="list-group-item d-flex justify-content-between lh-condensed">
                 <div>
                   <small class="my-0">[IP]</small>
+                </div>
+                <div>
+                  <small class="my-0">[TYPE]</small>
                 </div>
                 <div>
                   <small class="my-0">[TIME]</small>
@@ -113,9 +116,14 @@
                 document.getElementById("online_machines_count_id").innerHTML = data.online_devices.length;
                 var html = `<ul class="list-group mb-3">`;
                 data.online_devices.forEach(function(element) {
-                  row = MAchineIPRow;
+                  row = MachineIPRow;
                   row = row.split("[IP]").join(element.ip);
                   row = row.split("[TIME]").join(element.datetime);
+                  if (element.mks !== undefined) {
+                    row = row.split("[TYPE]").join("MKS (" + element.mks.name + ")");
+                  } else {
+                    row = row.split("[TYPE]").join("DEVICE");
+                  }
                   html = html + row;
                 });
               

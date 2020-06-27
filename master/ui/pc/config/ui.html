@@ -415,7 +415,12 @@
 					var html = `<div class="card"><div class="card-body">`;
 					network_devices.forEach(function(element) {
 						row = self.UI.NetworkDevicesRow;
-						row = row.split("[IP]").join(element);
+						row = row.split("[IP]").join(element.ip);
+						if (element.mks !== undefined) {
+							row = row.split("[TYPE]").join("MKS (" + element.mks.name + ")");
+						} else {
+							row = row.split("[TYPE]").join("DEVICE");
+						}
 						html = html + row;
 					});
 					html = html + `</div></div>`;
@@ -517,7 +522,7 @@
 				this.NetworkDevicesRow = `
 					<li class="list-group-item d-flex justify-content-between lh-condensed">
 						<div><small class="my-0">[IP]</small></div>
-						<div></div>
+						<div><small class="my-0">[TYPE]</small></div>
 						<div><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></div>
 					</li>
 				`;

@@ -63,7 +63,7 @@ class Context():
 					self.Node.LogMSG("({classname})# Exit this thread {0}".format(threading.get_ident(),classname=self.ClassName),5)
 					return
 				ip = network + str(client)
-				self.Node.LogMSG("({classname})# Ping {0} ...".format(ip,classname=self.ClassName),5)
+				# self.Node.LogMSG("({classname})# Ping {0} ...".format(ip,classname=self.ClassName),5)
 				res = MkSUtils.Ping(ip)
 				self.ThreadLock.acquire()
 				if (res is True):
@@ -79,12 +79,13 @@ class Context():
 		self.Node.LogMSG("UndefindHandler",5)
 	
 	def GetOnlineDevicesHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# Online device request ...".format(classname=self.ClassName),5)
-		
+		self.Node.LogMSG("({classname})# [GetOnlineDevicesHandler]".format(classname=self.ClassName),5)
+		self.ThreadLock.acquire()
 		listOfDevice = []
 		for key in self.OnlineDevices:
 			listOfDevice.append(self.OnlineDevices[key])
-
+		self.ThreadLock.release()
+		self.Node.LogMSG("({classname})# [GetOnlineDevicesHandler] {0}".format(listOfDevice, classname=self.ClassName),5)
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'online_devices': listOfDevice
 		})
@@ -106,6 +107,19 @@ class Context():
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 
+	def OnGetNodeInfoHandler(self, info):
+		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] {0}".format(info,classname=self.ClassName),5)
+		self.ThreadLock.acquire()
+		for key in self.OnlineDevices:
+			if key == info["ip"]:
+				self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
+				self.OnlineDevices[key]["mks"] = {
+					"type": info["type"],
+					"name": info["name"]
+				}
+		self.Node.LogMSG("({classname})# {0}".format(self.OnlineDevices, classname=self.ClassName),5)
+		self.ThreadLock.release()
+
 	def WorkingHandler(self):
 		try:
 			if time.time() - self.CurrentTimestamp > self.Interval:
@@ -118,6 +132,8 @@ class Context():
 					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
 				self.Node.LogMSG("",5)
 
+				self.ThreadLock.acquire()
+				# Find disconnected devices
 				network_device_to_delete = []
 				for key in self.OnlineDevices:
 					network_device = self.OnlineDevices[key]
@@ -127,14 +143,35 @@ class Context():
 					else:
 						self.Node.LogMSG("  {0}\t{1}\t{2}".format(network_device["ip"],network_device["datetime"],network_device["ts"]),5)
 				
+				# Send disconnected devices
+				if len(network_device_to_delete) > 0:
+					THIS.Node.EmitOnNodeChange({
+						'disconnected_devices': network_device_to_delete
+					})
+				
+				# Remove disconnected devices
 				for key in network_device_to_delete:
 					del self.OnlineDevices[key]
 				
-				listOfDevice = []
+				# Find MKS enabled devices
 				for key in self.OnlineDevices:
-					listOfDevice.append(self.OnlineDevices[key]["ip"])
+					# Check if connection is already opened
+					conn = self.Node.GetNode(key, 16999)
+					if conn is None:
+						conn, status = self.Node.ConnectNode(key, 16999)
+						if status is True:
+							self.Node.LogMSG("({classname})# Maksense device found".format(key,classname=self.ClassName),5)
+							message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_info", {}, {})
+							packet  = self.Node.BasicProtocol.AppendMagic(message)
+							self.Node.SocketServer.Send(conn.Socket, packet)
+				
+				# Send online devices
+				list_of_devices = []
+				for key in self.OnlineDevices:
+					list_of_devices.append(self.OnlineDevices[key])
+				self.ThreadLock.release()
 				THIS.Node.EmitOnNodeChange({
-					'online_devices': listOfDevice
+					'online_devices': list_of_devices
 				})
 		except Exception as e:
 			self.Node.LogMSG("({classname})# WorkingHandler ERROR ... \n{0}".format(e,classname=self.ClassName),5)
@@ -154,6 +191,7 @@ def main():
 	THIS.Node.NodeSystemLoadedCallback						= THIS.NodeSystemLoadedHandler
 	THIS.Node.OnApplicationRequestCallback					= THIS.OnApplicationCommandRequestHandler
 	THIS.Node.OnApplicationResponseCallback					= THIS.OnApplicationCommandResponseHandler
+	THIS.Node.OnGetNodeInfoCallback							= THIS.OnGetNodeInfoHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	THIS.ThreadWorking = False
