@@ -164,6 +164,10 @@ class Context():
 							message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_info", {}, {})
 							packet  = self.Node.BasicProtocol.AppendMagic(message)
 							self.Node.SocketServer.Send(conn.Socket, packet)
+					else:
+						message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_info", {}, {})
+						packet  = self.Node.BasicProtocol.AppendMagic(message)
+						self.Node.SocketServer.Send(conn.Socket, packet)
 				
 				# Send online devices
 				list_of_devices = []
