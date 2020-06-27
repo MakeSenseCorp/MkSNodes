@@ -107,6 +107,12 @@ class Context():
 		if command in self.ResponseHandlers:
 			self.ResponseHandlers[command](sock, packet)
 
+	def OnTerminateConnectionHandler(self, conn):
+		self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler]".format(classname=self.ClassName),5)
+		for key in self.OnlineDevices:
+			if key == conn.IP:
+				del self.OnlineDevices[key]["mks"]
+	
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] {0}".format(info,classname=self.ClassName),5)
 		self.ThreadLock.acquire()
@@ -192,10 +198,11 @@ def main():
 	THIS.Node.SetLocalServerStatus(True)
 	
 	# Node callbacks
-	THIS.Node.NodeSystemLoadedCallback						= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnApplicationRequestCallback					= THIS.OnApplicationCommandRequestHandler
-	THIS.Node.OnApplicationResponseCallback					= THIS.OnApplicationCommandResponseHandler
-	THIS.Node.OnGetNodeInfoCallback							= THIS.OnGetNodeInfoHandler
+	THIS.Node.NodeSystemLoadedCallback			= THIS.NodeSystemLoadedHandler
+	THIS.Node.OnApplicationRequestCallback		= THIS.OnApplicationCommandRequestHandler
+	THIS.Node.OnApplicationResponseCallback		= THIS.OnApplicationCommandResponseHandler
+	THIS.Node.OnGetNodeInfoCallback				= THIS.OnGetNodeInfoHandler
+	THIS.Node.OnTerminateConnectionCallback		= THIS.OnTerminateConnectionHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	THIS.ThreadWorking = False
