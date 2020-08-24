@@ -33,6 +33,7 @@ class Context():
 			'set_service_info': 			self.Request_SetServiceInfoHandler,
 			'reboot':						self.Request_RebootHandler,
 			'shutdown':						self.Request_ShutdownHandler,
+			'install':						self.Request_InstallHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
@@ -48,6 +49,9 @@ class Context():
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
+	
+	def Request_InstallHandler(self, packet):
+		self.Node.LogMSG("({classname})# [Request_InstallHandler]".format(classname=self.ClassName),5)
 
 	def Request_RebootHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_RebootHandler]".format(classname=self.ClassName),5)

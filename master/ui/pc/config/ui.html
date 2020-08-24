@@ -136,6 +136,13 @@
 																</h6>
 															</div>
 														</div>
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted"><a href="#" onclick="OpenModal();">Install Node</a></span>
+																</h6>
+															</div>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -240,7 +247,23 @@
 					</dix>
         	    </div>
         	</div>
-        </main>
+		</main>
+		
+		<!-- Modal -->
+		<div class="modal fade bd-example-modal-xl" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="id-gen-modalLabel">Title</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div id="id_modal_content" class="modal-body"> </div>
+					<div id="id_modal_footer" class="modal-footer"></div>
+				</div>
+			</div>
+		</div>
 
         <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
         <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
@@ -487,6 +510,37 @@
 			PC.prototype.Reboot = function() {
 				this.API.SendCustomCommand(NodeUUID, "reboot", {
 				}, function(res) { });
+			}
+
+			var GenModalContent = `
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<form>
+									<div class="form-group">
+										<label for="id_package_path">Please select package (ZIP File)</label>
+										<input type="file" class="form-control-file" id="id_package_path">
+									</div>
+								</form>
+								<button type="button" class="btn btn-primary" onclick="">Install</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+
+			var GenModalFooter = `
+				<h6 class="d-flex justify-content-between align-items-center mb-3">
+					<span class="text-muted"><a href="#" onclick="">Close</a></span>
+				</h6>
+			`;
+
+			var OpenModal = function () {
+				document.getElementById("id-gen-modalLabel").innerHTML	= "Install Node Package";
+				document.getElementById("id_modal_content").innerHTML	= GenModalContent;
+				document.getElementById("id_modal_footer").innerHTML	= GenModalFooter;
+				$('#id-gen-modal').modal('show');
 			}
 
 			function NodeUI (api) {
