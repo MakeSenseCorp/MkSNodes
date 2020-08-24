@@ -2,7 +2,8 @@
 	"node":
 	{
 		"system": {
-			"log_level": 3
+			"log_level": 3,
+			"log_to_file": "True"
 		},
 		"info": {
 			"uuid":"00000000-0000-0000-0000-000000000001",
