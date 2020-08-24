@@ -15,6 +15,46 @@ from mksdk import MkSShellExecutor
 from mksdk import MkSExternalProcess
 from mksdk import MkSUtils
 
+class FileDownload():
+	def __init__(self, name, size, owner, chanks):
+		self.Name 					= name
+		self.Size 					= size
+		self.LastFragmentNumber 	= chanks
+		self.FragmentsCount			= 0
+		self.Fragments 				= []
+		self.Timestamp 				= 0
+		self.OwnerUuid 				= owner
+
+		for i in range(1, self.LastFragmentNumber + 1):
+			self.FragmentsCount += i
+
+	def AddFragment(self, content, index, size):
+		self.Fragments.append({ 
+				'content': content,
+				'index': index,
+				'size': size ,
+			})
+		self.Timestamp = time.time()
+		return self.CheckFileUploaded()
+
+	def CheckFileDownloaded(self):
+		counter = 0
+		for item in self.Fragments:
+			counter += item["index"]
+
+		if counter == self.FragmentsCount:
+			return True
+		return False
+
+	def GetFileRaw(self):
+		data = []
+		for index in range(1, self.LastFragmentNumber+1):
+			for item in self.Fragments:
+				if str(item["index"]) == str(index):
+					data += item["content"]
+					break
+		return data, len(data)
+
 class Context():
 	def __init__(self, node):
 		self.ClassName 						= "Master Application"
@@ -34,6 +74,7 @@ class Context():
 			'reboot':						self.Request_RebootHandler,
 			'shutdown':						self.Request_ShutdownHandler,
 			'install':						self.Request_InstallHandler,
+			'upload_file':					self.Request_UploadFileHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
@@ -49,9 +90,23 @@ class Context():
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'error': 'none'
+		})
 	
-	def Request_InstallHandler(self, packet):
+	def Request_UploadFileHandler(self, sock, packet):
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		self.Node.LogMSG("({classname})# [Request_UploadFileHandler] {0}".format(payload["upload"]["chunk"], classname=self.ClassName),5)
+		self.File.AppendArray(os.path.join("packages",payload["upload"]["file"]), payload["upload"]["content"])
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'error': 'none'
+		})
+	
+	def Request_InstallHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_InstallHandler]".format(classname=self.ClassName),5)
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'error': 'none'
+		})
 
 	def Request_RebootHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_RebootHandler]".format(classname=self.ClassName),5)
