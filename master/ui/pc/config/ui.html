@@ -523,7 +523,21 @@
 										<input type="file" class="form-control-file" id="id_package_path">
 									</div>
 								</form>
-								<button type="button" class="btn btn-primary" onclick="OnInstallClick();">Install</button>
+								<button type="button" id="id_install_button" class="btn btn-primary" onclick="OnInstallClick();">Install</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body" id="id_progress">
+								<div class="progress">
+									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+								</div>
+								<div>
+									<span class="text-muted" id="id_progress_item">Idle</span>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -560,6 +574,7 @@
 
 				start = 0;
 				end   = 0;
+				percCunck = parseInt(100 / chunks);
 				for (i = 0; i < chunks; i++) {
 					if ( (fileSize - i * MAX_CHUNK_SIZE) < MAX_CHUNK_SIZE ) {
 						// We are at last packet
@@ -581,7 +596,7 @@
 						// console.log("send chunk", i+1, start, end, fileSize, dataToSend.length);
 						var payload = {
 							upload: {
-								action: "dfu",
+								action: "download",
 								file: fileName,
 								size: fileSize,
 								content: dataToSend,
@@ -592,16 +607,15 @@
 						}
 						// console.log(payload);
 						node.API.UploadFileContent(NodeUUID, payload, function(res) {
-							console.log("Uploaded", res);
-							/*
 							if (res) {
 								status = res.data.payload.status;
-								if (status == "done") {
-									document.getElementById("upload_firmware").innerHTML  = "Upload FW";
-									document.getElementById("upload_firmware").disabled   = false;
+								if (status == "recieved") {
+									console.log("Uploaded " + res.data.payload.chunk + " " + percCunck * res.data.payload.chunk);
+									$("#id_progress_bar").css("width", (res.data.payload.chunk * percCunck) + "%").text((res.data.payload.chunk * percCunck) + " %");
+									document.getElementById("id_progress_item").innerHTML = "Download Package";
+									document.getElementById("id_install_button").disabled = false;
 								}
 							}
-							*/
 						});
 					}
 				}
@@ -622,6 +636,7 @@
 			var OnInstallClick = function() {
 				var fileObj = document.getElementById("id_package_path");
 				console.log(fileObj.files[0]);
+				// document.getElementById("id_progress").disabled = true;
 				ReadImage(fileObj.files[0]);
 			}
 

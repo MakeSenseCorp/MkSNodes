@@ -98,8 +98,10 @@ class Context():
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_UploadFileHandler] {0}".format(payload["upload"]["chunk"], classname=self.ClassName),5)
 		self.File.AppendArray(os.path.join("packages",payload["upload"]["file"]), payload["upload"]["content"])
+		time.sleep(0.1)
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'error': 'none'
+			'status': 'recieved',
+			'chunk': payload["upload"]["chunk"]
 		})
 	
 	def Request_InstallHandler(self, sock, packet):
