@@ -536,7 +536,7 @@
 									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
 								</div>
 								<div>
-									<span class="text-muted" id="id_progress_item">Idle</span>
+									<span class="text-muted" id="id_progress_item">0%</span>
 								</div>
 							</div>
 						</div>
@@ -546,7 +546,7 @@
 
 			var GenModalFooter = `
 				<h6 class="d-flex justify-content-between align-items-center mb-3">
-					<span class="text-muted"><a href="#" onclick="">Close</a></span>
+					<span class="text-muted"><a href="#" onclick="$('#id-gen-modal').modal('hide');">Close</a></span>
 				</h6>
 			`;
 
@@ -596,7 +596,7 @@
 						// console.log("send chunk", i+1, start, end, fileSize, dataToSend.length);
 						var payload = {
 							upload: {
-								action: "download",
+								action: "upload",
 								file: fileName,
 								size: fileSize,
 								content: dataToSend,
@@ -609,11 +609,31 @@
 						node.API.UploadFileContent(NodeUUID, payload, function(res) {
 							if (res) {
 								status = res.data.payload.status;
-								if (status == "recieved") {
+								if (status == "inprogress") {
 									console.log("Uploaded " + res.data.payload.chunk + " " + percCunck * res.data.payload.chunk);
 									$("#id_progress_bar").css("width", (res.data.payload.chunk * percCunck) + "%").text((res.data.payload.chunk * percCunck) + " %");
-									document.getElementById("id_progress_item").innerHTML = "Download Package";
+									document.getElementById("id_progress_item").innerHTML = "Upload Package";
 									document.getElementById("id_install_button").disabled = false;
+								} else if (status == "done") {
+									$("#id_progress_bar").css("width", "100%").text("100%");
+									document.getElementById("id_progress_item").innerHTML = "Unzip Package";
+									// Send install command
+									node.API.SendCustomCommand(NodeUUID, "install", {
+										install: {
+											file: res.data.payload.file
+										}
+									}, function(res) { 
+										status = res.data.payload.status;
+										if (status == "done") {
+											document.getElementById("id_progress_item").innerHTML = "Installing Package Done";
+											$('#id-gen-modal').modal('hide');
+										} else if (status == "uuid_exist") {
+											document.getElementById("id_progress_item").innerHTML = "Package Allready Installed";
+										}
+									});
+								} else if (status == "timeout") {
+									$("#id_progress_bar").css("width", "0%").text("0%");
+									document.getElementById("id_progress_item").innerHTML = "Error Upload - Timeout";
 								}
 							}
 						});

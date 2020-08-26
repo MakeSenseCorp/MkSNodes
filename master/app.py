@@ -7,6 +7,7 @@ import time
 import thread
 import threading
 import re
+import zipfile
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
@@ -15,15 +16,15 @@ from mksdk import MkSShellExecutor
 from mksdk import MkSExternalProcess
 from mksdk import MkSUtils
 
-class FileDownload():
-	def __init__(self, name, size, owner, chanks):
+class FileUpload():
+	def __init__(self, name, size, chanks):
 		self.Name 					= name
 		self.Size 					= size
 		self.LastFragmentNumber 	= chanks
 		self.FragmentsCount			= 0
 		self.Fragments 				= []
 		self.Timestamp 				= 0
-		self.OwnerUuid 				= owner
+		self.CreationTimeStamp		= time.time()
 
 		for i in range(1, self.LastFragmentNumber + 1):
 			self.FragmentsCount += i
@@ -37,11 +38,12 @@ class FileDownload():
 		self.Timestamp = time.time()
 		return self.CheckFileUploaded()
 
-	def CheckFileDownloaded(self):
+	def CheckFileUploaded(self):
 		counter = 0
 		for item in self.Fragments:
 			counter += item["index"]
 
+		print (counter, self.FragmentsCount)
 		if counter == self.FragmentsCount:
 			return True
 		return False
@@ -54,6 +56,15 @@ class FileDownload():
 					data += item["content"]
 					break
 		return data, len(data)
+	
+	def CheckTimeout(self):
+		delta_ts = self.Timestamp - self.CreationTimeStamp
+		if delta_ts < 0:
+			return True
+		if delta_ts > 1000:
+			return delta_ts
+		
+		return False
 
 class Context():
 	def __init__(self, node):
@@ -87,6 +98,8 @@ class Context():
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
 		self.Shutdown 						= False
+		self.UploadObject					= None
+		self.UploadLocker					= threading.Lock()
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
@@ -95,19 +108,105 @@ class Context():
 		})
 	
 	def Request_UploadFileHandler(self, sock, packet):
+		self.UploadLocker.acquire()
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_UploadFileHandler] {0}".format(payload["upload"]["chunk"], classname=self.ClassName),5)
-		self.File.AppendArray(os.path.join("packages",payload["upload"]["file"]), payload["upload"]["content"])
+
+		content 	= payload["upload"]["content"]
+		action 		= payload["upload"]["action"]
+		chankSize 	= payload["upload"]["chunk_size"]
+		index 		= payload["upload"]["chunk"]
+		size 		= payload["upload"]["size"]
+		fileName	= payload["upload"]["file"]
+		chanks 		= payload["upload"]["chunks"]
+
+		if self.UploadObject is None:
+			self.UploadObject = FileUpload(fileName, size, chanks)
+		else:
+			if self.UploadObject.CheckTimeout() is True:
+				self.UploadObject = None
+				self.UploadLocker.release()
+				return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+					'status': 'timeout',
+					'chunk': index,
+					'file': fileName
+				})
+
+		isUploaded = self.UploadObject.AddFragment(content, index, chankSize)
+		if isUploaded is True:
+			# Upload is done
+			data, length = self.UploadObject.GetFileRaw()
+			self.File.SaveArray(os.path.join("packages",fileName), data)
+			self.UploadObject = None
+			self.UploadLocker.release()
+			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+				'status': 'done',
+				'chunk': index,
+				'file': fileName
+			})
+
 		time.sleep(0.1)
+		self.UploadLocker.release()
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'status': 'recieved',
-			'chunk': payload["upload"]["chunk"]
+			'status': 'inprogress',
+			'chunk': index,
+			'file': fileName
 		})
 	
 	def Request_InstallHandler(self, sock, packet):
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_InstallHandler]".format(classname=self.ClassName),5)
+
+		fileName = payload["install"]["file"]
+		path = os.path.join("packages",fileName)
+		with zipfile.ZipFile(path, 'r') as file:
+			file.extractall(path="packages")
+		
+		nodes = self.InstalledNodesDB["installed_nodes"]
+		configPath = os.path.join(path.replace(".zip",''),"system.json")
+		configFileStr = self.File.Load(configPath)
+		configFile = json.loads(configFileStr)
+
+		uuid = configFile["node"]["info"]["uuid"]
+		name = configFile["node"]["info"]["name"]
+		ntype = configFile["node"]["info"]["type"]
+
+		for node in nodes:
+			if node["uuid"] == uuid:
+				self.Node.LogMSG("({classname})# [Request_InstallHandler] ERROR - Node installed".format(classname=self.ClassName),5)
+				return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+					'status': 'uuid_exist',
+					'file': fileName
+				})
+
+		nodes.append({
+			"enabled": 0, 
+			"type": ntype, 
+			"name": name, 
+			"uuid": uuid
+		})
+		# self.InstalledNodesDB["installed_nodes"] = nodes
+		# Save new switch to database
+		# self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
+
+		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_install", { 
+			'node': {
+				"id": 					0,
+				"uuid":					uuid,
+				"type":					ntype,
+				"user_id": 				1,	# TODO - Replace
+				"is_valid": 			1,	# TODO - Replace
+				"created_timestamp": 	1,
+				"last_used_timestamp": 	1,
+				"name": 				name
+			} 
+		}, {})
+		THIS.Node.SendPacketGateway(message)
+
+		time.sleep(0.5)
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'error': 'none'
+			'status': 'done',
+			'file': fileName
 		})
 
 	def Request_RebootHandler(self, sock, packet):
