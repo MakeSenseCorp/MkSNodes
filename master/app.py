@@ -85,7 +85,9 @@ class Context():
 			'reboot':						self.Request_RebootHandler,
 			'shutdown':						self.Request_ShutdownHandler,
 			'install':						self.Request_InstallHandler,
+			'uninstall':					self.Request_UninstallHandler,
 			'upload_file':					self.Request_UploadFileHandler,
+			'get_git_packages':				self.Request_GetGitPackagesHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
@@ -105,6 +107,35 @@ class Context():
 		self.Node.LogMSG("UndefindHandler",5)
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
 			'error': 'none'
+		})
+	
+	def Request_GetGitPackagesHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_GetGitPackagesHandler]".format(classname=self.ClassName),5)
+
+		packages = []
+		nodes = self.InstalledNodesDB["installed_nodes"]
+		folders = self.File.ListFoldersInPath(os.path.join(self.Node.MKSPath,"nodes"))
+
+		for folder in folders:
+			configFileStr = self.File.Load(os.path.join(self.Node.MKSPath,"nodes",folder,"system.json"))
+			if (configFileStr is not None and len(configFileStr) > 0):
+				configFile = json.loads(configFileStr)
+				if ("info" in configFile["node"]):
+					installed = 0
+					if configFile["node"]["info"]["type"] not in [1,2]:
+						if configFile["node"]["info"]["is_service"] == "False":
+							for node in nodes:
+								if configFile["node"]["info"]["uuid"] == node["uuid"]:
+									installed = 1
+							packages.append({
+								"type": configFile["node"]["info"]["type"],
+								"uuid": configFile["node"]["info"]["uuid"],
+								"installed": installed
+							})
+
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'status': 'ok',
+			'packages': packages
 		})
 	
 	def Request_UploadFileHandler(self, sock, packet):
@@ -155,22 +186,26 @@ class Context():
 	
 	def Request_InstallHandler(self, sock, packet):
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG("({classname})# [Request_InstallHandler]".format(classname=self.ClassName),5)
+		self.Node.LogMSG("({classname})# [Request_InstallHandler] {0}".format(payload,classname=self.ClassName),5)
 
+		installType = payload["install"]["type"]
 		fileName = payload["install"]["file"]
-		path = os.path.join("packages",fileName)
-		with zipfile.ZipFile(path, 'r') as file:
-			file.extractall(path="packages")
-		
-		nodes = self.InstalledNodesDB["installed_nodes"]
-		configPath = os.path.join(path.replace(".zip",''),"system.json")
+		if ("file" in installType):
+			path = os.path.join("packages",fileName)
+			with zipfile.ZipFile(path, 'r') as file:
+				file.extractall(path="packages")
+			configPath = os.path.join(path.replace(".zip",''),"system.json")
+		elif ("git" in installType):
+			configPath = os.path.join(self.Node.MKSPath,"nodes",fileName,"system.json")
+		# Load system.json
 		configFileStr = self.File.Load(configPath)
 		configFile = json.loads(configFileStr)
-
-		uuid = configFile["node"]["info"]["uuid"]
-		name = configFile["node"]["info"]["name"]
+		# Get params
+		uuid  = configFile["node"]["info"]["uuid"]
+		name  = configFile["node"]["info"]["name"]
 		ntype = configFile["node"]["info"]["type"]
 
+		nodes = self.InstalledNodesDB["installed_nodes"]
 		for node in nodes:
 			if node["uuid"] == uuid:
 				self.Node.LogMSG("({classname})# [Request_InstallHandler] ERROR - Node installed".format(classname=self.ClassName),5)
@@ -185,13 +220,12 @@ class Context():
 			"name": name, 
 			"uuid": uuid
 		})
-		# self.InstalledNodesDB["installed_nodes"] = nodes
+		self.InstalledNodesDB["installed_nodes"] = nodes
 		# Save new switch to database
-		# self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
+		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
 
 		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_install", { 
 			'node': {
-				"id": 					0,
 				"uuid":					uuid,
 				"type":					ntype,
 				"user_id": 				1,	# TODO - Replace
@@ -207,6 +241,33 @@ class Context():
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
 			'status': 'done',
 			'file': fileName
+		})
+	
+	def Request_UninstallHandler(self, sock, packet):
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		self.Node.LogMSG("({classname})# [Request_UninstallHandler]".format(classname=self.ClassName),5)
+
+		uuid = payload["uninstall"]["uuid"]
+		nodes = self.InstalledNodesDB["installed_nodes"]
+		for node in nodes:
+			if node["uuid"] == uuid:
+				nodes.remove(node)
+				break
+		
+		self.InstalledNodesDB["installed_nodes"] = nodes
+		# Save new switch to database
+		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
+
+		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_uninstall", { 
+			'node': {
+				"uuid":	uuid
+			} 
+		}, {})
+		THIS.Node.SendPacketGateway(message)
+
+		time.sleep(0.5)
+		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+			'status': 'done'
 		})
 
 	def Request_RebootHandler(self, sock, packet):

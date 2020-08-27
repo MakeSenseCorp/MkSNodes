@@ -11,6 +11,7 @@
 			"name":"433Mhz Controller",
 			"description":"433Mhz Controller",
 			"isMasterNode":"False",
+			"is_service":"False",
 			"isLocalServerEnabled":"True",
 			"isWebEnabled":"True",
 			"is_application_ui_enabled": "True",

@@ -139,7 +139,7 @@
 														<div class="row">
 															<div class="col-lg-5">
 																<h6 class="d-flex justify-content-between align-items-center mb-3">
-																	<span class="text-muted"><a href="#" onclick="OpenModal();">Install Node</a></span>
+																	<span class="text-muted"><a href="#" onclick="OpenModal('install');">Install Node</a></span>
 																</h6>
 															</div>
 														</div>
@@ -218,27 +218,22 @@
 							<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
 								<div class="card-body">
 									<div class="row">
-										<div class="col-lg-6">
-											<div class="card">
-												<div class="card-body">
-													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">Service List</span>
-														<span class="badge badge-secondary badge-pill" id="on_boot_services_count_id">0</span>
-													</h6>
-													<div id="on_boot_services_list_id"></div>
-												</div>
-											</div>
+										<div class="col-lg-12">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Service List</span>
+												<span class="badge badge-secondary badge-pill" id="on_boot_services_count_id">0</span>
+											</h6>
+											<div id="on_boot_services_list_id"></div>
 										</div>
-										<div class="col-lg-6">
-											<div class="card">
-												<div class="card-body">
-													<h6 class="d-flex justify-content-between align-items-center mb-3">
-														<span class="text-muted">Nodes List</span>
-														<span class="badge badge-secondary badge-pill" id="online_nodes_count_id">0</span>
-													</h6>
-													<div id="online_nodes_list_id"></div>
-												</div>
-											</div>
+									</div>
+									<br/>
+									<div class="row">
+										<div class="col-lg-12">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Nodes List</span>
+												<span class="badge badge-secondary badge-pill" id="online_nodes_count_id">0</span>
+											</h6>
+											<div id="online_nodes_list_id"></div>
 										</div>
 									</div>
 								</div>
@@ -250,8 +245,8 @@
 		</main>
 		
 		<!-- Modal -->
-		<div class="modal fade bd-example-modal-xl" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
+		<div class="modal fade bd-example-modal-lg" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="id-gen-modalLabel">Title</h5>
@@ -396,6 +391,14 @@
 				});
 			}
 
+			PC.prototype.GetGitPackages = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_git_packages", {
+				}, function(res) {
+					gGitPackages = res.data.payload.packages;
+				});
+			}
+
 			PC.prototype.GetMiscInfo = function() {
 				self = this;
 				this.API.SendCustomCommand(NodeUUID, "get_master_public_info", {
@@ -512,26 +515,55 @@
 				}, function(res) { });
 			}
 
-			var GenModalContent = `
-				<div class="row">
-					<div class="col-lg-12">
-						<div class="card">
-							<div class="card-body">
-								<form>
-									<div class="form-group">
-										<label for="id_package_path">Please select package (ZIP File)</label>
-										<input type="file" class="form-control-file" id="id_package_path">
+			var gGitPackages = null;
+
+			var InstallModalContent = `
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item waves-effect waves-light">
+						<a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">File</a>
+					</li>
+					<li class="nav-item waves-effect waves-light">
+						<a class="nav-link active" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="true">Git</a>
+					</li>
+				</ul>
+				<div class="tab-content" id="myTabContent">
+					<div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="card">
+									<div class="card-body">
+										<form>
+											<div class="form-group">
+												<label for="id_package_path">Please select package (ZIP File)</label>
+												<input type="file" class="form-control-file" id="id_package_path">
+											</div>
+										</form>
+										<button type="button" id="id_install_button" class="btn btn-primary" onclick="OnInstallClick();">Install</button>
 									</div>
-								</form>
-								<button type="button" id="id_install_button" class="btn btn-primary" onclick="OnInstallClick();">Install</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="tab-pane fade active show" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+						<div class="row">
+							<div class="col-lg-12">
+								<div class="card">
+									<div class="card-body">
+										<h6 class="d-flex justify-content-between align-items-center mb-3">
+											<span class="text-muted">Nodes List</span>
+											<span class="badge badge-secondary badge-pill" id="id_git_packages_count">0</span>
+										</h6>
+										<div id="id_git_packages"></div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="row">
+				<div class="row d-none" id="id_progress">
 					<div class="col-lg-12">
 						<div class="card">
-							<div class="card-body" id="id_progress">
+							<div class="card-body">
 								<div class="progress">
 									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
 								</div>
@@ -544,16 +576,74 @@
 				</div>
 			`;
 
-			var GenModalFooter = `
+			var UninstallModalContent = `
+				<div class="row">
+					<div class="col-lg-12">
+						<span class="text-muted">Do you wish to remove this node?</span>
+					</div>
+				</div>
+				<div class="row d-none" id="id_progress">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<div class="progress">
+									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+								</div>
+								<div>
+									<span class="text-muted" id="id_progress_item">0%</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+
+			var InstallModalFooter = `
 				<h6 class="d-flex justify-content-between align-items-center mb-3">
 					<span class="text-muted"><a href="#" onclick="$('#id-gen-modal').modal('hide');">Close</a></span>
 				</h6>
 			`;
 
-			var OpenModal = function () {
-				document.getElementById("id-gen-modalLabel").innerHTML	= "Install Node Package";
-				document.getElementById("id_modal_content").innerHTML	= GenModalContent;
-				document.getElementById("id_modal_footer").innerHTML	= GenModalFooter;
+			var UninstalModalFooter = `
+				<button type="button" class="btn btn-primary" onclick="UninstallNode();">Yes</button>
+        		<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+			`;
+
+			var OpenModal = function (action) {
+				switch(action) {
+					case "install":
+						document.getElementById("id-gen-modalLabel").innerHTML	= "Install Node Package";
+						document.getElementById("id_modal_content").innerHTML	= InstallModalContent;
+						document.getElementById("id_modal_footer").innerHTML	= InstallModalFooter;
+						// Update list of packages
+						document.getElementById("id_git_packages_count").innerHTML = gGitPackages.length;
+						var html = `<div class="card"><div class="card-body">`;
+						gGitPackages.forEach(function(element) {
+							row = node.Machine.UI.InstalledGitPackasRow;
+							row = row.split("[UUID]").join(element.uuid);
+							row = row.split("[TYPE]").join(element.type);
+							if (element.installed == 1) {
+								row = row.split("[INSTALLED]").join("Installed");
+								row = row.split("[SELECT]").join("Select");
+							} else {
+								row = row.split("[INSTALLED]").join("Not Installed");
+								row = row.split("[SELECT]").join("<a href='#' onclick=''>Select</a>");
+							}
+							html = html + row;
+						});
+					
+						html = html + `</div></div>`;
+						document.getElementById("id_git_packages").innerHTML = html;
+						break;
+					case "uninstall":
+						document.getElementById("id-gen-modalLabel").innerHTML	= "Uninstall Node Package";
+						document.getElementById("id_modal_content").innerHTML	= UninstallModalContent;
+						document.getElementById("id_modal_footer").innerHTML	= UninstalModalFooter;
+						break;
+					default:
+						break;
+				}
+				
 				$('#id-gen-modal').modal('show');
 			}
 
@@ -620,6 +710,7 @@
 									// Send install command
 									node.API.SendCustomCommand(NodeUUID, "install", {
 										install: {
+											type: "file",
 											file: res.data.payload.file
 										}
 									}, function(res) { 
@@ -655,9 +746,47 @@
 
 			var OnInstallClick = function() {
 				var fileObj = document.getElementById("id_package_path");
-				console.log(fileObj.files[0]);
-				// document.getElementById("id_progress").disabled = true;
+				// Show progress bar
+				document.getElementById("id_progress").classList.remove("d-none");
 				ReadImage(fileObj.files[0]);
+			}
+
+			var InstallGitPackage = function(type) {
+				document.getElementById("id_progress").classList.remove("d-none");
+				$("#id_progress_bar").css("width", "10%").text("10%");
+				document.getElementById("id_progress_item").innerHTML = "Installing Package";
+				node.API.SendCustomCommand(NodeUUID, "install", {
+					install: {
+						type: "git",
+						file: type
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "done") {
+						$("#id_progress_bar").css("width", "100%").text("100%");
+						document.getElementById("id_progress_item").innerHTML = "Installing Package Done";
+						$('#id-gen-modal').modal('hide');
+					}
+				});
+			}
+
+			var gUninstallNodeUUID = "";
+			var UninstallNode = function() {
+				node.API.SendCustomCommand(NodeUUID, "uninstall", {
+					uninstall: {
+						uuid: gUninstallNodeUUID
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "done") {
+						$('#id-gen-modal').modal('hide');
+					}
+				});
+			}
+
+			var OnUninstallClick = function(uuid) {
+				gUninstallNodeUUID = uuid;
+				OpenModal("uninstall");
 			}
 
 			function NodeUI (api) {
@@ -707,19 +836,30 @@
 								<label class="custom-control-label" for="switch_id_[UUID]"></label>
 							</div>
 						</div>
-					</li>
+					</li><br/>
 				`;
 				this.InstalledNodeRow = `
 					<li class="list-group-item d-flex justify-content-between lh-condensed">
 						<div><small class="my-0">[NAME]</small></div>
 						<div><small class="my-0">[UUID]</small></div>
-						<div>
-							<div class="custom-control custom-switch">
-								<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
-								<label class="custom-control-label" for="switch_id_[UUID]"></label>
-							</div>
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
 						</div>
-					</li>
+						<div><span onClick="OnUninstallClick('[UUID]')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span></div>
+					</li><br/>
+				`;
+				this.InstalledGitPackasRow = `
+					<li class="list-group-item d-flex justify-content-between lh-condensed">
+						<div><small class="my-0">[UUID]</small></div>
+						<div><small class="my-0">[TYPE]</small></div>
+						<div><small class="my-0">[INSTALLED]</small></div>
+						<div>
+							<h6 class="d-flex justify-content-between align-items-center mb-3">
+							<span class="text-muted" onClick="InstallGitPackage('[TYPE]')">[SELECT]</span>
+							</h6>
+						</div>
+					</li><br/>
 				`;
 
 				return this;
@@ -737,6 +877,7 @@
 				node.Machine.MasterPublicInfoIntervakHndl = setInterval(node.Machine.GetMiscInfo.bind(node.Machine), 5000);
 				node.Machine.GetServicesInfo();
 				node.Machine.GetInstalledNodesList();
+				node.Machine.GetGitPackages();
 				// User Code #1 - End
 				node.API.RegisterOnNodeChange(NodeUUID, function(res) {
 					console.log("UI have registered NODE successfuly", res);
