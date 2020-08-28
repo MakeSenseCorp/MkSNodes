@@ -66,12 +66,191 @@ class FileUpload():
 		
 		return False
 
+class FileUploader():
+	def __init__(self, nodes_path):
+		self.ClassName 						= "File Uploader"
+		self.Locker							= threading.Lock()
+		self.OnNewWorkItemEvent				= threading.Event()
+		self.ExitFlag						= False
+		self.WorkItems						= {}
+
+	def Worker(self):
+		while(self.ExitFlag):
+			# Logic
+			for uuid in self.WorkItems:
+				package = self.WorkItems[uuid]
+
+			if len(self.WorkItems) == 0:
+				self.OnNewWorkItemEvent.clear()
+				self.OnNewWorkItemEvent.wait()
+		# Clean all resurces before exit
+		self.WorkItems = {}
+	
+	def Run(self):
+		self.ExitFlag = True
+		thread.start_new_thread(self.Worker, ())
+	
+	def Stop(self):
+		self.ExitFlag = False
+		self.OnNewWorkItemEvent.set()
+	
+	def AddWorkItem(self, item):
+		self.WorkItems[item["uuid"]] = item
+		self.OnNewWorkItemEvent.set()
+
+class PackageInstaller():
+	def __init__(self, node_context):
+		self.ClassName 		= "Package Installer"
+		self.Ctx 			= node_context
+		self.Queue    		= MkSQueue.Manager(self.Callback)
+		self.HandlerMethod	= {
+			"install_zip": 	    self.InstallZIP_HandlerMethod,
+			"install_git":	    self.InstallGIT_HandlerMethod,
+			"uninstall":	    self.Uninstall_HandlerMethod,
+		}
+	
+	def InstallZIP_HandlerMethod(self, data):
+		path = os.path.join("packages",data["file"])
+		THIS.Node.EmitOnNodeChange({
+			'event': "install_progress",
+			'data': {
+				"status": "inprogress",
+				"precentage": "10%",
+				"message": "Unzip package ..."
+			}
+		})
+		time.sleep(0.5)
+		# Exctruct ZIP file to packages folder
+		with zipfile.ZipFile(path, 'r') as file:
+			file.extractall(path="packages")
+		# Generate path to system.json
+		configPath = os.path.join(path.replace(".zip",''),"system.json")
+		configFile = self.GetConfigData(configPath)
+		if (self.RegisterPackage(configFile) is True):
+			THIS.Node.EmitOnNodeChange({
+				'event': "install_progress",
+				'data': {
+					"status": "done",
+					"precentage": "100%",
+					"message": "Node ({0}) installed".format(uuid)
+				}
+			})
+
+	def InstallGIT_HandlerMethod(self, data):
+		# Generate path to system.json
+		configPath = os.path.join(self.Ctx.Node.MKSPath,"nodes",data["file"],"system.json")
+		configFile = self.GetConfigData(configPath)
+		if (self.RegisterPackage(configFile) is True):
+			THIS.Node.EmitOnNodeChange({
+				'event': "install_progress",
+				'data': {
+					"status": "done",
+					"precentage": "100%",
+					"message": "Node ({0}) installed".format(uuid)
+				}
+			})
+
+	def Uninstall_HandlerMethod(self, data):
+		pass
+
+	def GetConfigData(self, path):
+		THIS.Node.EmitOnNodeChange({
+			'event': "install_progress",
+			'data': {
+				"status": "inprogress",
+				"precentage": "30%",
+				"message": "Load system.json ..."
+			}
+		})
+		time.sleep(0.5)
+		configFileStr = self.File.Load(path)
+		return json.loads(configFileStr)
+	
+	def RegisterPackage(self, config_file):
+		uuid  = config_file["node"]["info"]["uuid"]
+		name  = config_file["node"]["info"]["name"]
+		ntype = config_file["node"]["info"]["type"]
+
+		THIS.Node.EmitOnNodeChange({
+			'event': "install_progress",
+			'data': {
+				"status": "inprogress",
+				"precentage": "40%",
+				"message": "Register Node ({0}) ...".format(uuid)
+			}
+		})
+		time.sleep(0.5)
+
+		nodes = self.Ctx.InstalledNodesDB["installed_nodes"]
+		for node in nodes:
+			if node["uuid"] == uuid:
+				self.Ctx.Node.LogMSG("({classname})# [Request_InstallHandler] ERROR - Node installed".format(classname=self.ClassName),5)
+				THIS.Node.EmitOnNodeChange({
+					'event': "install_progress",
+					'data': {
+						"status": "error",
+						"precentage": "0%",
+						"message": "exist"
+					}
+				})
+				return False
+
+		# Update node.json
+		nodes.append({
+			"enabled": 0, 
+			"type": ntype, 
+			"name": name, 
+			"uuid": uuid
+		})
+		self.Ctx.InstalledNodesDB["installed_nodes"] = nodes
+		# Save new switch to database
+		self.File.SaveJSON(os.path.join(self.Ctx.Node.MKSPath,"nodes.json"), self.Ctx.InstalledNodesDB)
+
+		THIS.Node.EmitOnNodeChange({
+			'event': "install_progress",
+			'data': {
+				"status": "inprogress",
+				"precentage": "80%",
+				"message": "Register ({0}) in Gateway ...".format(uuid)
+			}
+		})
+		time.sleep(0.5)
+		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_install", { 
+			'node': {
+				"uuid":					uuid,
+				"type":					ntype,
+				"user_id": 				1,	# TODO - Replace
+				"is_valid": 			1,	# TODO - Replace
+				"created_timestamp": 	1,
+				"last_used_timestamp": 	1,
+				"name": 				name
+			} 
+		}, {})
+		THIS.Node.SendPacketGateway(message)
+		return True
+
+	def Callback(self, item):
+		pass
+	
+	def Run(self):
+		self.Queue.Start()
+	
+	def Stop(self):
+		self.Queue.Stop()
+	
+	def AddWorkItem(self, item):
+		if self.Queue is not None:
+            self.Queue.QueueItem({
+				"file": item["file"]
+			})
+
 class Context():
 	def __init__(self, node):
 		self.ClassName 						= "Master Application"
 		self.Interval						= 10
 		self.CurrentTimestamp 				= time.time()
 		self.File 							= MkSFile.File()
+		self.Installer						= None
 		self.Node							= node
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
@@ -189,57 +368,19 @@ class Context():
 		self.Node.LogMSG("({classname})# [Request_InstallHandler] {0}".format(payload,classname=self.ClassName),5)
 
 		installType = payload["install"]["type"]
-		fileName = payload["install"]["file"]
 		if ("file" in installType):
-			path = os.path.join("packages",fileName)
-			with zipfile.ZipFile(path, 'r') as file:
-				file.extractall(path="packages")
-			configPath = os.path.join(path.replace(".zip",''),"system.json")
+			self.Installer.AddWorkItem({
+				"action": "install_zip",
+				"file": payload["install"]["file"]
+			})
 		elif ("git" in installType):
-			configPath = os.path.join(self.Node.MKSPath,"nodes",fileName,"system.json")
-		# Load system.json
-		configFileStr = self.File.Load(configPath)
-		configFile = json.loads(configFileStr)
-		# Get params
-		uuid  = configFile["node"]["info"]["uuid"]
-		name  = configFile["node"]["info"]["name"]
-		ntype = configFile["node"]["info"]["type"]
-
-		nodes = self.InstalledNodesDB["installed_nodes"]
-		for node in nodes:
-			if node["uuid"] == uuid:
-				self.Node.LogMSG("({classname})# [Request_InstallHandler] ERROR - Node installed".format(classname=self.ClassName),5)
-				return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-					'status': 'uuid_exist',
-					'file': fileName
-				})
-
-		nodes.append({
-			"enabled": 0, 
-			"type": ntype, 
-			"name": name, 
-			"uuid": uuid
-		})
-		self.InstalledNodesDB["installed_nodes"] = nodes
-		# Save new switch to database
-		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
-
-		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_install", { 
-			'node': {
-				"uuid":					uuid,
-				"type":					ntype,
-				"user_id": 				1,	# TODO - Replace
-				"is_valid": 			1,	# TODO - Replace
-				"created_timestamp": 	1,
-				"last_used_timestamp": 	1,
-				"name": 				name
-			} 
-		}, {})
-		THIS.Node.SendPacketGateway(message)
-
-		time.sleep(0.5)
+			self.Installer.AddWorkItem({
+				"action": "install_git",
+				"file": payload["install"]["file"]
+			})
+		
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'status': 'done',
+			'status': 'accepted',
 			'file': fileName
 		})
 	
@@ -626,6 +767,7 @@ class Context():
 
 	def NodeSystemLoadedHandler(self):
 		self.SystemLoaded = True
+		self.Installer = PackageInstaller(self)
 		# Load all installed nodes
 		self.LoadNodes()
 		# Load services DB
