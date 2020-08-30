@@ -15,234 +15,9 @@ from mksdk import MkSMasterNode
 from mksdk import MkSShellExecutor
 from mksdk import MkSExternalProcess
 from mksdk import MkSUtils
-
-class FileUpload():
-	def __init__(self, name, size, chanks):
-		self.Name 					= name
-		self.Size 					= size
-		self.LastFragmentNumber 	= chanks
-		self.FragmentsCount			= 0
-		self.Fragments 				= []
-		self.Timestamp 				= 0
-		self.CreationTimeStamp		= time.time()
-
-		for i in range(1, self.LastFragmentNumber + 1):
-			self.FragmentsCount += i
-
-	def AddFragment(self, content, index, size):
-		self.Fragments.append({ 
-				'content': content,
-				'index': index,
-				'size': size ,
-			})
-		self.Timestamp = time.time()
-		return self.CheckFileUploaded()
-
-	def CheckFileUploaded(self):
-		counter = 0
-		for item in self.Fragments:
-			counter += item["index"]
-
-		print (counter, self.FragmentsCount)
-		if counter == self.FragmentsCount:
-			return True
-		return False
-
-	def GetFileRaw(self):
-		data = []
-		for index in range(1, self.LastFragmentNumber+1):
-			for item in self.Fragments:
-				if str(item["index"]) == str(index):
-					data += item["content"]
-					break
-		return data, len(data)
-	
-	def CheckTimeout(self):
-		delta_ts = self.Timestamp - self.CreationTimeStamp
-		if delta_ts < 0:
-			return True
-		if delta_ts > 1000:
-			return delta_ts
-		
-		return False
-
-class FileUploader():
-	def __init__(self, nodes_path):
-		self.ClassName 						= "File Uploader"
-		self.Locker							= threading.Lock()
-		self.OnNewWorkItemEvent				= threading.Event()
-		self.ExitFlag						= False
-		self.WorkItems						= {}
-
-	def Worker(self):
-		while(self.ExitFlag):
-			# Logic
-			for uuid in self.WorkItems:
-				package = self.WorkItems[uuid]
-
-			if len(self.WorkItems) == 0:
-				self.OnNewWorkItemEvent.clear()
-				self.OnNewWorkItemEvent.wait()
-		# Clean all resurces before exit
-		self.WorkItems = {}
-	
-	def Run(self):
-		self.ExitFlag = True
-		thread.start_new_thread(self.Worker, ())
-	
-	def Stop(self):
-		self.ExitFlag = False
-		self.OnNewWorkItemEvent.set()
-	
-	def AddWorkItem(self, item):
-		self.WorkItems[item["uuid"]] = item
-		self.OnNewWorkItemEvent.set()
-
-class PackageInstaller():
-	def __init__(self, node_context):
-		self.ClassName 		= "Package Installer"
-		self.Ctx 			= node_context
-		self.Queue    		= MkSQueue.Manager(self.Callback)
-		self.HandlerMethod	= {
-			"install_zip": 	    self.InstallZIP_HandlerMethod,
-			"install_git":	    self.InstallGIT_HandlerMethod,
-			"uninstall":	    self.Uninstall_HandlerMethod,
-		}
-	
-	def InstallZIP_HandlerMethod(self, data):
-		path = os.path.join("packages",data["file"])
-		THIS.Node.EmitOnNodeChange({
-			'event': "install_progress",
-			'data': {
-				"status": "inprogress",
-				"precentage": "10%",
-				"message": "Unzip package ..."
-			}
-		})
-		time.sleep(0.5)
-		# Exctruct ZIP file to packages folder
-		with zipfile.ZipFile(path, 'r') as file:
-			file.extractall(path="packages")
-		# Generate path to system.json
-		configPath = os.path.join(path.replace(".zip",''),"system.json")
-		configFile = self.GetConfigData(configPath)
-		if (self.RegisterPackage(configFile) is True):
-			THIS.Node.EmitOnNodeChange({
-				'event': "install_progress",
-				'data': {
-					"status": "done",
-					"precentage": "100%",
-					"message": "Node ({0}) installed".format(uuid)
-				}
-			})
-
-	def InstallGIT_HandlerMethod(self, data):
-		# Generate path to system.json
-		configPath = os.path.join(self.Ctx.Node.MKSPath,"nodes",data["file"],"system.json")
-		configFile = self.GetConfigData(configPath)
-		if (self.RegisterPackage(configFile) is True):
-			THIS.Node.EmitOnNodeChange({
-				'event': "install_progress",
-				'data': {
-					"status": "done",
-					"precentage": "100%",
-					"message": "Node ({0}) installed".format(uuid)
-				}
-			})
-
-	def Uninstall_HandlerMethod(self, data):
-		pass
-
-	def GetConfigData(self, path):
-		THIS.Node.EmitOnNodeChange({
-			'event': "install_progress",
-			'data': {
-				"status": "inprogress",
-				"precentage": "30%",
-				"message": "Load system.json ..."
-			}
-		})
-		time.sleep(0.5)
-		configFileStr = self.File.Load(path)
-		return json.loads(configFileStr)
-	
-	def RegisterPackage(self, config_file):
-		uuid  = config_file["node"]["info"]["uuid"]
-		name  = config_file["node"]["info"]["name"]
-		ntype = config_file["node"]["info"]["type"]
-
-		THIS.Node.EmitOnNodeChange({
-			'event': "install_progress",
-			'data': {
-				"status": "inprogress",
-				"precentage": "40%",
-				"message": "Register Node ({0}) ...".format(uuid)
-			}
-		})
-		time.sleep(0.5)
-
-		nodes = self.Ctx.InstalledNodesDB["installed_nodes"]
-		for node in nodes:
-			if node["uuid"] == uuid:
-				self.Ctx.Node.LogMSG("({classname})# [Request_InstallHandler] ERROR - Node installed".format(classname=self.ClassName),5)
-				THIS.Node.EmitOnNodeChange({
-					'event': "install_progress",
-					'data': {
-						"status": "error",
-						"precentage": "0%",
-						"message": "exist"
-					}
-				})
-				return False
-
-		# Update node.json
-		nodes.append({
-			"enabled": 0, 
-			"type": ntype, 
-			"name": name, 
-			"uuid": uuid
-		})
-		self.Ctx.InstalledNodesDB["installed_nodes"] = nodes
-		# Save new switch to database
-		self.File.SaveJSON(os.path.join(self.Ctx.Node.MKSPath,"nodes.json"), self.Ctx.InstalledNodesDB)
-
-		THIS.Node.EmitOnNodeChange({
-			'event': "install_progress",
-			'data': {
-				"status": "inprogress",
-				"precentage": "80%",
-				"message": "Register ({0}) in Gateway ...".format(uuid)
-			}
-		})
-		time.sleep(0.5)
-		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_install", { 
-			'node': {
-				"uuid":					uuid,
-				"type":					ntype,
-				"user_id": 				1,	# TODO - Replace
-				"is_valid": 			1,	# TODO - Replace
-				"created_timestamp": 	1,
-				"last_used_timestamp": 	1,
-				"name": 				name
-			} 
-		}, {})
-		THIS.Node.SendPacketGateway(message)
-		return True
-
-	def Callback(self, item):
-		pass
-	
-	def Run(self):
-		self.Queue.Start()
-	
-	def Stop(self):
-		self.Queue.Stop()
-	
-	def AddWorkItem(self, item):
-		if self.Queue is not None:
-            self.Queue.QueueItem({
-				"file": item["file"]
-			})
+from mksdk import MkSQueue
+from mksdk import MkSFileUploader
+from mksdk import MkSPackageInstaller
 
 class Context():
 	def __init__(self, node):
@@ -251,6 +26,7 @@ class Context():
 		self.CurrentTimestamp 				= time.time()
 		self.File 							= MkSFile.File()
 		self.Installer						= None
+		self.Uploader 						= None
 		self.Node							= node
 		self.SystemLoaded					= False
 		self.RequestHandlers				= {
@@ -279,7 +55,6 @@ class Context():
 		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
 		self.Shutdown 						= False
-		self.UploadObject					= None
 		self.UploadLocker					= threading.Lock()
 
 	def UndefindHandler(self, packet):
@@ -322,93 +97,58 @@ class Context():
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_UploadFileHandler] {0}".format(payload["upload"]["chunk"], classname=self.ClassName),5)
 
-		content 	= payload["upload"]["content"]
-		action 		= payload["upload"]["action"]
-		chankSize 	= payload["upload"]["chunk_size"]
-		index 		= payload["upload"]["chunk"]
-		size 		= payload["upload"]["size"]
-		fileName	= payload["upload"]["file"]
-		chanks 		= payload["upload"]["chunks"]
-
-		if self.UploadObject is None:
-			self.UploadObject = FileUpload(fileName, size, chanks)
+		if payload["upload"]["chunk"] == 1:
+			self.Uploader.AddNewUploader(payload["upload"])
 		else:
-			if self.UploadObject.CheckTimeout() is True:
-				self.UploadObject = None
-				self.UploadLocker.release()
-				return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-					'status': 'timeout',
-					'chunk': index,
-					'file': fileName
-				})
-
-		isUploaded = self.UploadObject.AddFragment(content, index, chankSize)
-		if isUploaded is True:
-			# Upload is done
-			data, length = self.UploadObject.GetFileRaw()
-			self.File.SaveArray(os.path.join("packages",fileName), data)
-			self.UploadObject = None
-			self.UploadLocker.release()
-			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-				'status': 'done',
-				'chunk': index,
-				'file': fileName
-			})
-
-		time.sleep(0.1)
+			self.Uploader.UpdateUploader(payload["upload"])
+		
 		self.UploadLocker.release()
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'status': 'inprogress',
-			'chunk': index,
-			'file': fileName
+			'status': 'accept',
+			'chunk': payload["upload"]["chunk"],
+			'file': payload["upload"]["file"]
 		})
 	
 	def Request_InstallHandler(self, sock, packet):
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_InstallHandler] {0}".format(payload,classname=self.ClassName),5)
+		time.sleep(1)
 
 		installType = payload["install"]["type"]
 		if ("file" in installType):
 			self.Installer.AddWorkItem({
-				"action": "install_zip",
-				"file": payload["install"]["file"]
+				"method": "install_zip",
+				"data": {
+					"file": payload["install"]["file"]
+				}
 			})
 		elif ("git" in installType):
 			self.Installer.AddWorkItem({
-				"action": "install_git",
-				"file": payload["install"]["file"]
+				"method": "install_git",
+				"data": {
+					"file": payload["install"]["file"]
+				}
 			})
 		
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
 			'status': 'accepted',
-			'file': fileName
+			'file': payload["install"]["file"]
 		})
 	
 	def Request_UninstallHandler(self, sock, packet):
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		self.Node.LogMSG("({classname})# [Request_UninstallHandler]".format(classname=self.ClassName),5)
 
-		uuid = payload["uninstall"]["uuid"]
-		nodes = self.InstalledNodesDB["installed_nodes"]
-		for node in nodes:
-			if node["uuid"] == uuid:
-				nodes.remove(node)
-				break
-		
-		self.InstalledNodesDB["installed_nodes"] = nodes
-		# Save new switch to database
-		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
+		self.Installer.AddWorkItem({
+			"method": "uninstall",
+			"data": {
+				"uuid": payload["uninstall"]["uuid"]
+			}
+		})
 
-		message = THIS.Node.Network.BasicProtocol.BuildRequest("MASTER", "GATEWAY", THIS.Node.UUID, "node_uninstall", { 
-			'node': {
-				"uuid":	uuid
-			} 
-		}, {})
-		THIS.Node.SendPacketGateway(message)
-
-		time.sleep(0.5)
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
-			'status': 'done'
+			'status': 'accepted',
+			'uuid': payload["uninstall"]["uuid"]
 		})
 
 	def Request_RebootHandler(self, sock, packet):
@@ -747,6 +487,8 @@ class Context():
 
 	def ShutdownProcess(self):
 		self.Shutdown = True
+		self.Installer.Stop()
+		self.Uploader.Stop()
 		shutdown_connections = []
 		# TODO - Could be an issue with not locking this list. (multithreading)
 		connections = THIS.Node.GetConnectedNodes()
@@ -766,8 +508,11 @@ class Context():
 		time.sleep(5)
 
 	def NodeSystemLoadedHandler(self):
-		self.SystemLoaded = True
-		self.Installer = PackageInstaller(self)
+		self.SystemLoaded 	= True
+		self.Installer 		= MkSPackageInstaller.Manager(self)
+		self.Uploader 		= MkSFileUploader.Manager(self)
+		self.Installer.Run()
+		self.Uploader.Run()
 		# Load all installed nodes
 		self.LoadNodes()
 		# Load services DB

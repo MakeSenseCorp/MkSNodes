@@ -310,12 +310,65 @@
 
 			Node.prototype.OnChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
+				data = packet.data.payload.data
 				switch(packet.data.payload.event) {
 					case "template": {
 					}
-					break;
+						break;
 					// User Code #1 - Start
-				
+					case "upload_progress": {
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								// Send install command
+								self.API.SendCustomCommand(NodeUUID, "install", {
+									install: {
+										type: "file",
+										file: data.file
+									}
+								}, function(res) { 
+									status = res.data.payload.status;
+									if (status == "accepted") {
+										document.getElementById("id_progress_item").innerHTML = "Installing Package";
+									}
+								});
+								break;
+						}
+					}
+						break;
+					case "install_progress": {
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								$('#id-gen-modal').modal('hide');
+								break;
+						}
+					}
+						break;
+					case "uninstall_progress": {
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								$('#id-gen-modal').modal('hide');
+								break;
+						}
+					}
+						break;
 					// User Code #1 - End
 				}
 			}
@@ -606,7 +659,7 @@
 
 			var UninstalModalFooter = `
 				<button type="button" class="btn btn-primary" onclick="UninstallNode();">Yes</button>
-        		<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
 			`;
 
 			var OpenModal = function (action) {
@@ -699,32 +752,8 @@
 						node.API.UploadFileContent(NodeUUID, payload, function(res) {
 							if (res) {
 								status = res.data.payload.status;
-								if (status == "inprogress") {
+								if (status == "accept") {
 									console.log("Uploaded " + res.data.payload.chunk + " " + percCunck * res.data.payload.chunk);
-									$("#id_progress_bar").css("width", (res.data.payload.chunk * percCunck) + "%").text((res.data.payload.chunk * percCunck) + " %");
-									document.getElementById("id_progress_item").innerHTML = "Upload Package";
-									document.getElementById("id_install_button").disabled = false;
-								} else if (status == "done") {
-									$("#id_progress_bar").css("width", "100%").text("100%");
-									document.getElementById("id_progress_item").innerHTML = "Unzip Package";
-									// Send install command
-									node.API.SendCustomCommand(NodeUUID, "install", {
-										install: {
-											type: "file",
-											file: res.data.payload.file
-										}
-									}, function(res) { 
-										status = res.data.payload.status;
-										if (status == "done") {
-											document.getElementById("id_progress_item").innerHTML = "Installing Package Done";
-											$('#id-gen-modal').modal('hide');
-										} else if (status == "uuid_exist") {
-											document.getElementById("id_progress_item").innerHTML = "Package Allready Installed";
-										}
-									});
-								} else if (status == "timeout") {
-									$("#id_progress_bar").css("width", "0%").text("0%");
-									document.getElementById("id_progress_item").innerHTML = "Error Upload - Timeout";
 								}
 							}
 						});
@@ -772,14 +801,14 @@
 
 			var gUninstallNodeUUID = "";
 			var UninstallNode = function() {
+				document.getElementById("id_progress").classList.remove("d-none");
 				node.API.SendCustomCommand(NodeUUID, "uninstall", {
 					uninstall: {
 						uuid: gUninstallNodeUUID
 					}
 				}, function(res) { 
 					status = res.data.payload.status;
-					if (status == "done") {
-						$('#id-gen-modal').modal('hide');
+					if (status == "accept") {
 					}
 				});
 			}
@@ -859,6 +888,7 @@
 							<span class="text-muted" onClick="InstallGitPackage('[TYPE]')">[SELECT]</span>
 							</h6>
 						</div>
+						<div><span onClick="OnUninstallClick('[UUID]')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span></div>
 					</li><br/>
 				`;
 
