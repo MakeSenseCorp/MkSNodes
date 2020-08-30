@@ -107,8 +107,8 @@
 								<div class="table-responsive">
 									<table class="table table-striped table-lg">
 										<tr>
-											<td align="center"><a href="#">Select Playlist</a></td>
-											<td align="center"><a href="#">Create Playlist</a></td>
+											<td align="center"><a href="#">Create Folder</a></td>
+											<td align="center" onClick="OpenModal('upload');"><a href="#">Upload Song</a></td>
 											<td align="center"><a href="#">Select Music Folder</a></td>
 											<td align="center"><a href="#">Select Speakers</a></td>
 										</tr>
@@ -136,17 +136,17 @@
         </main>
 
 		<!-- Modals -->
-		<div class="modal fade bd-example-modal-xl" id="id-playlist-modal" tabindex="-1" role="dialog" aria-labelledby="id-playlist-modalLabel" aria-hidden="true">
-			<div class="modal-dialog" role="document">
+		<div class="modal fade bd-example-modal-lg" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="id-playlist-modalLabel">Settings</h5>
+						<h5 class="modal-title" id="id-gen-modalLabel">Title</h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
-					<div id="id-playlist-modal-content" class="modal-body"> </div>
-					<div id="id-playlist-modal-footer" class="modal-footer"></div>
+					<div id="id_modal_content" class="modal-body"> </div>
+					<div id="id_modal_footer" class="modal-footer"></div>
 				</div>
 			</div>
 		</div>
@@ -222,10 +222,11 @@
 
 			Node.prototype.OnChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
+				data = packet.data.payload.data;
 				switch(packet.data.payload.event) {
 					case "media_folder_changed": {
 						var objSongList = document.getElementById("id_song_list");
-						var songsList = packet.data.payload.data.songs;
+						var songsList = data.songs;
 						for (key in songsList) {
 							song = songsList[key];
 							switch(song.status) {
@@ -252,9 +253,24 @@
 					}
 					break;
 					case "media_info": {
-						this.Player.PlayerHandlers[packet.data.payload.data.info.state](this.Player, packet.data.payload.data.info);
+						this.Player.PlayerHandlers[data.info.state](this.Player, data.info);
 						// Update volume UI object
-						this.Player.Objects.CurrentVolumeOffset.value = packet.data.payload.data.info.volume;
+						this.Player.Objects.CurrentVolumeOffset.value = data.info.volume;
+					}
+					break;
+					case "upload_progress": {
+						console.log(data);
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								$('#id-gen-modal').modal('hide');
+								break;
+						}
 					}
 					break;
 				}

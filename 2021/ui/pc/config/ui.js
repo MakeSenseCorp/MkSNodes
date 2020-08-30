@@ -320,3 +320,137 @@ function TimerBuilder() {
 
 	return this;
 }
+
+var UploadModalContent = `
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-body">
+					<form>
+						<div class="form-group">
+							<label for="id_package_path">Please select package (MP3 File)</label>
+							<input type="file" class="form-control-file" id="id_package_path">
+						</div>
+					</form>
+					<button type="button" id="id_install_button" class="btn btn-primary" onclick="OnInstallClick();">Upload</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row d-none" id="id_progress">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="progress">
+						<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+					</div>
+					<div>
+						<span class="text-muted" id="id_progress_item">0%</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+`;
+
+var UploadModalFooter = `
+	<h6 class="d-flex justify-content-between align-items-center mb-3">
+		<span class="text-muted"><a href="#" onclick="$('#id-gen-modal').modal('hide');">Close</a></span>
+	</h6>
+`;
+
+var OpenModal = function (action) {
+	switch(action) {
+		case "upload":
+			document.getElementById("id-gen-modalLabel").innerHTML	= "Upload Song";
+			document.getElementById("id_modal_content").innerHTML	= UploadModalContent;
+			document.getElementById("id_modal_footer").innerHTML	= UploadModalFooter;
+			break;
+		default:
+			break;
+	}
+	
+	$('#id-gen-modal').modal('show');
+}
+
+var fileName = "";
+var fileSize = 0;
+var reader = new FileReader();
+reader.onload = function(e) {
+	var data    		= reader.result;
+	var MAX_CHUNK_SIZE  = 4096;
+	var buffer  		= new Uint8Array(data);
+	var chunks  		= parseInt(fileSize / MAX_CHUNK_SIZE);
+
+	// console.log(buffer, fileSize / MAX_CHUNK_SIZE, chunks);
+	if (fileSize % MAX_CHUNK_SIZE != 0) {
+		// Append last chunk.
+		chunks++;
+	}
+
+	start = 0;
+	end   = 0;
+	percCunck = parseInt(100 / chunks);
+	for (i = 0; i < chunks; i++) {
+		if ( (fileSize - i * MAX_CHUNK_SIZE) < MAX_CHUNK_SIZE ) {
+			// We are at last packet
+			start = i * MAX_CHUNK_SIZE;
+			end   = fileSize;
+		} else {
+			start = i * MAX_CHUNK_SIZE;
+			end   = start + MAX_CHUNK_SIZE;
+		}
+
+		if (start < end) {
+			var arrayData = buffer.subarray(start, end);
+
+			var dataToSend = [];
+			for (idx = 0; idx < arrayData.length; idx++) {
+				dataToSend.push(arrayData[idx]);
+			}
+
+			// console.log("send chunk", i+1, start, end, fileSize, dataToSend.length);
+			var payload = {
+				upload: {
+					action: "upload",
+					file: fileName,
+					size: fileSize,
+					content: dataToSend,
+					chunk: i+1,
+					chunk_size: (end - start),
+					chunks: chunks
+				}
+			}
+			// console.log(payload);
+			node.API.UploadFileContent(NodeUUID, payload, function(res) {
+				if (res) {
+					status = res.data.payload.status;
+					if (status == "accept") {
+						console.log("Uploaded " + res.data.payload.chunk + " " + percCunck * res.data.payload.chunk);
+					}
+				}
+			});
+		}
+	}
+}
+
+var ReadImage = function(file) {
+	// Check if the file is zip file.
+	if (file.type && file.type.indexOf('audio/mpeg') === -1) {
+		console.log('File is not an image.', file.type, file);
+		return;
+	}
+
+	console.log("READ FILE");
+
+	fileName = file.name;
+	fileSize = file.size;
+	reader.readAsArrayBuffer(file);
+}
+
+var OnInstallClick = function() {
+	var fileObj = document.getElementById("id_package_path");
+	// Show progress bar
+	document.getElementById("id_progress").classList.remove("d-none");
+	ReadImage(fileObj.files[0]);
+}

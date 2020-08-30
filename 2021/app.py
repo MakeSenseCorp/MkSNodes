@@ -21,6 +21,7 @@ from mksdk import MkSUSBAdaptor
 from mksdk import MkSProtocol
 from mksdk import MkSDBcsv
 from mksdk import MkSTimer
+from mksdk import MkSFileUploader
 
 from flask import Response, request
 from flask import send_file
@@ -91,6 +92,7 @@ class Context():
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.File 						= MkSFile.File()
+		self.Uploader 					= None
 		self.Node						= node
 		# States
 		self.States = {
@@ -101,6 +103,7 @@ class Context():
 			'player_operation':			self.PlayerOperationHandler,
 			'playlist_operation':		self.PlaylistOperationHandler,
 			'critical_operation':		self.CriticalOperationHandler,
+			'upload_file':				self.Request_UploadFileHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -128,6 +131,8 @@ class Context():
 		self.Timer 						= MkSTimer.MkSTimer()
 		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
 
+		self.UploadLocker				= threading.Lock()
+
 	def GetPlayerState(self):
 		state = self.Player.get_state()
 		if state == vlc.State.Buffering:
@@ -152,6 +157,23 @@ class Context():
 
 	def UndefindHandler(self, sock, packet):
 		self.Node.LogMSG("UndefindHandler",5)
+	
+	def Request_UploadFileHandler(self, sock, packet):
+		self.UploadLocker.acquire()
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		self.Node.LogMSG("({classname})# [Request_UploadFileHandler] {0}".format(payload["upload"]["chunk"], classname=self.ClassName),5)
+
+		if payload["upload"]["chunk"] == 1:
+			self.Uploader.AddNewUploader(payload["upload"])
+		else:
+			self.Uploader.UpdateUploader(payload["upload"])
+		
+		self.UploadLocker.release()
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'status': 'accept',
+			'chunk': payload["upload"]["chunk"],
+			'file': payload["upload"]["file"]
+		})
 	
 	def GetSensorInfoHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName),5)
@@ -267,6 +289,9 @@ class Context():
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName),5)		
 		objFile = MkSFile.File()
+		self.Uploader = MkSFileUploader.Manager(self)
+		self.Uploader.SetUploadPath(os.path.join(self.LocalStoragePath, "songs"))
+		self.Uploader.Run()
 		# Loading local database
 		jsonSensorStr = objFile.Load("db.json")
 		if jsonSensorStr != "":
