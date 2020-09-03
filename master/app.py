@@ -438,11 +438,12 @@ class Context():
 					nodes = self.InstalledNodesDB["installed_nodes"]
 					for node in nodes:
 						if node["uuid"] == conn.Obj["uuid"]:
-							self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
-							node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
-							proc = MkSExternalProcess.ExternalProcess()
-							proc.CallProcess("python app.py &", node_path, "")
-							return
+							if (node["enabled"] == 1):
+								self.Node.LogMSG("({classname})# Start node - {0}".format(node["name"],classname=self.ClassName),5)
+								node_path = os.path.join(self.Node.MKSPath,"nodes",str(node["type"]))
+								proc = MkSExternalProcess.ExternalProcess()
+								proc.CallProcess("python app.py &", node_path, "")
+								return
 
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
