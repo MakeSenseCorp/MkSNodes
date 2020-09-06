@@ -75,6 +75,12 @@
 							<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
 								<div class="card-body">
 									<div class="row">
+										<div class="col-lg-12 text-center">
+											<img id="master_image" data-obj="mks" style="height:192px;" src="resource/img/yoda.jpeg" />
+										</div>
+									</div>
+									<br />
+									<div class="row">
 										<div class="col-lg-6">
 											<div class="card">
 												<div class="card-body">
@@ -265,7 +271,7 @@
 		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
 		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
         <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
-        <script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
         
         [SCRIPTS]
 
@@ -279,6 +285,22 @@
 			var NodeUUID  = "[NODE_UUID]";
 
 			console.log("Gateway IP address - " + GatewayIP);
+
+			var ConvertHEXtoString = function(hexx) {
+				var hex = hexx.toString();//force conversion
+				var str = '';
+				for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
+					str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+				}
+				return str;
+			}
+
+			var ExecuteJS = function(content) {
+				var oScript 	= document.createElement("script");
+				var oScriptText = document.createTextNode(content);
+				oScript.appendChild(oScriptText);
+				document.body.appendChild(oScript);
+			}
 
 			$(document).ready(function() {
 				// User Code #1 - Start
@@ -901,6 +923,7 @@
 			node.Connect();
 			var UserGetNodeSensorInfoHandler = function(res) {
 				var payload = res.data.payload;
+				[RESOURCES]
 				// User Code #1 - Start
 				node.Machine.GetConnectionsList();
 				node.Machine.GetMiscInfo();
