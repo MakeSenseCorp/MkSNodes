@@ -145,7 +145,7 @@
 														<div class="row">
 															<div class="col-lg-5">
 																<h6 class="d-flex justify-content-between align-items-center mb-3">
-																	<span class="text-muted"><a href="#" onclick="OpenModal('install');">Install Node</a></span>
+																	<span class="text-muted"><a href="#" onclick="node.Machine.UI.OpenModal('install');">Install Node</a></span>
 																</h6>
 															</div>
 														</div>
@@ -249,22 +249,6 @@
         	    </div>
         	</div>
 		</main>
-		
-		<!-- Modal -->
-		<div class="modal fade bd-example-modal-lg" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="id-gen-modalLabel">Title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div id="id_modal_content" class="modal-body"> </div>
-					<div id="id_modal_footer" class="modal-footer"></div>
-				</div>
-			</div>
-		</div>
 
         <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
         <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
@@ -272,6 +256,8 @@
 		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
         <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
 		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/mksdk-js/widgets/basic_modal.js"></script>
+		<script src="/mksdk-js/widgets/basic_uploader.js"></script>
         
         [SCRIPTS]
 
@@ -339,28 +325,7 @@
 						break;
 					// User Code #1 - Start
 					case "upload_progress": {
-						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
-						document.getElementById("id_progress_item").innerHTML =  data.message;
-						switch(data.status) {
-							case "inprogress":
-								break;
-							case "error":
-								break;
-							case "done":
-								// Send install command
-								self.API.SendCustomCommand(NodeUUID, "install", {
-									install: {
-										type: "file",
-										file: data.file
-									}
-								}, function(res) { 
-									status = res.data.payload.status;
-									if (status == "accepted") {
-										document.getElementById("id_progress_item").innerHTML = "Installing Package";
-									}
-								});
-								break;
-						}
+						this.Machine.UI.Uploader.UpdateProgress(data);
 					}
 						break;
 					case "install_progress": {
@@ -591,66 +556,6 @@
 			}
 
 			var gGitPackages = null;
-
-			var InstallModalContent = `
-				<ul class="nav nav-tabs" id="myTab" role="tablist">
-					<li class="nav-item waves-effect waves-light">
-						<a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">File</a>
-					</li>
-					<li class="nav-item waves-effect waves-light">
-						<a class="nav-link active" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="true">Git</a>
-					</li>
-				</ul>
-				<div class="tab-content" id="myTabContent">
-					<div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
-						<div class="row">
-							<div class="col-lg-12">
-								<div class="card">
-									<div class="card-body">
-										<form>
-											<div class="form-group">
-												<label for="id_package_path">Please select package (ZIP File)</label>
-												<input type="file" class="form-control-file" id="id_package_path">
-											</div>
-										</form>
-										<button type="button" id="id_install_button" class="btn btn-primary" onclick="OnInstallClick();">Install</button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="tab-pane fade active show" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-						<div class="row">
-							<div class="col-lg-12">
-								<div class="card">
-									<div class="card-body">
-										<h6 class="d-flex justify-content-between align-items-center mb-3">
-											<span class="text-muted">Nodes List</span>
-											<span class="badge badge-secondary badge-pill" id="id_git_packages_count">0</span>
-										</h6>
-										<div id="id_git_packages"></div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row d-none" id="id_progress">
-					<div class="col-lg-12">
-						<div class="card">
-							<div class="card-body">
-								<div class="progress">
-									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
-								</div>
-								<div>
-									<span class="text-muted" id="id_progress_item">0%</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			`;
-
 			var UninstallModalContent = `
 				<div class="row">
 					<div class="col-lg-12">
@@ -673,17 +578,12 @@
 				</div>
 			`;
 
-			var InstallModalFooter = `
-				<h6 class="d-flex justify-content-between align-items-center mb-3">
-					<span class="text-muted"><a href="#" onclick="$('#id-gen-modal').modal('hide');">Close</a></span>
-				</h6>
-			`;
-
 			var UninstalModalFooter = `
 				<button type="button" class="btn btn-primary" onclick="UninstallNode();">Yes</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
 			`;
 
+			/*
 			var OpenModal = function (action) {
 				switch(action) {
 					case "install":
@@ -721,86 +621,7 @@
 				
 				$('#id-gen-modal').modal('show');
 			}
-
-			var fileName = "";
-			var fileSize = 0;
-			var reader = new FileReader();
-			reader.onload = function(e) {
-				var data    		= reader.result;
-          		var MAX_CHUNK_SIZE  = 4096;
-				var buffer  		= new Uint8Array(data);
-				var chunks  		= parseInt(fileSize / MAX_CHUNK_SIZE);
-
-				// console.log(buffer, fileSize / MAX_CHUNK_SIZE, chunks);
-				if (fileSize % MAX_CHUNK_SIZE != 0) {
-					// Append last chunk.
-					chunks++;
-				}
-
-				start = 0;
-				end   = 0;
-				percCunck = parseInt(100 / chunks);
-				for (i = 0; i < chunks; i++) {
-					if ( (fileSize - i * MAX_CHUNK_SIZE) < MAX_CHUNK_SIZE ) {
-						// We are at last packet
-						start = i * MAX_CHUNK_SIZE;
-						end   = fileSize;
-					} else {
-						start = i * MAX_CHUNK_SIZE;
-						end   = start + MAX_CHUNK_SIZE;
-					}
-
-					if (start < end) {
-						var arrayData = buffer.subarray(start, end);
-
-						var dataToSend = [];
-						for (idx = 0; idx < arrayData.length; idx++) {
-							dataToSend.push(arrayData[idx]);
-						}
-
-						// console.log("send chunk", i+1, start, end, fileSize, dataToSend.length);
-						var payload = {
-							upload: {
-								action: "upload",
-								file: fileName,
-								size: fileSize,
-								content: dataToSend,
-								chunk: i+1,
-								chunk_size: (end - start),
-								chunks: chunks
-							}
-						}
-						// console.log(payload);
-						node.API.UploadFileContent(NodeUUID, payload, function(res) {
-							if (res) {
-								status = res.data.payload.status;
-								if (status == "accept") {
-									console.log("Uploaded " + res.data.payload.chunk + " " + percCunck * res.data.payload.chunk);
-								}
-							}
-						});
-					}
-				}
-			}
-
-			var ReadImage = function(file) {
-				// Check if the file is zip file.
-				if (file.type && file.type.indexOf('zip') === -1) {
-					console.log('File is not an image.', file.type, file);
-					return;
-				}
-
-				fileName = file.name;
-				fileSize = file.size;
-				reader.readAsArrayBuffer(file);
-			}
-
-			var OnInstallClick = function() {
-				var fileObj = document.getElementById("id_package_path");
-				// Show progress bar
-				document.getElementById("id_progress").classList.remove("d-none");
-				ReadImage(fileObj.files[0]);
-			}
+			*/
 
 			var InstallGitPackage = function(type) {
 				document.getElementById("id_progress").classList.remove("d-none");
@@ -841,7 +662,10 @@
 			}
 
 			function NodeUI (api) {
-				self = this;
+				self 			= this;
+				this.API 		= api;
+				this.Modal 		= new MksBasicModal();
+				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
 
 				this.TestRow = `
 					<li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -913,8 +737,94 @@
 						<div><span onClick="OnUninstallClick('[UUID]')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span></div>
 					</li><br/>
 				`;
+				this.InstallerContainer = `
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item waves-effect waves-light">
+							<a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">File</a>
+						</li>
+						<li class="nav-item waves-effect waves-light">
+							<a class="nav-link active" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="true">Git</a>
+						</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+							<div class="row">
+								<div class="col-lg-12" id="id-basic-uploader-installer"></div>
+							</div>
+						</div>
+						<div class="tab-pane fade active show" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="card">
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Nodes List</span>
+												<span class="badge badge-secondary badge-pill" id="id_git_packages_count">0</span>
+											</h6>
+											<div id="id_git_packages"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row d-none" id="id_progress">
+						<div class="col-lg-12">
+							<div class="card">
+								<div class="card-body">
+									<div class="progress">
+										<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+									</div>
+									<div>
+										<span class="text-muted" id="id_progress_item">0%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
 
 				return this;
+			}
+
+			NodeUI.prototype.OpenModal = function (action) {
+				switch(action) {
+					case "install":
+						this.Modal.SetTitle("Install Node Package");
+						this.Modal.SetContent(this.InstallerContainer);
+						// Build DOM UI for Modal
+						this.Modal.Build("lg");
+						var objUploader = document.getElementById("id-basic-uploader-installer");
+						// Build DOM UI for Uploader
+						this.Uploader.Build(objUploader, "Install");
+						break;
+					case "uninstall":
+						this.Modal.SetTitle("Uninstall Node Package");
+						this.Modal.SetContent(UninstallModalContent);
+						this.Modal.SetFooter(UninstalModalFooter);
+						this.Modal.Build("lg");
+						break;
+					default:
+						break;
+				}
+				
+				this.Uploader.OnUploadCompete = this.OnUploadCompleteHandler;
+				this.Modal.Show();
+			}
+
+			NodeUI.prototype.OnUploadCompleteHandler = function () {
+				// Send install command
+				self.API.SendCustomCommand(NodeUUID, "install", {
+					install: {
+						type: "file",
+						file: data.file
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "accepted") {
+						document.getElementById("id_progress_item").innerHTML = "Installing Package";
+					}
+				});
 			}
   
 			// Self-genrated area
