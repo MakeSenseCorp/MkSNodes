@@ -272,22 +272,6 @@
 
 			console.log("Gateway IP address - " + GatewayIP);
 
-			var ConvertHEXtoString = function(hexx) {
-				var hex = hexx.toString();//force conversion
-				var str = '';
-				for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
-					str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-				}
-				return str;
-			}
-
-			var ExecuteJS = function(content) {
-				var oScript 	= document.createElement("script");
-				var oScriptText = document.createTextNode(content);
-				oScript.appendChild(oScriptText);
-				document.body.appendChild(oScript);
-			}
-
 			$(document).ready(function() {
 				// User Code #1 - Start
 				
