@@ -321,7 +321,7 @@
 							case "error":
 								break;
 							case "done":
-								$('#id-gen-modal').modal('hide');
+								this.Machine.UI.Modal.Hide();
 								break;
 						}
 					}
@@ -335,7 +335,7 @@
 							case "error":
 								break;
 							case "done":
-								$('#id-gen-modal').modal('hide');
+								this.Machine.UI.Modal.Hide();
 								break;
 						}
 					}
@@ -588,6 +588,7 @@
 
 			var gUninstallNodeUUID = "";
 			var UninstallNode = function() {
+				node.Machine.UI.Modal.SetDefaultFooter();
 				document.getElementById("id_progress").classList.remove("d-none");
 				node.API.SendCustomCommand(NodeUUID, "uninstall", {
 					uninstall: {
