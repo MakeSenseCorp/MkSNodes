@@ -258,6 +258,7 @@
 		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
 		<script src="/mksdk-js/widgets/basic_modal.js"></script>
 		<script src="/mksdk-js/widgets/basic_uploader.js"></script>
+		<script src="/mksdk-js/widgets/basic_table.js"></script>
         
         [SCRIPTS]
 
@@ -371,20 +372,22 @@
 				self = this;
 				this.API.SendCustomCommand(NodeUUID, "get_connections_list", {}, function(res) {
 					var payload = res.data.payload;
+					var connections = payload.connections;
+					var data = [];
 					document.getElementById("connections_count_id").innerHTML = payload.connections.length;
-					var html = `<ul class="list-group mb-3">`;
-						payload.connections.forEach(function(element) {
-						row = self.UI.ConnectionRow;
-						row = row.split("[UUID]").join(element.uuid);
-						row = row.split("[LOCAL_TYPE]").join(element.local_type);
-						row = row.split("[TYPE]").join(element.type);
-						row = row.split("[IP]").join(element.ip);
-						row = row.split("[PORT]").join(element.port);
-						html = html + row;
+					connections.forEach(function(element) {
+						row = []
+						row.push(element.uuid);
+						row.push(element.local_type);
+						row.push(element.type);
+						row.push(element.ip);
+						row.push(element.port);
+						data.push(row);
 					});
-				
-					html = html + `</ul>`;
-					document.getElementById("connections_list_id").innerHTML = html;
+					table = new MksBasicTable();
+					table.SetSchema(["#","UUID","Local","Type","IP","Port"]);
+					table.SetData(data);
+					table.Build(document.getElementById("connections_list_id"));
 					feather.replace();
 				});
 			}
@@ -393,25 +396,38 @@
 				self = this;
 				this.API.SendCustomCommand(NodeUUID, "get_installed_nodes_list", {
 				}, function(res) {
-					payload = res.data.payload;
+					var payload = res.data.payload;
 					var installed_nodes = payload.installed_nodes;
+					var data = [];
+					var checkBox = `
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					`;
 					document.getElementById("online_nodes_count_id").innerHTML = installed_nodes.length;
-					var html = `<div class="card"><div class="card-body">`;
 					installed_nodes.forEach(function(element) {
-						row = self.UI.InstalledNodeRow;
-						row = row.split("[NAME]").join(element.name);
-						row = row.split("[UUID]").join(element.uuid);
-						row = row.split("[DISABLED]").join("");
+						row = []
+						row.push(element.name);
+						row.push(element.uuid);
+						html = checkBox;
+						html = html.split("[DISABLED]").join("");
+						html = html.split("[UUID]").join(element.uuid);
 						if (element.enabled == 1) {
-							row = row.split("[STATE]").join("checked");
+							html = html.split("[STATE]").join("checked");
 						} else {
-							row = row.split("[STATE]").join("");
+							html = html.split("[STATE]").join("");
 						}
-						html = html + row;
+						row.push(html);
+						row.push(`<span onClick="OnUninstallClick('`+element.uuid+`')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span>`);
+						data.push(row);
 					});
-				
-					html = html + `</div></div>`;
-					document.getElementById("online_nodes_list_id").innerHTML = html;
+
+					table = new MksBasicTable();
+					table.SetSchema(["#","Name","UUID","Activate","Remove"]);
+					table.SetData(data);
+					table.Build(document.getElementById("online_nodes_list_id"));
+					feather.replace();
 				});
 			}
 
@@ -449,33 +465,39 @@
 					document.getElementById("master_machine_name").innerHTML = payload.machine_name;
 					
 					var interfaces = payload.network.interfaces;
+					var data = [];
 					document.getElementById("network_interfaces_count_id").innerHTML = interfaces.length;
-					var html = `<div class="card"><div class="card-body">`;
 					interfaces.forEach(function(element) {
-						row = self.UI.NetworkInterfacesRow;
-						row = row.split("[IP]").join(element[0]);
-						row = row.split("[MAC]").join(element[1]);
-						html = html + row;
+						row = []
+						row.push(element[0]);
+						row.push(element[1]);
+						row.push(`<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>`);
+						data.push(row);
 					});
-					html = html + `</div></div>`;
-					document.getElementById("network_interfaces_list_id").innerHTML = html;
+					
+					table = new MksBasicTable();
+					table.SetSchema(["#","IP","MAC","Info"]);
+					table.SetData(data);
+					table.Build(document.getElementById("network_interfaces_list_id"));
+					feather.replace();
 
 					var network_devices = payload.network_devices;
+					var data = [];
 					document.getElementById("network_devices_count_id").innerHTML = network_devices.length;
-					var html = `<div class="card"><div class="card-body">`;
 					network_devices.forEach(function(element) {
-						row = self.UI.NetworkDevicesRow;
-						row = row.split("[IP]").join(element.ip);
+						row = []
+						row.push(element.ip);
 						if (element.mks !== undefined) {
-							row = row.split("[TYPE]").join("MKS (" + element.mks.name + ")");
+							row.push("MKS (" + element.mks.name + ")");
 						} else {
-							row = row.split("[TYPE]").join("DEVICE");
+							row.push("DEVICE");
 						}
-						html = html + row;
+						row.push(`<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>`);
+						data.push(row);
 					});
-					html = html + `</div></div>`;
-					document.getElementById("network_devices_list_id").innerHTML = html;
-					
+					table.SetSchema(["#","IP","Type","Info"]);
+					table.SetData(data);
+					table.Build(document.getElementById("network_devices_list_id"));
 					feather.replace();
 				});
 			}
@@ -484,25 +506,36 @@
 				self = this;
 				this.API.SendCustomCommand(NodeUUID, "get_services_info", {
 				}, function(res) {
-					payload = res.data.payload;
+					var payload = res.data.payload;
 					var on_boot_services = payload.on_boot_services;
+					var data = [];
+					var checkBox = `
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					`;
 					document.getElementById("on_boot_services_count_id").innerHTML = on_boot_services.length;
-					var html = `<div class="card"><div class="card-body">`;
 					on_boot_services.forEach(function(element) {
-						row = self.UI.OnBootServicesRow;
-						row = row.split("[NAME]").join(element.name);
-						row = row.split("[UUID]").join(element.uuid);
-						row = row.split("[DISABLED]").join("");
+						row = []
+						row.push(element.name);
+						row.push(element.uuid);
+						html = checkBox;
+						html = html.split("[DISABLED]").join("");
+						html = html.split("[UUID]").join(element.uuid);
 						if (element.enabled == 1) {
-							row = row.split("[STATE]").join("checked");
+							html = html.split("[STATE]").join("checked");
 						} else {
-							row = row.split("[STATE]").join("");
+							html = html.split("[STATE]").join("");
 						}
-						html = html + row;
+						row.push(html);
+						data.push(row);
 					});
-				
-					html = html + `</div></div>`;
-					document.getElementById("on_boot_services_list_id").innerHTML = html;
+
+					table = new MksBasicTable();
+					table.SetSchema(["#","Name","UUID","Activate"]);
+					table.SetData(data);
+					table.Build(document.getElementById("on_boot_services_list_id"));
 				});
 			}
 
@@ -613,76 +646,6 @@
 				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
 				this.Uploader.SetAPI(this.API);
 
-				this.TestRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><h6 class="my-0">[TEST_NAME]</h6></div>
-						<div>
-							<span onClick="PlayTest('[TEST_NAME]');" style="width: 18px; height: 18px; cursor: pointer;color: green" data-feather="play-circle"></span>
-							<span onClick="GetTestOutput('[TEST_NAME]');" style="width: 18px; height: 18px; cursor: pointer;" data-feather="file-text"></span>
-							<span id="[TEST_NAME]_id" style="width: 18px; height: 18px; color: red" data-feather="x-square"></span>
-						</div>
-					</li>
-				`;
-				this.ConnectionRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[UUID]</small></div>
-						<div><small class="my-0">[LOCAL_TYPE]</small></div>
-						<div><small class="my-0">[TYPE]</small></div>
-						<div><small class="my-0">[IP]</small></div>
-						<div><small class="my-0">[PORT]</small></div>
-						<div><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></div>
-					</li>
-				`;
-				this.NetworkInterfacesRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[IP]</small></div>
-						<div><small class="my-0">[MAC]</small></div>
-						<div><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></div>
-					</li>
-				`;
-				this.NetworkDevicesRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[IP]</small></div>
-						<div><small class="my-0">[TYPE]</small></div>
-						<div><span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span></div>
-					</li>
-				`;
-				this.OnBootServicesRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[NAME]</small></div>
-						<div><small class="my-0">[UUID]</small></div>
-						<div>
-							<div class="custom-control custom-switch">
-								<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateServiceEnable(this, '[UUID]')" id="switch_id_[UUID]">
-								<label class="custom-control-label" for="switch_id_[UUID]"></label>
-							</div>
-						</div>
-					</li><br/>
-				`;
-				this.InstalledNodeRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[NAME]</small></div>
-						<div><small class="my-0">[UUID]</small></div>
-						<div class="custom-control custom-switch">
-							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
-							<label class="custom-control-label" for="switch_id_[UUID]"></label>
-						</div>
-						<div><span onClick="OnUninstallClick('[UUID]')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span></div>
-					</li><br/>
-				`;
-				this.InstalledGitPackasRow = `
-					<li class="list-group-item d-flex justify-content-between lh-condensed">
-						<div><small class="my-0">[UUID]</small></div>
-						<div><small class="my-0">[TYPE]</small></div>
-						<div><small class="my-0">[INSTALLED]</small></div>
-						<div>
-							<h6 class="d-flex justify-content-between align-items-center mb-3">
-							<span class="text-muted" onClick="InstallGitPackage('[TYPE]')">[SELECT]</span>
-							</h6>
-						</div>
-						<div><span onClick="OnUninstallClick('[UUID]')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span></div>
-					</li><br/>
-				`;
 				this.InstallerContainer = `
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
 						<li class="nav-item waves-effect waves-light">
@@ -745,24 +708,31 @@
 						// Build DOM UI for Uploader
 						this.Uploader.Build(objUploader, "Install");
 						// Update list of packages
+						var data = [];
 						document.getElementById("id_git_packages_count").innerHTML = gGitPackages.length;
-						var html = `<div class="card"><div class="card-body">`;
 						gGitPackages.forEach(function(element) {
-							row = node.Machine.UI.InstalledGitPackasRow;
-							row = row.split("[UUID]").join(element.uuid);
-							row = row.split("[TYPE]").join(element.type);
+							row = []
+							row.push(element.uuid);
+							row.push(element.type);
+
 							if (element.installed == 1) {
-								row = row.split("[INSTALLED]").join("Installed");
-								row = row.split("[SELECT]").join("Select");
+								row.push("Installed");
+								row.push(`<a class="text-muted" onclick=''>Install</a>`);
 							} else {
-								row = row.split("[INSTALLED]").join("Not Installed");
-								row = row.split("[SELECT]").join("<a href='#' onclick=''>Select</a>");
+								row.push("Not Installed");
+								installCell = `<a href='#' onClick="InstallGitPackage('[TYPE]')">Install</a>`;
+								installCell = installCell.split("[TYPE]").join(element.type);
+								row.push(installCell);
 							}
-							html = html + row;
+							row.push(`<span onClick="OnUninstallClick('`+element.uuid+`')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span>`);
+							data.push(row);
 						});
-					
-						html = html + `</div></div>`;
-						document.getElementById("id_git_packages").innerHTML = html;
+						
+						table = new MksBasicTable();
+						table.SetSchema(["#","UUID","Type","Status","Install","Remove"]);
+						table.SetData(data);
+						table.Build(document.getElementById("id_git_packages"));
+						feather.replace();
 						break;
 					case "uninstall":
 						this.Modal.Remove();
