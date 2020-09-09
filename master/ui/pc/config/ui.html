@@ -360,7 +360,7 @@
 				self = this;
 
 				this.API 	= api;
-				this.UI		= new NodeUI();
+				this.UI		= new NodeUI(this.API);
 
 				this.MasterPublicInfoIntervakHndl = 0;
 
@@ -567,46 +567,6 @@
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
 			`;
 
-			/*
-			var OpenModal = function (action) {
-				switch(action) {
-					case "install":
-						document.getElementById("id-gen-modalLabel").innerHTML	= "Install Node Package";
-						document.getElementById("id_modal_content").innerHTML	= InstallModalContent;
-						document.getElementById("id_modal_footer").innerHTML	= InstallModalFooter;
-						// Update list of packages
-						document.getElementById("id_git_packages_count").innerHTML = gGitPackages.length;
-						var html = `<div class="card"><div class="card-body">`;
-						gGitPackages.forEach(function(element) {
-							row = node.Machine.UI.InstalledGitPackasRow;
-							row = row.split("[UUID]").join(element.uuid);
-							row = row.split("[TYPE]").join(element.type);
-							if (element.installed == 1) {
-								row = row.split("[INSTALLED]").join("Installed");
-								row = row.split("[SELECT]").join("Select");
-							} else {
-								row = row.split("[INSTALLED]").join("Not Installed");
-								row = row.split("[SELECT]").join("<a href='#' onclick=''>Select</a>");
-							}
-							html = html + row;
-						});
-					
-						html = html + `</div></div>`;
-						document.getElementById("id_git_packages").innerHTML = html;
-						break;
-					case "uninstall":
-						document.getElementById("id-gen-modalLabel").innerHTML	= "Uninstall Node Package";
-						document.getElementById("id_modal_content").innerHTML	= UninstallModalContent;
-						document.getElementById("id_modal_footer").innerHTML	= UninstalModalFooter;
-						break;
-					default:
-						break;
-				}
-				
-				$('#id-gen-modal').modal('show');
-			}
-			*/
-
 			var InstallGitPackage = function(type) {
 				document.getElementById("id_progress").classList.remove("d-none");
 				$("#id_progress_bar").css("width", "10%").text("10%");
@@ -642,7 +602,7 @@
 
 			var OnUninstallClick = function(uuid) {
 				gUninstallNodeUUID = uuid;
-				OpenModal("uninstall");
+				node.Machine.UI.OpenModal("uninstall");
 			}
 
 			function NodeUI (api) {
@@ -650,6 +610,7 @@
 				this.API 		= api;
 				this.Modal 		= new MksBasicModal();
 				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
+				this.Uploader.SetAPI(this.API);
 
 				this.TestRow = `
 					<li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -774,6 +735,7 @@
 			NodeUI.prototype.OpenModal = function (action) {
 				switch(action) {
 					case "install":
+						this.Modal.Remove();
 						this.Modal.SetTitle("Install Node Package");
 						this.Modal.SetContent(this.InstallerContainer);
 						// Build DOM UI for Modal
@@ -781,8 +743,28 @@
 						var objUploader = document.getElementById("id-basic-uploader-installer");
 						// Build DOM UI for Uploader
 						this.Uploader.Build(objUploader, "Install");
+						// Update list of packages
+						document.getElementById("id_git_packages_count").innerHTML = gGitPackages.length;
+						var html = `<div class="card"><div class="card-body">`;
+						gGitPackages.forEach(function(element) {
+							row = node.Machine.UI.InstalledGitPackasRow;
+							row = row.split("[UUID]").join(element.uuid);
+							row = row.split("[TYPE]").join(element.type);
+							if (element.installed == 1) {
+								row = row.split("[INSTALLED]").join("Installed");
+								row = row.split("[SELECT]").join("Select");
+							} else {
+								row = row.split("[INSTALLED]").join("Not Installed");
+								row = row.split("[SELECT]").join("<a href='#' onclick=''>Select</a>");
+							}
+							html = html + row;
+						});
+					
+						html = html + `</div></div>`;
+						document.getElementById("id_git_packages").innerHTML = html;
 						break;
 					case "uninstall":
+						this.Modal.Remove();
 						this.Modal.SetTitle("Uninstall Node Package");
 						this.Modal.SetContent(UninstallModalContent);
 						this.Modal.SetFooter(UninstalModalFooter);
@@ -792,11 +774,13 @@
 						break;
 				}
 				
+				
 				this.Uploader.OnUploadCompete = this.OnUploadCompleteHandler;
 				this.Modal.Show();
 			}
 
 			NodeUI.prototype.OnUploadCompleteHandler = function () {
+				document.getElementById("id_progress").classList.remove("d-none");
 				// Send install command
 				self.API.SendCustomCommand(NodeUUID, "install", {
 					install: {
