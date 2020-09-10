@@ -17,71 +17,6 @@ function Utils() {
 	return this;
 }
 
-function DOMTableContainer(name) {
-	this.Name = name;
-
-	this.DOMTable = `
-					<div class='table-responsive'>
-						<table class='table table-striped table-sm'>
-							<thead>[HEAD]</thead>
-							<tbody id="idMakeSense` + this.Name + `">[BODY]</tbody>
-						</table>
-					</div>
-					`;
-	this.HTML = "";
-	this.HEAD = "";
-	this.BODY = "";
-
-	this.CreateHead = function(items) {
-		this.HEAD = "<tr>";
-
-		for (i = 0; i < items.length; i++) {
-			this.HEAD += "<th>" + items[i] + "</th>";
-		}
-
-		this.HEAD += "</tr>"
-	}
-
-	this.CreateBody = function(items) {
-		this.BODY = "";
-
-		for (i = 0; i < items.length; i++) {
-			item = items[i];
-			this.BODY += "<tr>";
-			for (j = 0; j < item.length; j++) {
-				this.BODY += "<td>" + item[j] + "</td>";
-			}
-			this.BODY += "</tr>";
-		}
-	}
-
-	this.CreateTable = function() {
-		this.HTML = this.DOMTable;
-
-		this.HTML = this.HTML.split("[HEAD]").join(this.HEAD);
-		this.HTML = this.HTML.split("[BODY]").join(this.BODY);
-
-		return this.HTML;
-	}
-
-	this.UpdateTable = function(items) {
-		html = "";
-
-		for (i = 0; i < items.length; i++) {
-			item = items[i];
-			html += "<tr>";
-			for (j = 0; j < item.length; j++) {
-				html += "<td>" + item[j] + "</td>";
-			}
-			html += "</tr>";
-		}
-
-		document.getElementById("idMakeSense" + this.Name).innerHTML += html;
-	}
-
-	return this;
-}
-
 function TimerBuilder() {
 	this.HTML = `
 		<form>
@@ -321,6 +256,21 @@ function TimerBuilder() {
 	return this;
 }
 
+/*
+var OpenModal = function (action) {
+	switch(action) {
+		case "upload":
+			document.getElementById("id-gen-modalLabel").innerHTML	= "Upload Song";
+			document.getElementById("id_modal_content").innerHTML	= UploadModalContent;
+			document.getElementById("id_modal_footer").innerHTML	= UploadModalFooter;
+			break;
+		default:
+			break;
+	}
+	
+	$('#id-gen-modal').modal('show');
+}
+
 var UploadModalContent = `
 	<div class="row">
 		<div class="col-lg-12">
@@ -358,20 +308,6 @@ var UploadModalFooter = `
 		<span class="text-muted"><a href="#" onclick="$('#id-gen-modal').modal('hide');">Close</a></span>
 	</h6>
 `;
-
-var OpenModal = function (action) {
-	switch(action) {
-		case "upload":
-			document.getElementById("id-gen-modalLabel").innerHTML	= "Upload Song";
-			document.getElementById("id_modal_content").innerHTML	= UploadModalContent;
-			document.getElementById("id_modal_footer").innerHTML	= UploadModalFooter;
-			break;
-		default:
-			break;
-	}
-	
-	$('#id-gen-modal').modal('show');
-}
 
 var fileName = "";
 var fileSize = 0;
@@ -454,3 +390,4 @@ var OnInstallClick = function() {
 	document.getElementById("id_progress").classList.remove("d-none");
 	ReadImage(fileObj.files[0]);
 }
+*/

@@ -511,7 +511,7 @@
 					var data = [];
 					var checkBox = `
 						<div class="custom-control custom-switch">
-							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateServiceEnable(this, '[UUID]')" id="switch_id_[UUID]">
 							<label class="custom-control-label" for="switch_id_[UUID]"></label>
 						</div>
 					`;
@@ -645,6 +645,7 @@
 				this.Modal 		= new MksBasicModal();
 				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
 				this.Uploader.SetAPI(this.API);
+				this.Uploader.SetFileType("zip")
 
 				this.InstallerContainer = `
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -753,7 +754,7 @@
 			NodeUI.prototype.OnUploadCompleteHandler = function () {
 				document.getElementById("id_progress").classList.remove("d-none");
 				// Send install command
-				self.API.SendCustomCommand(NodeUUID, "install", {
+				node.API.SendCustomCommand(NodeUUID, "install", {
 					install: {
 						type: "file",
 						file: data.file

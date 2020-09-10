@@ -108,7 +108,7 @@
 									<table class="table table-striped table-lg">
 										<tr>
 											<td align="center"><a href="#">Create Folder</a></td>
-											<td align="center" onClick="OpenModal('upload');"><a href="#">Upload Song</a></td>
+											<td align="center" onClick="node.Uploader.Show();"><a href="#">Upload Song</a></td>
 											<td align="center"><a href="#">Select Music Folder</a></td>
 											<td align="center"><a href="#">Select Speakers</a></td>
 										</tr>
@@ -135,22 +135,6 @@
 			</div>
         </main>
 
-		<!-- Modals -->
-		<div class="modal fade bd-example-modal-lg" id="id-gen-modal" tabindex="-1" role="dialog" aria-labelledby="id-gen-modalLabel" aria-hidden="true">
-			<div class="modal-dialog modal-lg" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="id-gen-modalLabel">Title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div id="id_modal_content" class="modal-body"> </div>
-					<div id="id_modal_footer" class="modal-footer"></div>
-				</div>
-			</div>
-		</div>
-
 		<script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
 		<script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
 		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
@@ -162,28 +146,14 @@
 		<script src="/static/lib/datetimepicker/bootstrap-datetimepicker.min.js"></script>
 		<script src="/static/lib/crypto-js/3.1.2/components/core.js"></script>
 		<script src="/static/lib/crypto-js/3.1.2/components/md5.js"></script>
+		<script src="/mksdk-js/widgets/basic_modal.js"></script>
+		<script src="/mksdk-js/widgets/basic_uploader.js"></script>
 
 		[SCRIPTS]
 
         <script>
           	var GatewayIP = "[GATEWAY_IP]";
 			var NodeUUID  = "[NODE_UUID]";
-
-			var ConvertHEXtoString = function(hexx) {
-				var hex = hexx.toString();//force conversion
-				var str = '';
-				for (var i = 0; (i < hex.length && hex.substr(i, 2) !== '00'); i += 2) {
-					str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-				}
-				return str;
-			}
-
-			var ExecuteJS = function(content) {
-				var oScript 	= document.createElement("script");
-				var oScriptText = document.createTextNode(content);
-				oScript.appendChild(oScriptText);
-				document.body.appendChild(oScript);
-			}
 
 			String.prototype.format = function (args) {
 				var str = this;
@@ -216,6 +186,12 @@
 				this.API  		= MkSAPIBuilder.GetInstance();
 				this.Player 	= new Player(this.API);
 				this.PlayList 	= new PlayList(this.API);
+				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
+				this.Uploader.SetAPI(this.API);
+				this.Uploader.SetModal(true);
+				this.Uploader.SetFileType("audio/mpeg");
+				this.Uploader.Build(null, "Upload");
+				this.Uploader.OnUploadCompete = this.OnUploadCompleteHandler;
 				// Update gateway IP address
 				this.API.SetGlobalGatewayIP(GatewayIP);
 				// Default handler
@@ -258,7 +234,7 @@
 																					"src": "resource/img/song.jpeg", 
 																					"ui_type": 'config' }, function(res) { 
 										var payload = res.data.payload; 
-										document.getElementById(payload.id).src = ConvertHEXtoString(payload.content); 
+										document.getElementById(payload.id).src = MkSGlobal.ConvertHEXtoString(payload.content); 
 									});
 								}
 								break;
@@ -283,18 +259,7 @@
 					}
 					break;
 					case "upload_progress": {
-						console.log(data);
-						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
-						document.getElementById("id_progress_item").innerHTML =  data.message;
-						switch(data.status) {
-							case "inprogress":
-								break;
-							case "error":
-								break;
-							case "done":
-								$('#id-gen-modal').modal('hide');
-								break;
-						}
+						this.Uploader.UpdateProgress(data);
 					}
 					break;
 				}
@@ -312,6 +277,10 @@
 				});
 			}
 			
+			Node.prototype.OnUploadCompleteHandler = function () {
+				node.Uploader.Hide();
+			}
+
 			function Player (api) {
 				self = this;
 
@@ -574,7 +543,7 @@
 																	"src": "resource/img/song.jpeg", 
 																	"ui_type": 'config' }, function(res) { 
 						var payload = res.data.payload; 
-						document.getElementById(payload.id).src = ConvertHEXtoString(payload.content); 
+						document.getElementById(payload.id).src = MkSGlobal.ConvertHEXtoString(payload.content); 
 					});
 					node.Player.SongList.push(item);
 				}
@@ -587,12 +556,6 @@
 				});
 			}
 			// Self-generated area
-
-			$('#id-semsor-modal').on('hide.bs.modal', function (e) {
-				
-			})
-
-			// $('#id-semsor-modal').modal('show');
 
 			feather.replace();
         </script>
