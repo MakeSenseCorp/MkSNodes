@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>TDD Executor</title>
+
+		[CSS]
+
+        <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css" crossorigin="anonymous">
+     
+        <style>
+            body {
+              font-size: .875rem;
+            }
+            .feather {
+              width: 16px;
+              height: 16px;
+              vertical-align: text-bottom;
+            }
+            html {
+              position: relative;
+              min-height: 100%;
+            }
+            body {
+              /* Margin bottom by footer height */
+              margin-bottom: 60px;
+            }
+            .footer {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              /* Set the fixed height of the footer here */
+              height: 60px;
+              line-height: 60px; /* Vertically center the text there */
+              background-color: #f5f5f5;
+            }
+            body > .container {
+              padding: 60px 15px 0;
+            }
+            .footer > .container {
+              padding-right: 15px;
+              padding-left: 15px;
+            }
+            code {
+              font-size: 80%;
+            }
+        </style>
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <main role="main" class="container">
+        	<div class="row">
+        	    <div class="col-lg-12">
+					<div class="accordion" id="accordionExample">
+						<div class="card">
+							<div class="card-header" id="headingOne">
+								<h2 class="mb-0">
+									<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+										Master Public Info
+									</button>
+								</h2>
+							</div>
+
+							<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+								<div class="card-body">
+									<div class="row">
+										<div class="col-lg-12 text-center">
+											<img id="master_image" data-obj="mks" style="height:192px;" src="resource/img/yoda.jpeg" />
+										</div>
+									</div>
+									<br />
+									<div class="row">
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">CPU Type</span>
+														<span class="text-muted" id="master_cpu_type">n/a</span>
+													</h6>
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">CPU Usage</span>
+														<span class="text-muted" id="master_cpu_usage">n/a</span>
+													</h6>
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">CPU Temperature</span>
+														<span class="text-muted" id="master_cpu_temperature">n/a</span>
+													</h6>
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">Board Type</span>
+														<span class="text-muted" id="master_board_type">n/a</span>
+													</h6>
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">OS Type</span>
+														<span class="text-muted" id="master_os_type">n/a</span>
+													</h6>
+												</div>
+											</div>
+										</div>
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<div class="card-body">
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted">HD Usage (<a id="master_hd_total">n/a</a>)</span>
+																</h6>
+															</div>
+															<div class="col-lg-7">
+																<div class="progress">
+																	<div id="master_hd_used" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+																</div>
+															</div>
+														</div>
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted">RAM Usage (<a id="master_ram_total">n/a</a>)</span>
+																</h6>
+															</div>
+															<div class="col-lg-7">
+																<div class="progress">
+																	<div id="master_ram_used" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+																</div>
+															</div>
+														</div>
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted"><a href="#" onclick="node.Machine.Reboot()">Reboot</a></span>
+																</h6>
+															</div>
+														</div>
+														<div class="row">
+															<div class="col-lg-5">
+																<h6 class="d-flex justify-content-between align-items-center mb-3">
+																	<span class="text-muted"><a href="#" onclick="node.Machine.UI.OpenModal('install');">Install Node</a></span>
+																</h6>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="card">
+							<div class="card-header" id="headingTwo">
+								<h2 class="mb-0">
+									<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+										Network & Connections
+									</button>
+								</h2>
+							</div>
+							
+							<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+								<div class="card-body">
+									<div class="row">
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted">Machine Name</span>
+														<span class="text-muted" id="master_machine_name">n/a</span>
+													</h6>
+												</div>
+											</div>
+											<br>
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted"> Network Devices List </span>
+														<span class="badge badge-secondary badge-pill" id="network_devices_count_id">0</span>
+													</h6>
+													<div id="network_devices_list_id"></div>
+												</div>
+											</div>
+										</div>
+										<div class="col-lg-6">
+											<div class="card">
+												<div class="card-body">
+													<h6 class="d-flex justify-content-between align-items-center mb-3">
+														<span class="text-muted"> Interfaces </span>
+														<span class="badge badge-secondary badge-pill" id="network_interfaces_count_id">0</span>
+													</h6>
+													<div id="network_interfaces_list_id"></div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<br>
+									<h6 class="d-flex justify-content-between align-items-center mb-3">
+										<span class="text-muted">Connections List (<a href="#" onclick="node.Machine.GetConnectionsList()">Refresh</a>)</span>
+										<span class="badge badge-secondary badge-pill" id="connections_count_id">0</span>
+									</h6>
+									<div id="connections_list_id"></div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="card">
+							<div class="card-header" id="headingThree">
+								<h2 class="mb-0">
+									<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+										Nodes & Services
+									</button>
+								</h2>
+							</div>
+							
+							<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+								<div class="card-body">
+									<div class="row">
+										<div class="col-lg-12">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Service List</span>
+												<span class="badge badge-secondary badge-pill" id="on_boot_services_count_id">0</span>
+											</h6>
+											<div id="on_boot_services_list_id"></div>
+										</div>
+									</div>
+									<br/>
+									<div class="row">
+										<div class="col-lg-12">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Nodes List</span>
+												<span class="badge badge-secondary badge-pill" id="online_nodes_count_id">0</span>
+											</h6>
+											<div id="online_nodes_list_id"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>						
+					</dix>
+        	    </div>
+        	</div>
+		</main>
+
+        <script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
+        <script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
+        <script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
+		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/mksdk-js/widgets/basic_modal.js"></script>
+		<script src="/mksdk-js/widgets/basic_uploader.js"></script>
+		<script src="/mksdk-js/widgets/basic_table.js"></script>
+        
+        [SCRIPTS]
+
+        <script>
+			/*
+			[GATEWAY]
+			[NODE_UUID]
+			[CUSTOM_VARS]
+			*/
+			var GatewayIP = "[GATEWAY_IP]";
+			var NodeUUID  = "[NODE_UUID]";
+
+			console.log("Gateway IP address - " + GatewayIP);
+
+			$(document).ready(function() {
+				// User Code #1 - Start
+				
+				// User Code #1 - End
+			});
+
+			function Node() {
+				var self = this;
+
+				// Get makesense api instanse.
+				this.API 		= MkSAPIBuilder.GetInstance();
+				this.Machine 	= new PC(this.API);
+				// Update gateway IP address
+				this.API.SetGlobalGatewayIP(GatewayIP);
+				// Default handler
+				this.API.OnUnexpectedDataArrived = function (packet) {
+					console.log(packet);
+				}
+
+				return this;
+			}
+
+			Node.prototype.Init = function() {
+				// User Code #1 - Start
+				
+				// User Code #1 - End
+			}
+
+			Node.prototype.OnChangeEvent = function(packet) {
+				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
+				data = packet.data.payload.data
+				switch(packet.data.payload.event) {
+					case "template": {
+					}
+						break;
+					// User Code #1 - Start
+					case "upload_progress": {
+						this.Machine.UI.Uploader.UpdateProgress(data);
+					}
+						break;
+					case "install_progress": {
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								this.Machine.UI.Modal.Hide();
+								break;
+						}
+					}
+						break;
+					case "uninstall_progress": {
+						$("#id_progress_bar").css("width", data.precentage).text(data.precentage);
+						document.getElementById("id_progress_item").innerHTML =  data.message;
+						switch(data.status) {
+							case "inprogress":
+								break;
+							case "error":
+								break;
+							case "done":
+								this.Machine.UI.Modal.Hide();
+								break;
+						}
+					}
+						break;
+					// User Code #1 - End
+				}
+			}
+
+			Node.prototype.Connect = function() {
+				var self = this;
+				console.log("Connect Gateway");
+				this.API.ConnectGateway(function() {
+					console.log("Connection to Gateway was established.");
+					self.API.Gateway.OnNodeChangeEvent = self.OnChangeEvent.bind(self);
+					self.API.GetNodeInfo(NodeUUID, function(res) {
+						UserGetNodeSensorInfoHandler(res);
+					});
+				});
+			}
+
+			function PC(api) {
+				self = this;
+
+				this.API 	= api;
+				this.UI		= new NodeUI(this.API);
+
+				this.MasterPublicInfoIntervakHndl = 0;
+
+				return this;
+			}
+
+			PC.prototype.GetConnectionsList = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_connections_list", {}, function(res) {
+					var payload = res.data.payload;
+					var connections = payload.connections;
+					var data = [];
+					document.getElementById("connections_count_id").innerHTML = payload.connections.length;
+					connections.forEach(function(element) {
+						row = []
+						row.push(element.uuid);
+						row.push(element.local_type);
+						row.push(element.type);
+						row.push(element.ip);
+						row.push(element.port);
+						data.push(row);
+					});
+					table = new MksBasicTable();
+					table.SetSchema(["#","UUID","Local","Type","IP","Port"]);
+					table.SetData(data);
+					table.Build(document.getElementById("connections_list_id"));
+					feather.replace();
+				});
+			}
+
+			PC.prototype.GetInstalledNodesList = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_installed_nodes_list", {
+				}, function(res) {
+					var payload = res.data.payload;
+					var installed_nodes = payload.installed_nodes;
+					var data = [];
+					var checkBox = `
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateNodeEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					`;
+					document.getElementById("online_nodes_count_id").innerHTML = installed_nodes.length;
+					installed_nodes.forEach(function(element) {
+						row = []
+						row.push(element.name);
+						row.push(element.uuid);
+						html = checkBox;
+						html = html.split("[DISABLED]").join("");
+						html = html.split("[UUID]").join(element.uuid);
+						if (element.enabled == 1) {
+							html = html.split("[STATE]").join("checked");
+						} else {
+							html = html.split("[STATE]").join("");
+						}
+						row.push(html);
+						row.push(`<span onClick="OnUninstallClick('`+element.uuid+`')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span>`);
+						data.push(row);
+					});
+
+					table = new MksBasicTable();
+					table.SetSchema(["#","Name","UUID","Activate","Remove"]);
+					table.SetData(data);
+					table.Build(document.getElementById("online_nodes_list_id"));
+					feather.replace();
+				});
+			}
+
+			PC.prototype.GetGitPackages = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_git_packages", {
+				}, function(res) {
+					gGitPackages = res.data.payload.packages;
+				});
+			}
+
+			PC.prototype.GetMiscInfo = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_master_public_info", {
+				}, function(res) {					
+					payload = res.data.payload;
+					document.getElementById("master_cpu_usage").innerHTML = payload.cpu_usage + "%";
+					document.getElementById("master_cpu_temperature").innerHTML = payload.cpu_temperature + "C";
+					
+					document.getElementById("master_ram_total").innerHTML = payload.ram_total + "Mb";
+					ramUsage = ((payload.ram_used / payload.ram_total) * 100).toFixed(1)
+					document.getElementById("master_ram_used").style.width = ramUsage + "%";
+					document.getElementById("master_ram_used").setAttribute("aria-valuenow", ramUsage);
+					document.getElementById("master_ram_used").innerHTML = ramUsage + "%";
+					
+					document.getElementById("master_hd_total").innerHTML = payload.hd_total + "Gb";
+					hdUsage = ((payload.hd_used / payload.hd_total) * 100).toFixed(1)
+					document.getElementById("master_hd_used").style.width = hdUsage + "%";
+					document.getElementById("master_hd_used").setAttribute("aria-valuenow", hdUsage);
+					document.getElementById("master_hd_used").innerHTML = hdUsage + "%";
+					
+					document.getElementById("master_os_type").innerHTML = payload.os_type;
+					document.getElementById("master_cpu_type").innerHTML = payload.cpu_type;
+					document.getElementById("master_board_type").innerHTML = payload.board_type;
+					document.getElementById("master_machine_name").innerHTML = payload.machine_name;
+					
+					var interfaces = payload.network.interfaces;
+					var data = [];
+					document.getElementById("network_interfaces_count_id").innerHTML = interfaces.length;
+					interfaces.forEach(function(element) {
+						row = []
+						row.push(element[0]);
+						row.push(element[1]);
+						row.push(`<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>`);
+						data.push(row);
+					});
+					
+					table = new MksBasicTable();
+					table.SetSchema(["#","IP","MAC","Info"]);
+					table.SetData(data);
+					table.Build(document.getElementById("network_interfaces_list_id"));
+					feather.replace();
+
+					var network_devices = payload.network_devices;
+					var data = [];
+					document.getElementById("network_devices_count_id").innerHTML = network_devices.length;
+					network_devices.forEach(function(element) {
+						row = []
+						row.push(element.ip);
+						if (element.mks !== undefined) {
+							row.push("MKS (" + element.mks.name + ")");
+						} else {
+							row.push("DEVICE");
+						}
+						row.push(`<span onClick="" style="width: 16px; height: 16px; cursor: pointer;color: green" data-feather="settings"></span>`);
+						data.push(row);
+					});
+					table.SetSchema(["#","IP","Type","Info"]);
+					table.SetData(data);
+					table.Build(document.getElementById("network_devices_list_id"));
+					feather.replace();
+				});
+			}
+
+			PC.prototype.GetServicesInfo = function() {
+				self = this;
+				this.API.SendCustomCommand(NodeUUID, "get_services_info", {
+				}, function(res) {
+					var payload = res.data.payload;
+					var on_boot_services = payload.on_boot_services;
+					var data = [];
+					var checkBox = `
+						<div class="custom-control custom-switch">
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateServiceEnable(this, '[UUID]')" id="switch_id_[UUID]">
+							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+						</div>
+					`;
+					document.getElementById("on_boot_services_count_id").innerHTML = on_boot_services.length;
+					on_boot_services.forEach(function(element) {
+						row = []
+						row.push(element.name);
+						row.push(element.uuid);
+						html = checkBox;
+						html = html.split("[DISABLED]").join("");
+						html = html.split("[UUID]").join(element.uuid);
+						if (element.enabled == 1) {
+							html = html.split("[STATE]").join("checked");
+						} else {
+							html = html.split("[STATE]").join("");
+						}
+						row.push(html);
+						data.push(row);
+					});
+
+					table = new MksBasicTable();
+					table.SetSchema(["#","Name","UUID","Activate"]);
+					table.SetData(data);
+					table.Build(document.getElementById("on_boot_services_list_id"));
+				});
+			}
+
+			PC.prototype.UpdateServiceEnable = function(elem, uuid) {
+				if (elem.checked) {
+					this.API.SendCustomCommand(NodeUUID, "set_service_info", {
+						uuid: uuid,
+						enabled: 1
+					}, function(res) { });
+				} else {
+					this.API.SendCustomCommand(NodeUUID, "set_service_info", {
+						uuid: uuid,
+						enabled: 0
+					}, function(res) { });
+				}
+			};
+
+			PC.prototype.UpdateNodeEnable = function(elem, uuid) {
+				if (elem.checked) {
+					this.API.SendCustomCommand(NodeUUID, "set_installed_node_info", {
+						uuid: uuid,
+						enabled: 1
+					}, function(res) { });
+				} else {
+					this.API.SendCustomCommand(NodeUUID, "set_installed_node_info", {
+						uuid: uuid,
+						enabled: 0
+					}, function(res) { });
+				}
+			};
+
+			PC.prototype.Reboot = function() {
+				this.API.SendCustomCommand(NodeUUID, "reboot", {
+				}, function(res) { });
+			}
+
+			var gGitPackages = null;
+			var UninstallModalContent = `
+				<div class="row">
+					<div class="col-lg-12">
+						<span class="text-muted">Do you wish to remove this node?</span>
+					</div>
+				</div>
+				<div class="row d-none" id="id_progress">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<div class="progress">
+									<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+								</div>
+								<div>
+									<span class="text-muted" id="id_progress_item">0%</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+
+			var UninstalModalFooter = `
+				<button type="button" class="btn btn-primary" onclick="UninstallNode();">Yes</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+			`;
+
+			var InstallGitPackage = function(type) {
+				document.getElementById("id_progress").classList.remove("d-none");
+				$("#id_progress_bar").css("width", "10%").text("10%");
+				document.getElementById("id_progress_item").innerHTML = "Installing Package";
+				node.API.SendCustomCommand(NodeUUID, "install", {
+					install: {
+						type: "git",
+						file: type
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "done") {
+						$("#id_progress_bar").css("width", "100%").text("100%");
+						document.getElementById("id_progress_item").innerHTML = "Installing Package Done";
+						$('#id-gen-modal').modal('hide');
+					}
+				});
+			}
+
+			var gUninstallNodeUUID = "";
+			var UninstallNode = function() {
+				node.Machine.UI.Modal.SetDefaultFooter();
+				document.getElementById("id_progress").classList.remove("d-none");
+				node.API.SendCustomCommand(NodeUUID, "uninstall", {
+					uninstall: {
+						uuid: gUninstallNodeUUID
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "accept") {
+					}
+				});
+			}
+
+			var OnUninstallClick = function(uuid) {
+				gUninstallNodeUUID = uuid;
+				node.Machine.UI.OpenModal("uninstall");
+			}
+
+			function NodeUI (api) {
+				self 			= this;
+				this.API 		= api;
+				this.Modal 		= new MksBasicModal();
+				this.Uploader	= MksBasicUploaderBuilder.GetInstance();
+				this.Uploader.SetAPI(this.API);
+				this.Uploader.SetFileType("zip")
+
+				this.InstallerContainer = `
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item waves-effect waves-light">
+							<a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="false">File</a>
+						</li>
+						<li class="nav-item waves-effect waves-light">
+							<a class="nav-link active" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="true">Git</a>
+						</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
+							<div class="row">
+								<div class="col-lg-12" id="id-basic-uploader-installer"></div>
+							</div>
+						</div>
+						<div class="tab-pane fade active show" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+							<div class="row">
+								<div class="col-lg-12">
+									<div class="card">
+										<div class="card-body">
+											<h6 class="d-flex justify-content-between align-items-center mb-3">
+												<span class="text-muted">Nodes List</span>
+												<span class="badge badge-secondary badge-pill" id="id_git_packages_count">0</span>
+											</h6>
+											<div id="id_git_packages"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row d-none" id="id_progress">
+						<div class="col-lg-12">
+							<div class="card">
+								<div class="card-body">
+									<div class="progress">
+										<div id="id_progress_bar" class="progress-bar progress-bar-striped" style="min-width: 20px;"></div>
+									</div>
+									<div>
+										<span class="text-muted" id="id_progress_item">0%</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+
+				return this;
+			}
+
+			NodeUI.prototype.OpenModal = function (action) {
+				switch(action) {
+					case "install":
+						this.Modal.Remove();
+						this.Modal.SetTitle("Install Node Package");
+						this.Modal.SetContent(this.InstallerContainer);
+						// Build DOM UI for Modal
+						this.Modal.Build("lg");
+						var objUploader = document.getElementById("id-basic-uploader-installer");
+						// Build DOM UI for Uploader
+						this.Uploader.Build(objUploader, "Install");
+						// Update list of packages
+						var data = [];
+						document.getElementById("id_git_packages_count").innerHTML = gGitPackages.length;
+						gGitPackages.forEach(function(element) {
+							row = []
+							row.push(element.uuid);
+							row.push(element.type);
+
+							if (element.installed == 1) {
+								row.push("Installed");
+								row.push(`<a class="text-muted" onclick=''>Install</a>`);
+							} else {
+								row.push("Not Installed");
+								installCell = `<a href='#' onClick="InstallGitPackage('[TYPE]')">Install</a>`;
+								installCell = installCell.split("[TYPE]").join(element.type);
+								row.push(installCell);
+							}
+							row.push(`<span onClick="OnUninstallClick('`+element.uuid+`')" style="width: 16px; height: 16px; cursor: pointer;color: red" data-feather="trash-2"></span>`);
+							data.push(row);
+						});
+						
+						table = new MksBasicTable();
+						table.SetSchema(["#","UUID","Type","Status","Install","Remove"]);
+						table.SetData(data);
+						table.Build(document.getElementById("id_git_packages"));
+						feather.replace();
+						break;
+					case "uninstall":
+						this.Modal.Remove();
+						this.Modal.SetTitle("Uninstall Node Package");
+						this.Modal.SetContent(UninstallModalContent);
+						this.Modal.SetFooter(UninstalModalFooter);
+						this.Modal.Build("lg");
+						break;
+					default:
+						break;
+				}
+				
+				
+				this.Uploader.OnUploadCompete = this.OnUploadCompleteHandler;
+				this.Modal.Show();
+			}
+
+			NodeUI.prototype.OnUploadCompleteHandler = function () {
+				document.getElementById("id_progress").classList.remove("d-none");
+				// Send install command
+				node.API.SendCustomCommand(NodeUUID, "install", {
+					install: {
+						type: "file",
+						file: data.file
+					}
+				}, function(res) { 
+					status = res.data.payload.status;
+					if (status == "accepted") {
+						document.getElementById("id_progress_item").innerHTML = "Installing Package";
+					}
+				});
+			}
+  
+			// Self-genrated area
+			var node = new Node();
+			node.Init();
+			node.Connect();
+			var UserGetNodeSensorInfoHandler = function(res) {
+				var payload = res.data.payload;
+				[RESOURCES]
+				// User Code #1 - Start
+				node.Machine.GetConnectionsList();
+				node.Machine.GetMiscInfo();
+				node.Machine.MasterPublicInfoIntervakHndl = setInterval(node.Machine.GetMiscInfo.bind(node.Machine), 5000);
+				node.Machine.GetServicesInfo();
+				node.Machine.GetInstalledNodesList();
+				node.Machine.GetGitPackages();
+				// User Code #1 - End
+				node.API.RegisterOnNodeChange(NodeUUID, function(res) {
+					console.log("UI have registered NODE successfuly", res);
+				});
+			}
+			// Self-generated area
+          
+        </script>
+    </body>
+</html>
