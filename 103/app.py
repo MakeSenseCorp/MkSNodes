@@ -181,6 +181,7 @@ class Context():
 					list_of_devices.append(self.OnlineDevices[key])
 				self.ThreadLock.release()
 				THIS.Node.EmitOnNodeChange({
+					'event': 'online_devices',
 					'online_devices': list_of_devices
 				})
 		except Exception as e:

@@ -173,6 +173,10 @@ class Context():
 		self.ShutdownProcess()
 		self.Node.Exit("Request_ShutdownHandler")
 
+	''' 
+		Description: 	Event from registered node or service.
+		Return: 		N/A
+	'''	
 	def Request_OnNodeChangeHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
@@ -185,6 +189,9 @@ class Context():
 			'error': 'none'
 		})
 	
+	'''
+	TODO - I think this is not being used.
+	'''
 	def Response_GetOnlineDevicesHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
