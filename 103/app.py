@@ -112,7 +112,12 @@ class Context():
 		for key in self.OnlineDevices:
 			if key == conn.IP:
 				del self.OnlineDevices[key]["mks"]
-	
+	''' 
+		Description: 	Response for request (get_node_info) 
+						For each device found this service send get_node_info, if there is a response
+						the device marked as MKS by adding "mks" value to dictionary.
+		Return: 		N/A
+	'''	
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] {0}".format(info,classname=self.ClassName),5)
 		self.ThreadLock.acquire()

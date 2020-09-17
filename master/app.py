@@ -182,7 +182,8 @@ class Context():
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
 
-		if src in THIS.Node.Services[103]["uuid"]:
+		# if src in THIS.Node.Services[103]["uuid"]:
+		if ('online_devices' in payload["event"]):
 			self.NetworkDevicesList = payload["online_devices"]
 
 		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
