@@ -119,16 +119,16 @@ class Context():
 		Return: 		N/A
 	'''	
 	def OnGetNodeInfoHandler(self, info):
-		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] {0}".format(info,classname=self.ClassName),5)
+		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler]".format(classname=self.ClassName),5)
 		self.ThreadLock.acquire()
 		for key in self.OnlineDevices:
 			if key == info["ip"]:
-				self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
+				# self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
 				self.OnlineDevices[key]["mks"] = {
 					"type": info["type"],
 					"name": info["name"]
 				}
-		self.Node.LogMSG("({classname})# {0}".format(self.OnlineDevices, classname=self.ClassName),5)
+		#self.Node.LogMSG("({classname})# {0}".format(self.OnlineDevices, classname=self.ClassName),5)
 		self.ThreadLock.release()
 
 	def WorkingHandler(self):

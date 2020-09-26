@@ -208,7 +208,7 @@ class Context():
 					'local_type':	node.Obj["local_type"],
 					'uuid':			node.Obj["uuid"],
 					'ip':			node.IP,
-					'port':			node.Port,
+					'port':			node.Obj["listener_port"],
 					'type':			node.Obj["type"]
 				})
 			payload = {
