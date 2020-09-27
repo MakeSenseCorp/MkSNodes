@@ -535,30 +535,35 @@ class Context():
 
 	def OnNodeWorkTick(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:			
-			self.CheckingForUpdate = True
-			self.CurrentTimestamp = time.time()
-			self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName),5)
-			self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName),5)
+			try:
+				self.CheckingForUpdate = True
+				self.CurrentTimestamp = time.time()
+				self.Node.LogMSG("({classname})# Live ... ({0})".format(self.Node.Ticker, classname=self.ClassName),5)
+				self.Node.LogMSG("({classname})# Current connections:".format(classname=self.ClassName),5)
 
-			connections = THIS.Node.GetConnectedNodes()
-			for idx, key in enumerate(connections):
-				node = connections[key]
-				#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
-				#packet  = self.Node.BasicProtocol.AppendMagic(message)
-				#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.Obj["listener_port"], node.Obj["type"], node.IP),5)
-			
-			self.Node.LogMSG("({classname})# Services:".format(classname=self.ClassName),5)
-			for idx, key in enumerate(self.Node.Services):
-				service = self.Node.Services[key]
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx), service["uuid"], service["enabled"], service["registered"], service["name"]),5)
-			
-			self.Node.LogMSG("({classname})# Local Master connection:".format(classname=self.ClassName),5)
-			for idx, key in self.Node.MasterManager.Masters:
-				master = self.Node.MasterManager.Masters[key]
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}".format(str(idx), master["ip"], master["conn"]["obj"]["uuid"], master["status"]),5)
-			if not self.Node.MasterManager.Masters:
-				self.Node.LogMSG("  Empty",5)
+				connections = THIS.Node.GetConnectedNodes()
+				for idx, key in enumerate(connections):
+					node = connections[key]
+					#message = self.Node.BasicProtocol.BuildRequest("DIRECT", item.UUID, self.Node.UUID, "get_node_status", {}, {})
+					#packet  = self.Node.BasicProtocol.AppendMagic(message)
+					#self.Node.Transceiver.Send({"sock":item.Socket, "packet":packet}) # Response will update "enabled" or "ts" field in local DB
+					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx), node.Obj["local_type"], node.Obj["uuid"], node.Obj["listener_port"], node.Obj["type"], node.IP),5)
+				
+				self.Node.LogMSG("({classname})# Services:".format(classname=self.ClassName),5)
+				for idx, key in enumerate(self.Node.Services):
+					service = self.Node.Services[key]
+					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx), service["uuid"], service["enabled"], service["registered"], service["name"]),5)
+				
+				self.Node.LogMSG("({classname})# Local Master connection:".format(classname=self.ClassName),5)
+				for idx, key in enumerate(self.Node.MasterManager.Masters):
+					master = self.Node.MasterManager.Masters[key]
+					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}".format(str(idx), master["ip"], master["conn"]["obj"]["uuid"], master["status"]),5)
+				if not self.Node.MasterManager.Masters:
+					self.Node.LogMSG("  Empty",5)
+			except Exception as e:
+				self.Node.LogMSG("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
+						classname=self.ClassName,
+						error=str(e)),3) 
 
 Node = MkSMasterNode.MasterNode()
 THIS = Context(Node)

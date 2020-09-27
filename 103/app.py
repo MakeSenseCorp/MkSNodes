@@ -122,8 +122,8 @@ class Context():
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler]".format(classname=self.ClassName),5)
 		self.ThreadLock.acquire()
 		for key in self.OnlineDevices:
+			#self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
 			if key == info["ip"]:
-				# self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
 				self.OnlineDevices[key]["mks"] = {
 					"type": info["type"],
 					"name": info["name"]
@@ -171,7 +171,7 @@ class Context():
 					if conn is None:
 						conn, status = self.Node.ConnectNode(key, 16999)
 						if status is True:
-							self.Node.LogMSG("({classname})# Maksense device found".format(key,classname=self.ClassName),5)
+							self.Node.LogMSG("({classname})# Makesense device found".format(key,classname=self.ClassName),5)
 							message = self.Node.BasicProtocol.BuildRequest("DIRECT", "MASTER", self.Node.UUID, "get_node_info", {}, {})
 							packet  = self.Node.BasicProtocol.AppendMagic(message)
 							self.Node.SocketServer.Send(conn.Socket, packet)
