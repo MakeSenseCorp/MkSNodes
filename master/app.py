@@ -170,8 +170,10 @@ class Context():
 	
 	def Request_ShutdownHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_ShutdownHandler]".format(classname=self.ClassName),5)
-		self.ShutdownProcess()
-		self.Node.Exit("Request_ShutdownHandler")
+		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
+		if src == "00000000-0000-0000-0000-000000000001":
+			self.ShutdownProcess()
+			self.Node.Exit("Request_ShutdownHandler")
 
 	''' 
 		Description: 	Event from registered node or service.
@@ -557,7 +559,8 @@ class Context():
 				self.Node.LogMSG("({classname})# Local Master connection:".format(classname=self.ClassName),5)
 				for idx, key in enumerate(self.Node.MasterManager.Masters):
 					master = self.Node.MasterManager.Masters[key]
-					self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}".format(str(idx), master["ip"], master["conn"]["obj"]["uuid"], master["status"]),5)
+					self.Node.LogMSG("  {0}\t{1}\t{2}\n\t\t{3}".format(str(idx), master["uuid"], master["ip"], master["nodes"]),5)
+					#self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}".format(str(idx), master["ip"], master["conn"]["obj"]["uuid"], master["status"]),5)
 				if not self.Node.MasterManager.Masters:
 					self.Node.LogMSG("  Empty",5)
 			except Exception as e:
