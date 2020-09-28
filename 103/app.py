@@ -51,19 +51,18 @@ class Context():
 					self.Networks.append(net)
 		
 		for network in self.Networks:
-			thread.start_new_thread(self.PingDevicesThread, (network, range(1,50), ))
-			thread.start_new_thread(self.PingDevicesThread, (network, range(50,100), ))
-			thread.start_new_thread(self.PingDevicesThread, (network, range(100,150), ))
-			thread.start_new_thread(self.PingDevicesThread, (network, range(150,200), ))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(1,50), 1,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(50,100), 2,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(100,150), 3,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(150,200), 4,))
 
-	def PingDevicesThread(self, network, range):
+	def PingDevicesThread(self, network, ip_range, index):
 		while (self.ThreadWorking is True):
-			for client in range:
+			for client in ip_range:
 				if (self.ThreadWorking is False):
-					self.Node.LogMSG("({classname})# Exit this thread {0}".format(threading.get_ident(),classname=self.ClassName),5)
+					self.Node.LogMSG("({classname})# Exit this thread {0}".format(index,classname=self.ClassName),5)
 					return
 				ip = network + str(client)
-				# self.Node.LogMSG("({classname})# Ping {0} ...".format(ip,classname=self.ClassName),5)
 				res = MkSUtils.Ping(ip)
 				self.ThreadLock.acquire()
 				if (res is True):
@@ -122,13 +121,11 @@ class Context():
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler]".format(classname=self.ClassName),5)
 		self.ThreadLock.acquire()
 		for key in self.OnlineDevices:
-			#self.Node.LogMSG("({classname})# {0} ? {1}".format(key,info["ip"], classname=self.ClassName),5)
 			if key == info["ip"]:
 				self.OnlineDevices[key]["mks"] = {
 					"type": info["type"],
 					"name": info["name"]
 				}
-		#self.Node.LogMSG("({classname})# {0}".format(self.OnlineDevices, classname=self.ClassName),5)
 		self.ThreadLock.release()
 
 	def WorkingHandler(self):
@@ -198,6 +195,7 @@ THIS = Context(Node)
 def signal_handler(signal, frame):
 	THIS.ThreadWorking = False
 	THIS.Node.Stop("Accepted signal from other app")
+	time.sleep(3)
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
