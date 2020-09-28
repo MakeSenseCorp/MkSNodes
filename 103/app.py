@@ -195,7 +195,7 @@ THIS = Context(Node)
 def signal_handler(signal, frame):
 	THIS.ThreadWorking = False
 	THIS.Node.Stop("Accepted signal from other app")
-	time.sleep(3)
+	time.sleep(1)
 
 def main():
 	signal.signal(signal.SIGINT, signal_handler)
