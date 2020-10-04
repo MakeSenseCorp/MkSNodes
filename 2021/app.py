@@ -277,6 +277,15 @@ class Context():
 		data = {}
 		return THIS.Node.BasicProtocol.BuildResponse(packet, data)
 	
+	def OnStreamSocketCreatedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
+
+	def OnStreamSocketDataHandler(self, name, data):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,str(len(data)),classname=self.ClassName),5)
+	
+	def OnStreamSocketDisconnectedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
+
 	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
 		self.Node.LogMSG("({classname})# [OnMasterAppendNodeHandler] {0} {1} {2} {3}".format(str(uuid), str(type), str(ip), str(port), classname=self.ClassName),5)
 	
@@ -441,6 +450,10 @@ def main():
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
+	# Stream sockets events
+	THIS.Node.OnStreamSocketCreatedEvent 			= THIS.OnStreamSocketCreatedHandler
+	THIS.Node.OnStreamSocketDataEvent 				= THIS.OnStreamSocketDataHandler
+	THIS.Node.OnStreamSocketDisconnectedEvent		= THIS.OnStreamSocketDisconnectedHandler
 	
 	THIS.Node.Run(THIS.WorkingHandler)
 	THIS.Node.LogMSG("({classname})# Exit node.".format(classname=THIS.Node.ClassName),5)

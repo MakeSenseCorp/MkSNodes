@@ -498,8 +498,10 @@ class Context():
 
 	def ShutdownProcess(self):
 		self.Shutdown = True
-		self.Installer.Stop()
-		self.Uploader.Stop()
+		if self.Installer is not None:
+			self.Installer.Stop()
+		if self.Uploader is not None:
+			self.Uploader.Stop()
 		shutdown_connections = []
 		# TODO - Could be an issue with not locking this list. (multithreading)
 		connections = THIS.Node.GetConnectedNodes()
@@ -516,7 +518,17 @@ class Context():
 				packet  = THIS.Node.BasicProtocol.AppendMagic(message)
 				THIS.Node.SocketServer.Send(item["sock"], packet)
 		
+		print("Shutting down in 5 seconds")
 		time.sleep(5)
+	
+	def OnStreamSocketCreatedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
+
+	def OnStreamSocketDataHandler(self, name, data):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,str(len(data)),classname=self.ClassName),5)
+	
+	def OnStreamSocketDisconnectedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
 	def NodeSystemLoadedHandler(self):
 		self.SystemLoaded 	= True
@@ -589,6 +601,10 @@ def main():
 	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnTerminateConnectionCallback			= THIS.OnTerminateConnectionHandler
+	# Stream sockets events
+	THIS.Node.OnStreamSocketCreatedEvent 			= THIS.OnStreamSocketCreatedHandler
+	THIS.Node.OnStreamSocketDataEvent 				= THIS.OnStreamSocketDataHandler
+	THIS.Node.OnStreamSocketDisconnectedEvent		= THIS.OnStreamSocketDisconnectedHandler
 
 	# Run Node
 	THIS.Node.LogMSG("(Master Application)# Start Node ...",5)
