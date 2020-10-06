@@ -268,8 +268,8 @@
 			[NODE_UUID]
 			[CUSTOM_VARS]
 			*/
-			var GatewayIP = "[GATEWAY_IP]";
-			var NodeUUID  = "[NODE_UUID]";
+
+			[CONFIGURATION]
 
 			console.log("Gateway IP address - " + GatewayIP);
 
@@ -287,6 +287,8 @@
 				this.Machine 	= new PC(this.API);
 				// Update gateway IP address
 				this.API.SetGlobalGatewayIP(GatewayIP);
+				this.API.SetLocalWebsockIP(LocalWSIP);
+				this.API.SetLocalWebsockPort(LocalWSPORT);
 				// Default handler
 				this.API.OnUnexpectedDataArrived = function (packet) {
 					console.log(packet);
