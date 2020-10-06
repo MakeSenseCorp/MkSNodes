@@ -132,6 +132,7 @@ class Context():
 		self.Timer.OnTimerTriggerEvent  = self.OnTimerTriggerHandler
 
 		self.UploadLocker				= threading.Lock()
+		self.StreamIdentity				= 0
 
 	def GetPlayerState(self):
 		state = self.Player.get_state()
@@ -280,8 +281,8 @@ class Context():
 	def OnStreamSocketCreatedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
-	def OnStreamSocketDataHandler(self, name, data):
-		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,str(len(data)),classname=self.ClassName),5)
+	def OnStreamSocketDataHandler(self, name, identity, data):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,data,classname=self.ClassName),5)
 	
 	def OnStreamSocketDisconnectedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
@@ -346,6 +347,9 @@ class Context():
 
 		vlc.libvlc_audio_output_device_list_release(interfaces)
 		self.Node.LogMSG(self.SoundCards,5)
+
+		# Open stream to master
+		self.StreamIdentity = self.Node.ConnectStream(self.Node.MasterUUID, "master")
 
 		# self.Timer.LoadClocks(addrs)
 		# self.Timer.Run()
@@ -432,6 +436,9 @@ class Context():
 					}
 				}
 			})
+		
+		# Send PING message to MASTER
+		self.Node.SendStream(self.StreamIdentity, "PING")
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

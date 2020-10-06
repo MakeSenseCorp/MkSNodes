@@ -524,8 +524,10 @@ class Context():
 	def OnStreamSocketCreatedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
-	def OnStreamSocketDataHandler(self, name, data):
-		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,str(len(data)),classname=self.ClassName),5)
+	def OnStreamSocketDataHandler(self, name, identity, data):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,data,classname=self.ClassName),5)
+		# Response to slave
+		self.Node.SendStream(identity, "PONG")
 	
 	def OnStreamSocketDisconnectedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
