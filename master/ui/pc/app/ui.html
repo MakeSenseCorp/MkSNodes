@@ -350,9 +350,9 @@
 			Node.prototype.Connect = function() {
 				var self = this;
 				console.log("Connect Gateway");
+				self.API.OnNodeChangeCallback = self.OnChangeEvent.bind(self);
 				this.API.ConnectGateway(function() {
 					console.log("Connection to Gateway was established.");
-					self.API.Gateway.OnNodeChangeEvent = self.OnChangeEvent.bind(self);
 					self.API.GetNodeInfo(NodeUUID, function(res) {
 						UserGetNodeSensorInfoHandler(res);
 					});
@@ -776,6 +776,9 @@
 			var UserGetNodeSensorInfoHandler = function(res) {
 				var payload = res.data.payload;
 				[RESOURCES]
+				node.API.ConnectLocalWS(NodeUUID, function(res) {
+					console.log("Connected to local websocket", res);
+				});
 				// User Code #1 - Start
 				node.Machine.GetConnectionsList();
 				node.Machine.GetMiscInfo();
