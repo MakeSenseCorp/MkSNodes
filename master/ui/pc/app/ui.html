@@ -304,7 +304,7 @@
 			}
 
 			Node.prototype.OnChangeEvent = function(packet) {
-				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
+				console.log("OnNodeChangeEvent", packet, packet.data.payload.event);
 				data = packet.data.payload.data
 				switch(packet.data.payload.event) {
 					case "template": {

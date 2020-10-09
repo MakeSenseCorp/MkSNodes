@@ -152,8 +152,9 @@
 		[SCRIPTS]
 
         <script>
-          	var GatewayIP = "[GATEWAY_IP]";
-			var NodeUUID  = "[NODE_UUID]";
+			[CONFIGURATION]
+			  
+			console.log("Gateway IP address - " + GatewayIP);
 
 			String.prototype.format = function (args) {
 				var str = this;
@@ -194,6 +195,8 @@
 				this.Uploader.OnUploadCompete = this.OnUploadCompleteHandler;
 				// Update gateway IP address
 				this.API.SetGlobalGatewayIP(GatewayIP);
+				this.API.SetLocalWebsockIP(LocalWSIP);
+				this.API.SetLocalWebsockPort(LocalWSPORT);
 				// Default handler
 				this.API.OnUnexpectedDataArrived = function (packet) {
 					console.log(packet);
@@ -213,7 +216,7 @@
 			}
 
 			Node.prototype.OnChangeEvent = function(packet) {
-				console.log("OnNodeChangeEvent", this, packet.data.payload.event);
+				console.log("OnNodeChangeEvent", packet.data.payload.event);
 				data = packet.data.payload.data;
 				switch(packet.data.payload.event) {
 					case "media_folder_changed": {
@@ -268,9 +271,9 @@
 			Node.prototype.Connect = function() {
 				var self = this;
 				console.log("Connect Gateway");
+				self.API.OnNodeChangeCallback = self.OnChangeEvent.bind(self);
 				this.API.ConnectGateway(function() {
 					console.log("Connection to Gateway was established.");
-					self.API.Gateway.OnNodeChangeEvent = self.OnChangeEvent.bind(self);
 					self.API.GetNodeSensorsInfo(NodeUUID, function(res) {
 						UserGetNodeSensorInfoHandler(res);
 					});
@@ -527,6 +530,9 @@
 			var UserGetNodeSensorInfoHandler = function(res) {
 				var payload = res.data.payload;
 				[RESOURCES]
+				node.API.ConnectLocalWS(NodeUUID, function(res) {
+					console.log("Connected to local websocket", res);
+				});
 				// User Code #1 - Start
 				var objSongList = document.getElementById("id_song_list");
 				for (key in payload.songs) {

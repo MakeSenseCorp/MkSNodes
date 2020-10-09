@@ -255,6 +255,7 @@ class Context():
 		#	CPU/RAM Usage, 10 Tasks List	top -n 1
 		#									ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10
 		#
+		self.Node.LogMSG("({classname})# [Request_GetMasterPublicInfoHandler]".format(classname=self.ClassName),5)
 		cpuUsage 		= 0
 		temperature 	= 0
 		ramTotal 		= 0

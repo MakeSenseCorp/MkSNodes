@@ -349,7 +349,7 @@ class Context():
 		self.Node.LogMSG(self.SoundCards,5)
 
 		# Open stream to master
-		self.StreamIdentity = self.Node.ConnectStream(self.Node.MasterUUID, "master")
+		# self.StreamIdentity = self.Node.ConnectStream(self.Node.MasterUUID, "master")
 
 		# self.Timer.LoadClocks(addrs)
 		# self.Timer.Run()
@@ -438,7 +438,7 @@ class Context():
 			})
 		
 		# Send PING message to MASTER
-		self.Node.SendStream(self.StreamIdentity, "PING")
+		# self.Node.SendStream(self.StreamIdentity, "PING")
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
