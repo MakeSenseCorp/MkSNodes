@@ -44,7 +44,7 @@ class Context():
 		self.RequestHandlers		= {
 			'get_frame':				self.GetFrameHandler,
 			'get_sensor_info':			self.GetSensorInfoHandler,
-			'options':					self.OptionsHandler
+			'options':					self.OptionsHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -52,10 +52,7 @@ class Context():
 		}
 		# Application variables
 		self.DB							= None
-		self.Cameras 					= []
 		self.ObjCameras					= []
-		self.USBDevices 				= []
-		self.USBDevice 					= None
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -89,12 +86,18 @@ class Context():
 		return THIS.Node.BasicProtocol.BuildResponse(packet, {
 			'return_code': 'no_frame'
 		})
-
-	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
-		print ("[OnMasterAppendNodeHandler]", str(uuid), str(type), str(ip), str(port))
 	
-	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
-		print ("[OnMasterRemoveNodeHandler]", str(uuid), str(type), str(ip), str(port))
+	def OptionsHandler(self, sock, packet):
+		pass
+
+	def OnStreamSocketCreatedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
+
+	def OnStreamSocketDataHandler(self, name, identity, data):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDataHandler] {0} {1}".format(name,data,classname=self.ClassName),5)
+	
+	def OnStreamSocketDisconnectedHandler(self, name, identity):
+		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
 	def OnGetNodeInfoHandler(self, info, online):
 		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
@@ -106,89 +109,79 @@ class Context():
 		devices = data.split("\n")[:-1]
 		return devices
 	
-	def UpdateCameraStracture(self, dbCameras, dev_path):
-		cameradb 		= None
+	def UpdateCameraStracture(self, db_camera, dev_path):
+		camera_db 		= None
 		camera 			= MkSUVCCamera.UVCCamera(dev_path)
 		camera_drv_name	= camera.CameraDriverName
-		cameraFound 	= False
+		camera_found 	= False
 
 		# Update camera path (if it was changed)
-		for itemCamera in dbCameras:
+		for item in db_camera:
 			# Invalid driver name
 			if camera_drv_name == "":
-				print ("({classname})# Found path is not valid camera".format(classname=self.ClassName))
+				self.Node.LogMSG("({classname})# Found path is not valid camera {0}".format(camera_drv_name,classname=self.ClassName),5)
 				return
 			else:
 				# Is camera exist in DB
-				if camera_drv_name in itemCamera["driver_name"]:
-					cameraFound = True
-					cameradb 	= itemCamera
+				if camera_drv_name in item["driver_name"]:
+					camera_found = True
+					camera_db 	 = item
 					break
 		
-		if cameraFound is True:
-			cameradb["dev"] 	= dev_path.split('/')[-1]
-			cameradb["path"] 	= dev_path
-			camera.SetFramesPerVideo(int(cameradb["frame_per_video"]))
-			camera.SetRecordingSensetivity(int(cameradb["camera_sensetivity_recording"]))
-			camera.SetSecuritySensetivity(int(cameradb["camera_sensetivity_security"]))
-			camera.SetHighDiff(int(cameradb["high_diff"]))
-			camera.SetSecondsPerFrame(float(cameradb["seconds_per_frame"]))
+		if camera_found is True:
+			camera_db["dev"] 	= dev_path.split('/')[-1]
+			camera_db["path"] 	= dev_path
+			camera.SetHighDiff(int(camera_db["high_diff"]))
+			camera.SetSecondsPerFrame(float(camera_db["seconds_per_frame"]))
+			camera.SetSensetivity(int(camera_db["sensetivity"]))
 		else:
-			print ("({classname})# New camera... Adding to the database...".format(classname=self.ClassName))
-			cameradb = {
+			self.Node.LogMSG("({classname})# New camera... Adding to the database... {0}".format(camera_drv_name,classname=self.ClassName),5)
+			camera_db = {
 				'uid': camera.UID,
 				'name': 'Camera_' + camera.UID,
 				'dev': dev_path.split('/')[-1],
 				'path': dev_path,
 				'driver_name': camera_drv_name,
 				'enable':1,
-				"camera_sensetivity_recording": 95,
-				"camera_sensetivity_security": 95,
+				"sensetivity": 95,
 				"status": "connected",
 				"high_diff": 5000,
 				"seconds_per_frame": 1, 
 				'access_from_www': 1
 			}
 			# Append new camera.
-			dbCameras.append(cameradb)
-			camera.SetFramesPerVideo(2000)
-			camera.SetRecordingSensetivity(95)
-			camera.SetSecuritySensetivity(95)
+			db_camera.append(camera_db)
+			camera.SetSensetivity(95)
 			camera.SetHighDiff(5000)
 			camera.SetSecondsPerFrame(1)
 			# Add camera to camera obejct DB
 			self.ObjCameras.append(camera)
-			cameradb["enable"] = 1
+			camera_db["enable"] = 1
 		
 		# Start camera thread
 		camera.OnFrameChangeHandler = self.OnFrameChangeCallback
 		camera.StartCamera()
 		
 		# Update camera object with values from database
-		camera.Name = cameradb["name"]
-		camera.OnImageDifferentCallback = self.OnCameraDiffrentHandler
-		camera.StopRecordingEvent 		= self.StopRecordingEventHandler
-		cameradb["enable"] = 1
+		camera.Name = camera_db["name"]
+		camera_db["enable"] = 1
 		# Add camera to camera obejct DB
 		self.ObjCameras.append(camera)
 			
-		print ("({classname})# Emit camera_connected {dev}".format(classname=self.ClassName,dev=cameradb["dev"]))
+		self.Node.LogMSG("({classname})# Emit camera_connected {dev}".format(dev=camera_db["dev"],classname=self.ClassName),5)
 		THIS.Node.EmitOnNodeChange({
 				'event': "camera_connected",
-				'camera': cameradb
+				'camera': camera_db
 		})
 
 	def NodeSystemLoadedHandler(self):
-		print ("({classname})# Loading system ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName),5)
 		objFile = MkSFile.File()
-		# THIS.Node.GetListOfNodeFromGateway()
 		# Loading local database
-		jsonSensorStr = objFile.Load("db.json")
-		if jsonSensorStr != "":
-			self.DB = json.loads(jsonSensorStr)
-			if self.DB is not None:
-				for item in self.DB["cameras"]:
-					self.Cameras.append(item)
+		# TODO - Check if file exist, if not create with default structure
+		db_str = objFile.Load("db.json")
+		if db_str != "":
+			self.DB = json.loads(db_str)
 		
 		'''
 		1. Check if USB device available.
@@ -198,26 +191,23 @@ class Context():
 			  but want save to file until device will be available.
 		'''
 
-		# Get USB device
-		self.USBDevice = self.DB["usb_device"]
-
 		# Search for cameras
-		print ("({classname})# Searching for cameras ...".format(classname=self.ClassName))
+		self.Node.LogMSG("({classname})# Searching for cameras ...".format(classname=self.ClassName),5)
 		paths = self.SerachForCameras()
 		# Get ipscameras from db
-		dbCameras = self.DB["cameras"]
+		db_camera = self.DB["cameras"]
 		# Disable all cameras
-		for itemCamera in dbCameras:
-			itemCamera["enable"] = 0
-		# Check all connected ips
-		print ("({classname})# Updating cameras database ...".format(classname=self.ClassName))
+		for camera in db_camera:
+			camera["enable"] = 0
+		# Check all connected cameras and update db
+		self.Node.LogMSG("({classname})# Updating cameras database ...".format(classname=self.ClassName),5)
 		for path in paths:
-			self.UpdateCameraStracture(dbCameras, path)
+			self.UpdateCameraStracture(db_camera, path)
 		
-		self.DB["cameras"] = dbCameras
+		self.DB["cameras"] = db_camera
 		# Save new camera to database
-		objFile.Save("db.json", json.dumps(self.DB))
-		print ("({classname})# Loading system ... DONE.".format(classname=self.ClassName))
+		objFile.SaveJSON("db.json", self.DB)
+		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName),5)
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -247,17 +237,17 @@ class Context():
 			self.CheckingForUpdate = True
 			self.CurrentTimestamp = time.time()
 
-			print("\nTables:")
-			for idx, item in enumerate(THIS.Node.GetConnections()):
-				print ("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(str(idx),item.LocalType,item.UUID,item.IP,item.Port,item.Type))
-			print("")
+			self.Node.LogMSG("\nTables:",5)
+			connections = THIS.Node.GetConnectedNodes()
+			for idx, key in enumerate(connections):
+				node = connections[key]
+				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
+			self.Node.LogMSG("",5)
 			return
+
 			for idx, camera in enumerate(self.ObjCameras):
 				print ("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
 			print("")
-
-			# Search for usb storage in /media/[USER]/
-			self.USBDevices = self.File.ListAllInFolder(self.USBStoragePath)
 
 			dbCameras = self.DB["cameras"]
 			for itemCamera in dbCameras:
@@ -271,29 +261,10 @@ class Context():
 							'event': "misc_info",
 							'camera': itemCamera,
 							'data': {
-								'fps': str(camera.GetFPS()),
-								'usb_device': self.USBDevice,
-								'usb_devices': self.USBDevices,
+								'fps': str(camera.GetFPS())
 							}
 					})
-	
-	def StopRecordingEventHandler(self, data):
-		print ("({classname})# Recording path ({path}) is invalid for camera({ip})".format(classname=self.ClassName,path=data["path"],ip=data["ip"]))
-		objFile 	= MkSFile.File()
-		dbCameras 	= self.DB["cameras"]
-		for camera in dbCameras:
-			if data["uid"] in camera["uid"] and data["mac"] in camera["mac"]:
-				camera["recording"] = 0
-				# Send event to application
-				THIS.Node.EmitOnNodeChange({
-								'camera_ip': data["ip"],
-								'event': "stop_recording",
-							})
-				self.DB["cameras"] = dbCameras
-				# Save new camera to database
-				objFile.Save("db.json", json.dumps(self.DB))
-				return
-	
+
 	def OnFrameChangeCallback(self, data):
 		THIS.Node.EmitOnNodeChange(data)
 

@@ -287,12 +287,6 @@ class Context():
 	def OnStreamSocketDisconnectedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
-	def OnMasterAppendNodeHandler(self, uuid, type, ip, port):
-		self.Node.LogMSG("({classname})# [OnMasterAppendNodeHandler] {0} {1} {2} {3}".format(str(uuid), str(type), str(ip), str(port), classname=self.ClassName),5)
-	
-	def OnMasterRemoveNodeHandler(self, uuid, type, ip, port):
-		self.Node.LogMSG("({classname})# [OnMasterRemoveNodeHandler]{0} {1} {2} {3}".format(str(uuid), str(type), str(ip), str(port), classname=self.ClassName),5)
-
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
 	
