@@ -74,8 +74,12 @@ class Context():
 				frame, error = item.Frame()
 				if error is False:
 					return THIS.Node.BasicProtocol.BuildResponse(packet, {
-									'uid': item.UID,
-									'dev': item.DevicePath.split('/')[-1],
+									'meta': {
+										'uid': item.UID,
+										"device_path": item.DevicePath,
+										"fps": str(item.FPS),
+										"sensetivity": item.Sensetivity
+									},
 									'frame': base64.encodestring(frame)
 					})
 
@@ -84,8 +88,42 @@ class Context():
 		})
 	
 	def OptionsHandler(self, sock, packet):
-		pass
+		self.Node.LogMSG("({classname})# [OptionsHandler]".format(classname=self.ClassName),5)
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
 
+		camera = None
+		for item in self.ObjCameras:
+			if item.UID == payload["uid"]:
+				camera = item
+				break
+
+		if camera is not None:
+			if "set_sensetivity" in payload["option"]:
+				camera.SetSensetivity(int(payload["value"]))
+				self.UpdateCamerDB(payload["uid"], "sensetivity", int(payload["value"]))
+			elif "set_fps" in payload["option"]:
+				camera.SetFPS(int(payload["value"]))
+				camera.SetSecondsPerFrame(1.0 / float(payload["value"]))
+				self.UpdateCamerDB(payload["uid"], "user_fps", int(payload["value"]))
+				self.UpdateCamerDB(payload["uid"], "seconds_between_frame", 1.0 / float(payload["value"]))
+			else:
+				pass
+		
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'return_code': 'ok'
+		})
+	
+	def UpdateCamerDB(self, uid, name, value):
+		db_camera = self.DB["cameras"]
+		for camera in db_camera:
+			if uid == camera["uid"]:
+				camera[name] = value
+				self.DB["cameras"] = db_camera
+				# Save new camera to database
+				objFile = MkSFile.File()
+				objFile.SaveJSON("db.json", self.DB)
+				break
+	
 	def OnStreamSocketCreatedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
@@ -142,7 +180,8 @@ class Context():
 				"sensetivity": 95,
 				"status": "connected",
 				"high_diff": 5000,
-				"seconds_between_frame": 1
+				"seconds_between_frame": 1,
+				"user_fps": 1
 			}
 			# Append new camera.
 			db_camera.append(camera_db)
@@ -165,8 +204,10 @@ class Context():
 			
 		self.Node.LogMSG("({classname})# Emit camera_connected {dev}".format(dev=camera_db["dev"],classname=self.ClassName),5)
 		THIS.Node.EmitOnNodeChange({
-				'event': "camera_connected",
+			'event': "on_camera_connected",
+			'data': {
 				'camera': camera_db
+			}
 		})
 
 	def NodeSystemLoadedHandler(self):
@@ -238,30 +279,15 @@ class Context():
 				node = connections[key]
 				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
 			self.Node.LogMSG("",5)
-			return
 
-			for idx, camera in enumerate(self.ObjCameras):
-				print ("  {0}\t{1}\t{2}\t{3}\t{4}".format(str(idx),camera.IPAddress,camera.UID,camera.MAC,camera.Address))
-			print("")
-
-			dbCameras = self.DB["cameras"]
-			for itemCamera in dbCameras:
-				camera = None
-				for item in self.ObjCameras:
-					if (item.GetIp() in itemCamera["ip"]):
-						camera = item
-						break
-				if camera is not None:
-					THIS.Node.EmitOnNodeChange({
-							'event': "misc_info",
-							'camera': itemCamera,
-							'data': {
-								'fps': str(camera.GetFPS())
-							}
-					})
-
-	def OnFrameChangeCallback(self, data):
-		THIS.Node.EmitOnNodeChange(data)
+	def OnFrameChangeCallback(self, meta, frame):
+		THIS.Node.EmitOnNodeChange({
+			'event': "on_frame_change",
+			'data': {
+				'meta': meta,
+				'frame': base64.encodestring(frame)
+			}
+		})
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
