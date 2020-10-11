@@ -60,11 +60,7 @@ class Context():
 	def GetSensorInfoHandler(self, sock, packet):
 		print ("({classname})# GetSensorInfoHandler ...".format(classname=self.ClassName))
 		payload = {
-			'db': self.DB,
-			'device': {
-				'ip': THIS.Node.MyLocalIP,
-				'webport': THIS.Node.LocalWebPort
-			}
+			'cameras': self.DB["cameras"]
 		}
 
 		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
@@ -99,8 +95,8 @@ class Context():
 	def OnStreamSocketDisconnectedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketDisconnectedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
 
-	def OnGetNodeInfoHandler(self, info, online):
-		print ("({classname})# Node Info Recieved ...\n\t{0}\t{1}\t{2}\t{3}".format(online, info["uuid"],info["name"],info["type"],classname=self.ClassName))
+	def OnGetNodeInfoHandler(self, info):
+		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
 
 	def SerachForCameras(self):
 		shell = MkSShellExecutor.ShellExecutor()
@@ -132,7 +128,7 @@ class Context():
 			camera_db["dev"] 	= dev_path.split('/')[-1]
 			camera_db["path"] 	= dev_path
 			camera.SetHighDiff(int(camera_db["high_diff"]))
-			camera.SetSecondsPerFrame(float(camera_db["seconds_per_frame"]))
+			camera.SetSecondsPerFrame(float(camera_db["seconds_between_frame"]))
 			camera.SetSensetivity(int(camera_db["sensetivity"]))
 		else:
 			self.Node.LogMSG("({classname})# New camera... Adding to the database... {0}".format(camera_drv_name,classname=self.ClassName),5)
@@ -146,8 +142,7 @@ class Context():
 				"sensetivity": 95,
 				"status": "connected",
 				"high_diff": 5000,
-				"seconds_per_frame": 1, 
-				'access_from_www': 1
+				"seconds_between_frame": 1
 			}
 			# Append new camera.
 			db_camera.append(camera_db)
