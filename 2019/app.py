@@ -6,20 +6,6 @@ import json
 import time
 import thread
 import threading
-
-import subprocess
-import urllib2
-import urllib
-import re
-from subprocess import call
-from subprocess import Popen, PIPE
-import Queue
-
-import numpy as np
-from PIL import Image
-from PIL import ImageFilter
-from io import BytesIO
-
 import base64
 
 from mksdk import MkSFile
@@ -27,16 +13,60 @@ from mksdk import MkSSlaveNode
 from mksdk import MkSShellExecutor
 from mksdk import MkSUVCCamera
 
-from flask import Response, request
-from flask import send_file
+class FolderMonitor():
+	def __init__(self, path, search_fn):
+		self.ClassName					= "FolderMonitor"
+		self.Path 						= path
+		self.Items 						= []
+		self.SearchHandler 				= search_fn
+	
+	def SetPath(self, path):
+		self.Path = path
+	
+	def GetItemsList(self):
+		return self.Items
+
+	def GetItems(self):
+		return self.SearchHandler(self.Path)
+
+	def GetItemsCompare(self):
+		ret_items = []
+		items = self.GetItems()
+		if len(self.Items) == 0:
+			for item in items:
+				ret_items.append({
+					"item": item,
+					"status": "append"
+				})
+			self.Items = items
+			return ret_items, (len(ret_items) > 0)
+		else:
+			# Find removed items
+			for item in self.Items:
+				if item not in items:
+					ret_items.append({
+						"item": item,
+						"status": "remove"
+					})
+					self.Items.remove(item)
+			# Find appended items
+			for item in items:
+				if item not in self.Items:
+					ret_items.append({
+						"item": item,
+						"status": "append"
+					})
+					self.Items.append(item)
+		return ret_items, (len(ret_items) > 0)
 
 class Context():
 	def __init__(self, node):
 		self.ClassName					= "Apllication"
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
-		self.File 						= MkSFile.File()
 		self.Node						= node
+		self.File 						= MkSFile.File()
+		self.CameraSearcher 			= FolderMonitor("/dev", self.SerachForCameras)
 		# States
 		self.States = {
 		}
@@ -123,6 +153,18 @@ class Context():
 				objFile = MkSFile.File()
 				objFile.SaveJSON("db.json", self.DB)
 				break
+		
+	def RemoveCamera(self, uid):
+		self.UpdateCamerDB(uid, "enable", 0)
+		self.UpdateCamerDB(uid, "status", "disconnected")
+
+		camera = None
+		for item in self.ObjCameras:
+			if item.UID == uid:
+				camera = item
+				break
+		if camera is not None:
+			self.ObjCameras.remove(camera)
 	
 	def OnStreamSocketCreatedHandler(self, name, identity):
 		self.Node.LogMSG("({classname})# [OnStreamSocketCreatedHandler] {0} {1}".format(name,str(identity),classname=self.ClassName),5)
@@ -136,12 +178,10 @@ class Context():
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
 
-	def SerachForCameras(self):
-		shell = MkSShellExecutor.ShellExecutor()
+	def SerachForCameras(self, path):
+		files = self.File.ListAllInFolder(path)
 		# Get all video devices
-		data = shell.ExecuteCommand("ls /dev/video*")
-		devices = data.split("\n")[:-1]
-		return devices
+		return ["/dev/{0}".format(cam) for cam in files if "video" in cam]
 	
 	def UpdateCameraStracture(self, db_camera, dev_path):
 		camera_db 		= None
@@ -193,7 +233,8 @@ class Context():
 			camera_db["enable"] = 1
 		
 		# Start camera thread
-		camera.OnFrameChangeHandler = self.OnFrameChangeCallback
+		camera.OnFrameChangeCallback = self.OnFrameChangeHandler
+		camera.OnCameraFailCallback = self.OnCameraFailHandler
 		camera.StartCamera()
 		
 		# Update camera object with values from database
@@ -229,7 +270,9 @@ class Context():
 
 		# Search for cameras
 		self.Node.LogMSG("({classname})# Searching for cameras ...".format(classname=self.ClassName),5)
-		paths = self.SerachForCameras()
+		# Initiate state of comparator
+		self.CameraSearcher.GetItemsCompare()
+		paths = self.SerachForCameras("/dev")
 		# Get ipscameras from db
 		db_camera = self.DB["cameras"]
 		# Disable all cameras
@@ -262,12 +305,6 @@ class Context():
 	def OnGetNodesListHandler(self, uuids):
 		print ("OnGetNodesListHandler", uuids)
 
-	def CameraRunningStatus(self, dev):
-		for camera in self.ObjCameras:
-			if (camera.DevicePath == dev):
-				return True
-		return False
-
 	def WorkingHandler(self):
 		if time.time() - self.CurrentTimestamp > self.Interval:
 			self.CheckingForUpdate = True
@@ -280,7 +317,19 @@ class Context():
 				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
 			self.Node.LogMSG("",5)
 
-	def OnFrameChangeCallback(self, meta, frame):
+			# Search for change
+			items, is_change = self.CameraSearcher.GetItemsCompare()
+			if is_change is True:
+				for item in items:
+					if item["status"] == "append":
+						# Update camera structure
+						self.UpdateCameraStracture(self.DB["cameras"], item["item"])
+					elif item["status"] == "remove":
+						# Update camera structure
+						pass
+			self.Node.LogMSG("({classname})# Search {0} {1}".format(items, is_change, classname=self.ClassName),5)
+
+	def OnFrameChangeHandler(self, meta, frame):
 		THIS.Node.EmitOnNodeChange({
 			'event': "on_frame_change",
 			'data': {
@@ -288,6 +337,11 @@ class Context():
 				'frame': base64.encodestring(frame)
 			}
 		})
+	
+	def OnCameraFailHandler(self, uid):
+		self.Node.LogMSG("({classname})# [OnCameraFailHandler] {0}".format(uid, classname=self.ClassName),5)
+		self.RemoveCamera(uid)
+		# Emit to UI
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)

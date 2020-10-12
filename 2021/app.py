@@ -30,14 +30,12 @@ import vlc
 import hashlib
 
 class FolderMonitor():
-	def __init__(self, path):
+	def __init__(self, path, search_fn):
 		self.ClassName					= "FolderMonitor"
 		self.Path 						= path
 		self.Items 						= []
 		self.File 						= MkSFile.File()
-
-		self.WorkerThread				= None
-		self.FolderContentChangedEvent	= None
+		self.SearchHandler 				= search_fn
 	
 	def SetPath(self, path):
 		self.Path = path
@@ -46,7 +44,7 @@ class FolderMonitor():
 		return self.Items
 
 	def GetItems(self):
-		return self.File.ListAllInFolder(self.Path)
+		return self.SearchHandler(self.Path)
 
 	def GetItemsCompare(self):
 		ret_items = []
@@ -290,6 +288,9 @@ class Context():
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
 	
+	def FolderSerachCallback(self, path):
+		return self.File.ListAllInFolder(self.Path)
+	
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName),5)		
 		objFile = MkSFile.File()
@@ -321,7 +322,7 @@ class Context():
 		if not os.path.exists(os.path.join(self.SelectedStoragePath, "songs")):
 			os.makedirs(os.path.join(self.SelectedStoragePath, "songs"))
 		
-		self.SongsFolder = FolderMonitor(os.path.join(self.SelectedStoragePath, "songs"))
+		self.SongsFolder = FolderMonitor(os.path.join(self.SelectedStoragePath, "songs"), self.FolderSerachCallback)
 		self.SongsFolder.GetItemsCompare()
 
 		ifaces = [	'alsa_output.pci-0000_00_1b.0.analog-stereo', 
