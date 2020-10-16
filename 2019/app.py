@@ -16,12 +16,6 @@ from mksdk import MkSUVCCamera
 '''
 BUG LIST:
 ---------
-#1
-	(UVCCamera)# [Frame] ERROR (cannot identify image file <_io.BytesIO object at 0x7faa1bc20fb0>)
-	(UVCCamera)# ERROR - Cannot fetch frame ... True
-	(UVCCamera)# ERROR [Errno 9] Bad file descriptor
-	(UVCCamera)# Exit camera thread VirtualBoxWebcam-USBVideoD
-	(Apllication)# [OnCameraFailHandler] VirtualBoxWebcam-USBVideoD
 
 TASK LIST:
 ---------
@@ -30,13 +24,39 @@ TASK LIST:
 	b. Add quality selection.
 #2
 	State machine for MKSDK.
-#3
-	Scheduler for MKSDK.
 '''
 
 class TimeSchedulerThreadless():
 	def __init__(self):
 		self.ClassName		= "TimeSchedulerThreadless"
+		self.TimeItems 		= {} # Key - Interval time
+
+	def AddTimeItem(self, interval, callback):
+		if interval not in self.TimeItems:
+			self.TimeItems[interval] = []
+		item = {
+			"callback": callback,
+			"ts": time.time()
+		}
+		self.TimeItems[interval].append(item)
+	
+	def RemoveTimeItem(self, interval, callback):
+		if interval in self.TimeItems:
+			callbacks = self.TimeItems[interval]
+			for item in callbacks:
+				if item["callback"] == callback:
+					callbacks.remove(item)
+					return True
+		return False
+	
+	def Tick(self):
+		now = time.time()
+		for interval in self.TimeItems:
+			callbacks = self.TimeItems[interval]
+			for callback in callbacks:
+				if now - callback["ts"] > interval:
+					callback["callback"]()
+					callback["ts"] = time.time()
 
 class BasicSMThreadless():
 	def __init__(self):
@@ -91,6 +111,7 @@ class FolderMonitorThreadless():
 class Context():
 	def __init__(self, node):
 		self.ClassName					= "Apllication"
+		self.Timer 						= TimeSchedulerThreadless()
 		self.Interval					= 10
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
@@ -113,6 +134,9 @@ class Context():
 		# Application variables
 		self.DB							= None
 		self.ObjCameras					= []
+
+		self.Timer.AddTimeItem(5, self.PrintConnections)
+		self.Timer.AddTimeItem(2, self.SearchForCameras)
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -378,29 +402,29 @@ class Context():
 	def OnGetNodesListHandler(self, uuids):
 		print ("OnGetNodesListHandler", uuids)
 
+	def PrintConnections(self):
+		self.Node.LogMSG("\nTables:",5)
+		connections = THIS.Node.GetConnectedNodes()
+		for idx, key in enumerate(connections):
+			node = connections[key]
+			self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
+		self.Node.LogMSG("",5)
+	
+	def SearchForCameras(self):
+		# Search for change
+		items, is_change = self.CameraSearcher.GetItemsCompare()
+		if is_change is True:
+			for item in items:
+				if item["status"] == "append":
+					# Update camera structure
+					self.UpdateCameraStracture(self.DB["cameras"], item["item"])
+				elif item["status"] == "remove":
+					# Update camera structure
+					pass
+		self.Node.LogMSG("({classname})# Search {0} {1}".format(items, is_change, classname=self.ClassName),5)
+	
 	def WorkingHandler(self):
-		if time.time() - self.CurrentTimestamp > self.Interval:
-			self.CheckingForUpdate = True
-			self.CurrentTimestamp = time.time()
-
-			self.Node.LogMSG("\nTables:",5)
-			connections = THIS.Node.GetConnectedNodes()
-			for idx, key in enumerate(connections):
-				node = connections[key]
-				self.Node.LogMSG("  {0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(str(idx),node.Obj["local_type"],node.Obj["uuid"],node.IP,node.Obj["listener_port"],node.Obj["type"],node.Obj["pid"],node.Obj["name"]),5)
-			self.Node.LogMSG("",5)
-
-			# Search for change
-			items, is_change = self.CameraSearcher.GetItemsCompare()
-			if is_change is True:
-				for item in items:
-					if item["status"] == "append":
-						# Update camera structure
-						self.UpdateCameraStracture(self.DB["cameras"], item["item"])
-					elif item["status"] == "remove":
-						# Update camera structure
-						pass
-			self.Node.LogMSG("({classname})# Search {0} {1}".format(items, is_change, classname=self.ClassName),5)
+		self.Timer.Tick()
 
 	def OnFrameChangeHandler(self, meta, frame):
 		THIS.Node.EmitOnNodeChange({
