@@ -135,20 +135,33 @@
 				switch(packet.data.payload.event) {
 					// User Code #1 - Start
 					case "on_camera_connected":
-						console.log(data);
+						console.log("on_camera_connected", data);
+						node.Cameras.Append(data.camera);
 					break;
+					case "on_camera_disconnected":
+						console.log("on_camera_disconnected", data);
+						node.Cameras.Update(data.camera);
+						node.Cameras.Modal.Hide();
+					break;
+					case "delete_camera_from_db":
+						console.log("on_camera_connected", data);
+						node.Cameras.Remove(data.uid);
+						node.Cameras.Modal.Hide();
 					case "on_frame_change": {
+						console.log(data.meta);
 						// Set frame
 						var imgObj = document.getElementById("id_frame_" + data.meta.uid);
-						imgObj.src = "data:image/jpg;base64," + data.frame;
-						// Set FPS
-						document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
-						// Set sensetivity slider
-						$('#id_sensetivity').slider('setValue', data.meta.sensetivity);
-						document.getElementById("id_sensetivity_value").innerHTML = data.meta.sensetivity;
-						// Set FPS slider
-						$('#id_fps').slider('setValue', Math.round(data.meta.user_fps));
-						document.getElementById("id_fps_value").innerHTML = Math.round(data.meta.user_fps);
+						if (imgObj !== null) {
+							imgObj.src = "data:image/jpg;base64," + data.frame;
+							// Set FPS
+							document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
+							// Set sensetivity slider
+							$('#id_sensetivity').slider('setValue', data.meta.sensetivity);
+							document.getElementById("id_sensetivity_value").innerHTML = data.meta.sensetivity;
+							// Set FPS slider
+							$('#id_fps').slider('setValue', Math.round(data.meta.user_fps));
+							document.getElementById("id_fps_value").innerHTML = Math.round(data.meta.user_fps);
+						}
 					}
 					break;				
 					// User Code #1 - End
@@ -183,19 +196,10 @@
 					console.log("Connected to local websocket", res);
 				});
 				// User Code #1 - Start
-				var objCameraList = document.getElementById("id_camera_list");
+				console.log("UserGetNodeSensorInfoHandler", payload);
 				for (idx = 0; idx < payload.cameras.length; idx++) {
 					camera = payload.cameras[idx];
-					objCameraList.innerHTML += node.Cameras.GenerateRowItemView(camera);
-					node.API.SendCustomCommand(NodeUUID, 'get_resource', { 
-																	"id": "img_" + camera.uid, 
-																	"tag": "img", 
-																	"src": "resource/img/camera.png", 
-																	"ui_type": 'app' }, function(res) { 
-						var payload = res.data.payload;
-						console.log("RESOURCE", payload);
-						document.getElementById(payload.id).src = MkSGlobal.ConvertHEXtoString(payload.content); 
-					});
+					node.Cameras.Append(camera);
 				}
 				// User Code #1 - End
 				node.API.RegisterOnNodeChange(NodeUUID, function(res) {
@@ -206,8 +210,11 @@
 
 			// User Code #1 - Start
 			function CameraManager(api) {
-				var self = this;
-				this.API = api;
+				var self 			= this;
+				this.API 			= api;
+
+				this.Cameras 		= {};
+				this.CameraUIDUse 	= null;
 
 				this.Modal = new MksBasicModal();
 				this.Modal.SetTitle("Camer Information");
@@ -217,7 +224,11 @@
 						<img  class="mr-3" alt="..." style="height: 48px;" id="img_[UID]">
 						<div class="media-body">
 							<h7 class="mt-0 mb-1">[NAME]</h7>
-							<p><a href="#" onclick="node.Cameras.OpenCameraInformation({name:'[NAME]', uid:'[UID]', path:'[PATH]'});">Open</a></p>
+							<p><a href="#" onclick="node.Cameras.OpenCameraInformation({name:'[NAME]',uid:'[UID]',path:'[PATH]'});">Open</a></p>
+						</div>
+						<div class="media-body">
+							<h6 class="mt-0 mb-1" id="id_status_[UID]" style="color:[COLOR]">[STATUS]</h6>
+							<p><a href="#" onclick="node.Cameras.OpenCameraDelete({name:'[NAME]',uid:'[UID]',path:'[PATH]'})">Delete</a></p>
 						</div>
 					</li>
 					<hr id="id_line_[ID]">
@@ -278,58 +289,142 @@
 				return this;
 			}
 
+			CameraManager.prototype.Append = function(camera) {
+				if (camera.uid in this.Cameras) {
+					this.Update(camera);
+				} else {
+					this.Cameras[camera.uid] = camera;
+					var objCameraList = document.getElementById("id_camera_list");
+					objCameraList.innerHTML += this.GenerateRowItemView(camera);
+					this.API.SendCustomCommand(NodeUUID, 'get_resource', { 
+																	"id": "img_" + camera.uid, 
+																	"tag": "img", 
+																	"src": "resource/img/camera.png", 
+																	"ui_type": 'app' }, function(res) { 
+						var payload = res.data.payload;
+						console.log("RESOURCE", payload);
+						document.getElementById(payload.id).src = MkSGlobal.ConvertHEXtoString(payload.content); 
+					});
+				}
+			}
+
+			CameraManager.prototype.Remove = function(uid) {
+				if (uid in this.Cameras) {
+					delete this.Cameras[uid];
+					// Remove from UI
+					elem = document.getElementById("id_" + uid);
+					elem.parentNode.removeChild(elem);
+					elem = document.getElementById("id_line_" + uid);
+					elem.parentNode.removeChild(elem);
+				}
+			}
+
+			CameraManager.prototype.Update = function(camera) {
+				if (camera.uid in this.Cameras) {
+					this.Cameras[camera.uid] = camera;
+					// Update UI
+					var obj = document.getElementById("id_status_" + camera.uid);
+					obj.innerHTML = camera.status;
+					if (camera.status == "Connected") {
+						obj.style.color = "green";
+					} else {
+						obj.style.color = "red";
+					}
+				}
+			}
+
+			CameraManager.prototype.DeleteCameraFromNodeDB = function(uid) {
+				this.API.SendCustomCommand(NodeUUID, 'delete_camera_from_db', { "uid": uid }, function(res) {
+				});
+			}
+
 			CameraManager.prototype.GenerateRowItemView = function(data) {
 				var html = this.RowItemComponentHtml;
 				html = html.split("[NAME]").join(data.name);
 				html = html.split("[UID]").join(data.uid);
 				html = html.split("[PATH]").join(data.path);
+				html = html.split("[STATUS]").join(data.status);
+				if (data.status == "Connected") {
+					html = html.split("[COLOR]").join("green");
+				} else {
+					html = html.split("[COLOR]").join("red");
+				}
 				return html;
+			}
+
+			CameraManager.prototype.OpenCameraDelete = function(camera) {
+				this.Modal.SetTitle("Delete " +  camera.uid + " from database");
+				this.Modal.SetContent(`
+					<div class="row">
+						<div class="col-lg-12">
+							<span class="text-muted">Are you sure?</span>
+						</div>
+					</div>
+				`);
+				this.Modal.SetFooter(`
+					<button type="button" class="btn btn-primary" onclick="node.Cameras.DeleteCameraFromNodeDB('` + camera.uid + `');">Yes</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+				`);
+				this.Modal.Remove();
+				this.Modal.Build("lg");
+				this.Modal.Show();
 			}
 
 			CameraManager.prototype.OpenCameraInformation = function(data) {
 				var html = this.CameraInformationContainer;
-				html = html.split("[NAME]").join(data.name);
-				html = html.split("[UID]").join(data.uid);
-				html = html.split("[PATH]").join(data.path);
 
+				if (this.Cameras[data.uid].status == "Disconnected") {
+					html = `<h6 class="d-flex justify-content-between align-items-center mb-3">NO INFORMATION</h6>`;
+				} else {
+					html = html.split("[NAME]").join(data.name);
+					html = html.split("[UID]").join(data.uid);
+					html = html.split("[PATH]").join(data.path);
+					this.CameraUIDUse = data.uid;
+				}
+
+				this.Modal.Remove();
+				this.Modal.SetTitle("Camer Information");
 				this.Modal.SetContent(html);
+				this.Modal.SetDefaultFooter();
 				this.Modal.Build("lg");
 				this.Modal.Show();
 
-				// Init sensitivity slider
-				$('#id_sensetivity').slider({
-					value : 0,
-					formatter: function(value) {
-						return 'Current value: ' + value;
-					}
-				});
-				$('#id_sensetivity').slider().on('slide', function(ev) {
-					document.getElementById("id_sensetivity_value").innerHTML = ev.value;
-					node.API.SendCustomCommand(NodeUUID, "options", {
-						option: "set_sensetivity",
-						uid: data.uid,
-						value: ev.value
-					}, function(res) {
-						console.log(res.data.payload)
+				if (this.Cameras[data.uid].status == "Connected") {
+					// Init sensitivity slider
+					$('#id_sensetivity').slider({
+						value : 0,
+						formatter: function(value) {
+							return 'Current value: ' + value;
+						}
 					});
-				});
-				// Init fps slider
-				$('#id_fps').slider({
-					value : 0,
-					formatter: function(value) {
-						return 'Current value: ' + value;
-					}
-				});
-				$('#id_fps').slider().on('slide', function(ev) {
-					document.getElementById("id_fps_value").innerHTML = ev.value;
-					node.API.SendCustomCommand(NodeUUID, "options", {
-						option: "set_fps",
-						uid: data.uid,
-						value: ev.value
-					}, function(res) {
-						console.log(res.data.payload)
+					$('#id_sensetivity').slider().on('slide', function(ev) {
+						document.getElementById("id_sensetivity_value").innerHTML = ev.value;
+						node.API.SendCustomCommand(NodeUUID, "options", {
+							option: "set_sensetivity",
+							uid: data.uid,
+							value: ev.value
+						}, function(res) {
+							console.log(res.data.payload)
+						});
 					});
-				})
+					// Init fps slider
+					$('#id_fps').slider({
+						value : 0,
+						formatter: function(value) {
+							return 'Current value: ' + value;
+						}
+					});
+					$('#id_fps').slider().on('slide', function(ev) {
+						document.getElementById("id_fps_value").innerHTML = ev.value;
+						node.API.SendCustomCommand(NodeUUID, "options", {
+							option: "set_fps",
+							uid: data.uid,
+							value: ev.value
+						}, function(res) {
+							console.log(res.data.payload)
+						});
+					})
+				}
 			}
 			// User Code #1 - End
 

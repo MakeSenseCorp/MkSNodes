@@ -13,9 +13,38 @@ from mksdk import MkSSlaveNode
 from mksdk import MkSShellExecutor
 from mksdk import MkSUVCCamera
 
-class FolderMonitor():
+'''
+BUG LIST:
+---------
+#1
+	(UVCCamera)# [Frame] ERROR (cannot identify image file <_io.BytesIO object at 0x7faa1bc20fb0>)
+	(UVCCamera)# ERROR - Cannot fetch frame ... True
+	(UVCCamera)# ERROR [Errno 9] Bad file descriptor
+	(UVCCamera)# Exit camera thread VirtualBoxWebcam-USBVideoD
+	(Apllication)# [OnCameraFailHandler] VirtualBoxWebcam-USBVideoD
+
+TASK LIST:
+---------
+#1
+	a. Add resolution selection.
+	b. Add quality selection.
+#2
+	State machine for MKSDK.
+#3
+	Scheduler for MKSDK.
+'''
+
+class TimeSchedulerThreadless():
+	def __init__(self):
+		self.ClassName		= "TimeSchedulerThreadless"
+
+class BasicSMThreadless():
+	def __init__(self):
+		self.ClassName		= "BasicSMThreadless"
+
+class FolderMonitorThreadless():
 	def __init__(self, path, search_fn):
-		self.ClassName					= "FolderMonitor"
+		self.ClassName					= "FolderMonitorThreadless"
 		self.Path 						= path
 		self.Items 						= []
 		self.SearchHandler 				= search_fn
@@ -66,7 +95,7 @@ class Context():
 		self.CurrentTimestamp 			= time.time()
 		self.Node						= node
 		self.File 						= MkSFile.File()
-		self.CameraSearcher 			= FolderMonitor("/dev", self.SerachForCameras)
+		self.CameraSearcher 			= FolderMonitorThreadless("/dev", self.SerachForCameras)
 		# States
 		self.States = {
 		}
@@ -75,6 +104,7 @@ class Context():
 			'get_frame':				self.GetFrameHandler,
 			'get_sensor_info':			self.GetSensorInfoHandler,
 			'options':					self.OptionsHandler,
+			'delete_camera_from_db':	self.DeleteCameraFromDBHandler,
 			'undefined':				self.UndefindHandler
 		}
 		self.ResponseHandlers		= {
@@ -143,6 +173,47 @@ class Context():
 			'return_code': 'ok'
 		})
 	
+	def DeleteCameraFromDBHandler(self, sock, packet):
+		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
+		uid = payload["uid"]
+
+		self.Node.LogMSG("({classname})# [DeleteCameraFromDBHandler] {0}".format(uid,classname=self.ClassName),5)
+		db_camera = self.DB["cameras"]
+		self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
+		camera = None
+		for item in db_camera:
+			if uid in item["uid"]:
+				camera = item
+				break
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [DEBUG #2]".format(classname=self.ClassName),5)
+			# Stop and delete camera
+			# Delete from JSON file
+			db_camera.remove(camera)
+			self.Node.LogMSG("({classname})# [DEBUG #3]".format(classname=self.ClassName),5)
+			self.DB["cameras"] = db_camera
+			# Save new camera to database
+			objFile = MkSFile.File()
+			self.Node.LogMSG("({classname})# [DEBUG #4]".format(classname=self.ClassName),5)
+			objFile.SaveJSON("db.json", self.DB)
+			self.Node.LogMSG("({classname})# [DEBUG #5]".format(classname=self.ClassName),5)
+			# Emit to registered UIs
+			THIS.Node.EmitOnNodeChange({
+				'event': "delete_camera_from_db",
+				'data': {
+					'uid': uid
+				}
+			})
+			self.Node.LogMSG("({classname})# [DEBUG #1]".format(classname=self.ClassName),5)
+			# Send response
+			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				'return_code': 'ok'
+			})
+		# Send response
+		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			'return_code': 'failed'
+		})
+
 	def UpdateCamerDB(self, uid, name, value):
 		db_camera = self.DB["cameras"]
 		for camera in db_camera:
@@ -156,7 +227,7 @@ class Context():
 		
 	def RemoveCamera(self, uid):
 		self.UpdateCamerDB(uid, "enable", 0)
-		self.UpdateCamerDB(uid, "status", "disconnected")
+		self.UpdateCamerDB(uid, "status", "Disconnected")
 
 		camera = None
 		for item in self.ObjCameras:
@@ -208,6 +279,7 @@ class Context():
 			camera.SetHighDiff(int(camera_db["high_diff"]))
 			camera.SetSecondsPerFrame(float(camera_db["seconds_between_frame"]))
 			camera.SetSensetivity(int(camera_db["sensetivity"]))
+			camera.SetFPS(int(camera_db["user_fps"]))
 		else:
 			self.Node.LogMSG("({classname})# New camera... Adding to the database... {0}".format(camera_drv_name,classname=self.ClassName),5)
 			camera_db = {
@@ -218,7 +290,7 @@ class Context():
 				'driver_name': camera_drv_name,
 				'enable':1,
 				"sensetivity": 95,
-				"status": "connected",
+				"status": "Disconnected",
 				"high_diff": 5000,
 				"seconds_between_frame": 1,
 				"user_fps": 1
@@ -235,11 +307,12 @@ class Context():
 		# Start camera thread
 		camera.OnFrameChangeCallback = self.OnFrameChangeHandler
 		camera.OnCameraFailCallback = self.OnCameraFailHandler
-		camera.StartCamera()
+		camera.Start()
 		
 		# Update camera object with values from database
 		camera.Name = camera_db["name"]
 		camera_db["enable"] = 1
+		camera_db["status"] = "Connected"
 		# Add camera to camera obejct DB
 		self.ObjCameras.append(camera)
 			
@@ -341,7 +414,18 @@ class Context():
 	def OnCameraFailHandler(self, uid):
 		self.Node.LogMSG("({classname})# [OnCameraFailHandler] {0}".format(uid, classname=self.ClassName),5)
 		self.RemoveCamera(uid)
-		# Emit to UI
+
+		db_camera = self.DB["cameras"]
+		for camera in db_camera:
+			if uid == camera["uid"]:
+				# Emit to UI
+				THIS.Node.EmitOnNodeChange({
+					'event': "on_camera_disconnected",
+					'data': {
+						'camera': camera
+					}
+				})
+				return
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
