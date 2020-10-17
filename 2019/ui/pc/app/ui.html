@@ -152,6 +152,12 @@
 						// Set frame
 						var imgObj = document.getElementById("id_frame_" + data.meta.uid);
 						if (imgObj !== null) {
+							/*
+							idx = node.Cameras.GetNextFrameIndex()
+							this.Cameras.Frames[idx] = new Image()
+							this.Cameras.Frames[1 - idx] = null;
+							this.Cameras.Frames[idx].src = "data:image/jpg;base64," + data.frame;
+							*/
 							imgObj.src = "data:image/jpg;base64," + data.frame;
 							// Set FPS
 							document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
@@ -212,6 +218,9 @@
 			function CameraManager(api) {
 				var self 			= this;
 				this.API 			= api;
+
+				this.Frames 		= [new Image(), new Image()];
+				this.WorkingFrame	= 0;
 
 				this.Cameras 		= {};
 				this.CameraUIDUse 	= null;
@@ -287,6 +296,10 @@
 				`;
 
 				return this;
+			}
+
+			CameraManager.prototype.GetNextFrameIndex = function(camera) {
+				this.WorkingFrame = 1 - this.WorkingFrame;
 			}
 
 			CameraManager.prototype.Append = function(camera) {
