@@ -1,0 +1,19 @@
+{
+  "cameras": [
+    {
+      "status": "Disconnected", 
+      "security_enabled": 0, 
+      "face_detect_enabled": 0, 
+      "enable": 0, 
+      "uid": "VirtualBoxWebcam-USBVideoD", 
+      "fps": 2, 
+      "motion_detection_enabled": 0, 
+      "sensetivity": 98, 
+      "name": "Camera_VirtualBoxWebcam-USBVideoD"
+    }
+  ], 
+  "user": {
+    "sms": "+972547884156", 
+    "email": "yevgeniy.kiveisha@gmail.com"
+  }
+}

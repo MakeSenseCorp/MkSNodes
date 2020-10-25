@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>USB Cameras</title>
+
+		[CSS]
+     
+        <style>
+            body {
+              font-size: .875rem;
+            }
+            .feather {
+              width: 16px;
+              height: 16px;
+              vertical-align: text-bottom;
+            }
+            html {
+              position: relative;
+              min-height: 100%;
+            }
+            body {
+              /* Margin bottom by footer height */
+              margin-bottom: 60px;
+            }
+            .footer {
+              position: absolute;
+              bottom: 0;
+              width: 100%;
+              /* Set the fixed height of the footer here */
+              height: 60px;
+              line-height: 60px; /* Vertically center the text there */
+              background-color: #f5f5f5;
+            }
+            body > .container {
+              padding: 60px 15px 0;
+            }
+            .footer > .container {
+              padding-right: 15px;
+              padding-left: 15px;
+            }
+            code {
+              font-size: 80%;
+            }
+        </style>
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+	<body style="background-color: #000;">
+		<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+		<div id="cameras_list_id" style="margin-bottom: 60px; margin: 10px;"></div>
+
+		<script src="/static/lib/nodes/js/jquery_3_3_1/jquery.min.js"></script>
+		<script src="/static/lib/nodes/js/popper_1_14_7/popper.min.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap.min.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/bootstrap/js/bootstrap-slider.js" crossorigin="anonymous"></script>
+		<script src="/static/lib/nodes/js/feather_4_19/feather.min.js"></script>
+		<script src="/static/lib/nodes/map/feather_4_19/feather.min.js.map"></script>
+		<script src="/static/lib/bootstrap4-editable/js/bootstrap-editable.min.js"></script>
+		<script src="/static/lib/chartjs/2.9.3/Chart.min.js"></script>
+		<script src="/static/lib/datetimepicker/bootstrap-datetimepicker.min.js"></script>
+		<script src="/static/lib/crypto-js/3.1.2/components/core.js"></script>
+		<script src="/static/lib/crypto-js/3.1.2/components/md5.js"></script>
+		<script src="/mksdk-js/widgets/basic_modal.js"></script>
+		<script src="/mksdk-js/widgets/basic_uploader.js"></script>
+
+		[SCRIPTS]
+
+        <script>
+			[CONFIGURATION]
+			  
+			console.log("Gateway IP address - " + GatewayIP);
+
+			$(document).ready(function() {
+				// User Code #1 - Start
+				
+				// User Code #1 - End
+			});
+
+			function Node() {
+				var self = this;
+
+				// Get makesense api instanse.
+				this.API = MkSAPIBuilder.GetInstance();
+				// Update gateway IP address
+				this.API.SetGlobalGatewayIP(GatewayIP);
+				this.API.SetLocalWebsockIP(LocalWSIP);
+				this.API.SetLocalWebsockPort(LocalWSPORT);
+				// Default handler
+				this.API.OnUnexpectedDataArrived = function (packet) {
+					console.log(packet);
+				}
+
+				// User Code #1 - Start
+				
+				// User Code #1 - End
+
+				return this;
+			}
+
+			// Self-genrated area
+			Node.prototype.Init = function() {
+			}
+			// Self-genrated area
+
+			// Self-genrated area
+			Node.prototype.OnChangeEvent = function(packet) {
+				console.log("OnNodeChangeEvent", packet.data.payload.event);
+				data = packet.data.payload.data;
+				switch(packet.data.payload.event) {
+					// User Code #1 - Start
+				
+					// User Code #1 - End
+					default:
+					break;
+				}
+			}
+			// Self-genrated area
+
+			// Self-genrated area
+			Node.prototype.Connect = function() {
+				var self = this;
+				console.log("Connect Gateway");
+				self.API.OnNodeChangeCallback = self.OnChangeEvent.bind(self);
+				this.API.ConnectGateway(function() {
+					console.log("Connection to Gateway was established.");
+					self.API.GetNodeSensorsInfo(NodeUUID, function(res) {
+						UserGetNodeSensorInfoHandler(res);
+					});
+				});
+			}
+			// Self-genrated area
+
+			// Self-genrated area
+			var node = new Node();
+			node.Init();
+			node.Connect();
+			var UserGetNodeSensorInfoHandler = function(res) {
+				var payload = res.data.payload;
+				[RESOURCES]
+				node.API.ConnectLocalWS(NodeUUID, function(res) {
+					console.log("Connected to local websocket", res);
+				});
+				// User Code #1 - Start
+				
+				// User Code #1 - End
+				node.API.RegisterOnNodeChange(NodeUUID, function(res) {
+					console.log("UI have registered NODE successfuly", res);
+				});
+			}
+			// Self-generated area
+
+			feather.replace();
+        </script>
+    </body>
+</html>

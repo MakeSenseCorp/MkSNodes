@@ -1,0 +1,44 @@
+{
+	"node": {
+		"system": {
+			"log_level": 3,
+			"log_to_file": "False"
+		},
+		"info": {
+			"uuid":"12345678-1234-1234-1234-123456791103",
+			"isHW":"False",
+			"type":10000,
+			"ostype":"linux",
+			"osversion":"Any",
+			"brandname":"Camera Surveillance",
+			"name":"Cameras",
+			"description":"Camera Surveillance",
+			"isMasterNode":"False",
+			"is_service":"False",
+			"isLocalServerEnabled":"True",
+			"isWebEnabled":"True",
+			"is_application_ui_enabled": "True",
+			"tagging": {
+				"cat_1": "application",
+				"cat_2": "image&video",
+				"cat_3": "camera"
+			}
+		},
+		"service": {
+			"depend": [	]
+		}
+	},
+	"user":	{
+		
+	},
+	"device": {
+		
+	},
+	"deploymnet": {
+		"dependencies_cmd": [
+		],
+		"script": {
+
+		}
+	}
+}
