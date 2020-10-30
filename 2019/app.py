@@ -115,7 +115,7 @@ class Context():
 			'cameras': self.DB["cameras"]
 		}
 
-		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def GetFrameHandler(self, sock, packet):
 		print ("({classname})# GetFrameHandler ...".format(classname=self.ClassName))
@@ -125,19 +125,19 @@ class Context():
 			if (item.UID in payload["uid"]):
 				frame, error = item.Frame()
 				if error is False:
-					return THIS.Node.BasicProtocol.BuildResponse(packet, {
-									'meta': {
-										'uid': item.UID,
-										"device_path": item.DevicePath,
-										"fps": str(item.FPS),
-										"sensetivity": item.Sensetivity
-									},
-									'frame': base64.encodestring(frame)
-					})
+					return {
+						'meta': {
+							'uid': item.UID,
+							"device_path": item.DevicePath,
+							"fps": str(item.FPS),
+							"sensetivity": item.Sensetivity
+						},
+						'frame': base64.encodestring(frame)
+					}
 
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+		return {
 			'return_code': 'no_frame'
-		})
+		}
 	
 	def OperationsHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [OperationsHandler]".format(classname=self.ClassName),5)
@@ -234,24 +234,23 @@ class Context():
 						else:
 							pass
 				
-				return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				return {
 					"index": 	 index,
 					"subindex":	 subindex,
 					"direction": direction,
 					"data": data
-				})
-		
-			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+				}
+			return {
 				"index": 	 index,
 				"subindex":	 subindex,
 				"direction": direction,
 				"data": {
 					'return_code': 'fail'
 				}
-			})
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			}
+		return {
 			'error': 'fail'
-		})
+		}
 	
 	def DeleteCameraFromDBHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
@@ -282,13 +281,13 @@ class Context():
 				}
 			})
 			# Send response
-			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			return {
 				'return_code': 'ok'
-			})
+			}
 		# Send response
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+		return {
 			'return_code': 'failed'
-		})
+		}
 
 	def UpdateCamerDB(self, uid, name, value):
 		db_camera = self.DB["cameras"]
@@ -447,9 +446,9 @@ class Context():
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
 		
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
-			'error': '-1'
-		})
+		return {
+			'error': 'cmd_no_support'
+		}
 
 	def OnApplicationCommandResponseHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
