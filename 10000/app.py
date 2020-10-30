@@ -12,6 +12,10 @@ from mksdk import MkSFile
 from mksdk import MkSSlaveNode
 from mksdk import MkSScheduling
 
+class SimpleJsonDB():
+	def __init__(self):
+		self.ClassName					= "SimpleJsonDB"
+
 class ICamera():
 	def __init__(self):
 		self.ClassName					= "ICamera"
@@ -37,6 +41,7 @@ class Context():
 		# Application variables
 		self.DB							= None
 		self.ObjCameras					= []
+		self.CameraNodes 				= {}
 
 		self.Timer.AddTimeItem(10, self.PrintConnections)
 		self.Timer.AddTimeItem(5, self.SearchForCameras)
@@ -102,22 +107,33 @@ class Context():
 				direction 	= payload["direction"]
 				data 		= payload["data"]
 				if 0x0 == subindex:
-					self.Node.LogMSG("({classname})# [OperationsHandler] PING subindex".format(classname=self.ClassName),5)
+					self.Node.LogMSG("({classname})# [OperationsHandler] PING subindex {0}".format(source,classname=self.ClassName),5)
 					# PING
-					self.Node.SendRequestToNode(source, "operations", {
-						"index": 	 0x1000,
-						"subindex":	 0x1,
-						"direction": 0x1,
-						"data": { }
-					})
-					# Open stream to this node
-					# self.StreamIdentity = self.Node.ConnectStream(source, source)
+					if source not in self.CameraNodes:
+						self.Node.SendRequestToNode(source, "operations", {
+							"index": 	 0x1000,
+							"subindex":	 0x1,
+							"direction": 0x1,
+							"data": { }
+						})
+						# Open stream to this node
+						# self.StreamIdentity = self.Node.ConnectStream(source, source)
+						self.CameraNodes[source] = {
+							"uuid": 			source,
+							"stream_id": 		0,
+							"register_events": 	0,
+							"status":			"INIT",
+							"ts":				time.time()
+						}
+						# self.Node.RegisterOnNodeChangeEvent(source)
+					else:
+						pass
 				if 0x1 == subindex:
 					# INFO
 					self.Node.LogMSG("({classname})# [OperationsHandler] INFO {0}".format(data, classname=self.ClassName),5)
 					cameras = None
 					if "cameras" in data:
-						cameras = data["cameras"]
+						cameras 	= data["cameras"]
 						for camera in cameras:
 							self.Node.LogMSG("({classname})# [OperationsHandler] INFO {0}".format(camera, classname=self.ClassName),5)
 							status, idx = self.CameraExistInDB(camera["uid"])
@@ -132,13 +148,20 @@ class Context():
 									"name": "Camera_" + camera["uid"],
 									"face_detect_enabled": 0,
 									"security_enabled": 0,
-									"motion_detection_enabled": 0
+									"motion_detection_enabled": 0,
+									"uuid": source
 								})
 							else:
 								# Update camera DB
 								if idx is not None:
 									self.UpdateCamerDBCacheByIndex(idx, camera)
 						self.SaveCameraDBToFile()
+						if self.CameraNodes[source]["status"] in "INIT":
+							# Connect node using regualar MKS TCP connection
+							conn_info = data["local_connection"]
+							self.Node.LogMSG("({classname})# Connecting to {0}".format(conn_info["ip"], classname=self.ClassName),5)
+							self.Node.ConnectNode(conn_info["ip"], conn_info["port"])
+							self.CameraNodes[source]["status"] = "PREOP"
 				elif 0x11 == subindex:
 					# GETFRAME
 					pass
@@ -398,6 +421,9 @@ class Context():
 					}
 				})
 				return
+	
+	def OnGenericEventHandler(self, event, data):
+		pass
 
 Node = MkSSlaveNode.SlaveNode()
 THIS = Context(Node)
@@ -415,6 +441,7 @@ def main():
 	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
+	THIS.Node.OnGenericEvent 						= THIS.OnGenericEventHandler
 	# Stream sockets events
 	THIS.Node.OnStreamSocketCreatedEvent 			= THIS.OnStreamSocketCreatedHandler
 	THIS.Node.OnStreamSocketDataEvent 				= THIS.OnStreamSocketDataHandler

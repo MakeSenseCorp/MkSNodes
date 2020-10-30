@@ -61,9 +61,9 @@ class Context():
 
 	def UndefindHandler(self, packet):
 		self.Node.LogMSG("UndefindHandler",5)
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'error': 'none'
-		})
+		}
 	
 	def Request_GetGitPackagesHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_GetGitPackagesHandler]".format(classname=self.ClassName),5)
@@ -89,10 +89,10 @@ class Context():
 								"installed": installed
 							})
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'status': 'ok',
 			'packages': packages
-		})
+		}
 	
 	def Request_UploadFileHandler(self, sock, packet):
 		self.UploadLocker.acquire()
@@ -105,11 +105,11 @@ class Context():
 			self.Uploader.UpdateUploader(payload["upload"])
 		
 		self.UploadLocker.release()
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'status': 'accept',
 			'chunk': payload["upload"]["chunk"],
 			'file': payload["upload"]["file"]
-		})
+		}
 	
 	def Request_InstallHandler(self, sock, packet):
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
@@ -132,10 +132,10 @@ class Context():
 				}
 			})
 		
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'status': 'accepted',
 			'file': payload["install"]["file"]
-		})
+		}
 	
 	def Request_UninstallHandler(self, sock, packet):
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
@@ -148,10 +148,10 @@ class Context():
 			}
 		})
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'status': 'accepted',
 			'uuid': payload["uninstall"]["uuid"]
-		})
+		}
 
 	def Request_RebootHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_RebootHandler]".format(classname=self.ClassName),5)
@@ -166,9 +166,9 @@ class Context():
 				THIS.Node.SocketServer.Send(node.Socket, local_packet)
 				# Return message to requestor
 				payload = { 'status': 'OK' }
-				return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+				return payload
 		payload = { 'status': 'FAILD' }
-		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def Request_ShutdownHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_ShutdownHandler]".format(classname=self.ClassName),5)
@@ -190,9 +190,9 @@ class Context():
 		if ('online_devices' in payload["event"]):
 			self.NetworkDevicesList = payload["online_devices"]
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, {
+		return {
 			'error': 'none'
-		})
+		}
 	
 	'''
 	TODO - I think this is not being used.
@@ -219,7 +219,7 @@ class Context():
 				'connections': conns
 			}
 
-			return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+			return payload
 
 	def Request_GetInstalledNodesListRequestHandler(self, sock, packet):
 		if self.InstalledNodesDB is None:
@@ -230,7 +230,7 @@ class Context():
 			'installed_nodes': installed,
 		}
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def Request_SetInstalledNodeInfoRequestHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_SetInstalledNodeInfoRequestHandler] {0}".format(packet,classname=self.ClassName),5)
@@ -249,7 +249,7 @@ class Context():
 		self.File.SaveJSON(os.path.join(self.Node.MKSPath,"nodes.json"), self.InstalledNodesDB)
 		
 		payload = { 'error': 'ok' }
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def Request_GetMasterPublicInfoHandler(self, sock, packet):
 		# Read
@@ -351,7 +351,7 @@ class Context():
 			'network_devices': self.NetworkDevicesList
 		}
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def Request_GetServicesInfoHandler(self, sock, packet):
 		if self.ServicesDB is None:
@@ -362,7 +362,7 @@ class Context():
 			'on_boot_services': installed,
 		}
 
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 	
 	def Request_SetServiceInfoHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_SetServiceInfoHandler] {0}".format(packet,classname=self.ClassName),5)
@@ -424,16 +424,16 @@ class Context():
 						THIS.Node.SocketServer.Send(node.Socket, local_packet)
 		
 		payload = { 'error': 'ok' }
-		return THIS.Node.Network.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 		
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
 		
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
-			'error': '-1'
-		})
+		return {
+			'error': 'cmd_no_support'
+		}
 
 	def OnApplicationCommandResponseHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)

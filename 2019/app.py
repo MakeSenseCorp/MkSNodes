@@ -172,7 +172,12 @@ class Context():
 								"status": camera["status"]
 							})
 						data = {
-							'cameras': cameras
+							'cameras': cameras,
+							'node': self.Node.NodeInfo,
+							'local_connection': {
+								'ip': 	self.Node.MyLocalIP,
+								'port': self.Node.SlaveListenerPort
+							}
 						}
 				else:
 					# Detailed camera request
