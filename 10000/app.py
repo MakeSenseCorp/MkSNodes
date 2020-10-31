@@ -45,6 +45,7 @@ class Context():
 
 		self.Timer.AddTimeItem(10, self.PrintConnections)
 		self.Timer.AddTimeItem(5, self.SearchForCameras)
+		self.Timer.AddTimeItem(1, self.GetFrame)
 	
 	def SaveCameraDBToFile(self):
 		# Save new camera to database
@@ -87,7 +88,7 @@ class Context():
 			'cameras': self.DB["cameras"]
 		}
 
-		return THIS.Node.BasicProtocol.BuildResponse(packet, payload)
+		return payload
 
 	def OperationsHandler(self, sock, packet):
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
@@ -164,6 +165,7 @@ class Context():
 							self.CameraNodes[source]["status"] = "PREOP"
 				elif 0x11 == subindex:
 					# GETFRAME
+					self.Node.LogMSG("({classname})# [OperationsHandler] GETFRAME {0}".format(payload, classname=self.ClassName),5)
 					pass
 				elif 0x12 == subindex:
 					self.Node.LogMSG("({classname})# [OperationsHandler] CAMERAINFO {0}".format(payload, classname=self.ClassName),5)
@@ -235,13 +237,13 @@ class Context():
 				}
 			})
 			# Send response
-			return THIS.Node.BasicProtocol.BuildResponse(packet, {
+			return {
 				'return_code': 'ok'
-			})
+			}
 		# Send response
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
+		return {
 			'return_code': 'failed'
-		})
+		}
 
 	def UpdateCamerDB(self, uid, name, value):
 		db_camera = self.DB["cameras"]
@@ -284,6 +286,9 @@ class Context():
 
 	def OnGetNodeInfoHandler(self, info):
 		self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] [{0}, {1}, {2}]".format(info["uuid"],info["name"],info["type"],classname=self.ClassName),5)
+		if info["uuid"] in self.CameraNodes:
+			self.CameraNodes[info["uuid"]]["status"] = "OP"
+			self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] Camera Node Operational {0}".format(info["uuid"],classname=self.ClassName),5)
 	
 	def UpdateCameraStracture(self, db_camera, dev_path):
 		camera_db 		= None
@@ -369,9 +374,9 @@ class Context():
 		if command in self.RequestHandlers:
 			return self.RequestHandlers[command](sock, packet)
 		
-		return THIS.Node.BasicProtocol.BuildResponse(packet, {
-			'error': '-1'
-		})
+		return {
+			'error': 'cmd_no_support'
+		}
 
 	def OnApplicationCommandResponseHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -393,6 +398,17 @@ class Context():
 		# Search for services
 		self.Node.LogMSG("({classname})# [SearchForCameras] ".format(classname=self.ClassName),5)
 		self.Node.SearchNodes(0x1000)
+	
+	def GetFrame(self):
+		for uuid in self.CameraNodes:
+			camera_node = self.CameraNodes[uuid]
+			if camera_node["status"] in "OP":
+				self.Node.SendRequestToNode(uuid, "operations", {
+					"index": 	 0x1000,
+					"subindex":	 0x11,
+					"direction": 0x1,
+					"data": { }
+				})
 	
 	def WorkingHandler(self):
 		self.Timer.Tick()

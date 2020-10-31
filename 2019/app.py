@@ -191,7 +191,10 @@ class Context():
 					if camera is not None:
 						if 0x11 == subindex:
 							# GETFRAME
-							pass
+							self.Node.LogMSG("({classname})# [OperationsHandler] subindex GETFRAME".format(classname=self.ClassName),5)
+							data = {
+								"frame": "frame"
+							}
 						elif 0x12 == subindex:
 							# CAMERAINFO
 							pass
