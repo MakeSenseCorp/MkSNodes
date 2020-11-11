@@ -131,50 +131,48 @@
 			// Self-genrated area
 			Node.prototype.OnChangeEvent = function(packet) {
 				console.log("OnNodeChangeEvent", packet.data.payload);
-				if (0x1000 == packet.data.payload.index) {
-					data = packet.data.payload.data;
-					switch(packet.data.payload.subindex) {
-						// User Code #1 - Start
-						case 0x20: {
-							console.log(data.meta);
-							// Set frame
-							var imgObj = document.getElementById("id_frame_" + data.meta.uid);
-							if (imgObj !== null) {
-								/*
-								idx = node.Cameras.GetNextFrameIndex()
-								this.Cameras.Frames[idx] = new Image()
-								this.Cameras.Frames[1 - idx] = null;
-								this.Cameras.Frames[idx].src = "data:image/jpg;base64," + data.frame;
-								*/
-								imgObj.src = "data:image/jpg;base64," + data.frame;
-								// Set FPS
-								document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
-								// Set sensetivity slider
-								$('#id_sensetivity').slider('setValue', data.meta.sensetivity);
-								document.getElementById("id_sensetivity_value").innerHTML = data.meta.sensetivity;
-								// Set FPS slider
-								$('#id_fps').slider('setValue', Math.round(data.meta.user_fps));
-								document.getElementById("id_fps_value").innerHTML = Math.round(data.meta.user_fps);
-							}
+				data = packet.data.payload.data;
+				switch(packet.data.payload.event) {
+					// User Code #1 - Start
+					case "on_frame_change": {
+						console.log(data.meta);
+						// Set frame
+						var imgObj = document.getElementById("id_frame_" + data.meta.uid);
+						if (imgObj !== null) {
+							/*
+							idx = node.Cameras.GetNextFrameIndex()
+							this.Cameras.Frames[idx] = new Image()
+							this.Cameras.Frames[1 - idx] = null;
+							this.Cameras.Frames[idx].src = "data:image/jpg;base64," + data.frame;
+							*/
+							imgObj.src = "data:image/jpg;base64," + data.frame;
+							// Set FPS
+							document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
+							// Set sensetivity slider
+							$('#id_sensetivity').slider('setValue', data.meta.sensetivity);
+							document.getElementById("id_sensetivity_value").innerHTML = data.meta.sensetivity;
+							// Set FPS slider
+							$('#id_fps').slider('setValue', Math.round(data.meta.user_fps));
+							document.getElementById("id_fps_value").innerHTML = Math.round(data.meta.user_fps);
 						}
-						break;	
-						case 0x21:
-							console.log("on_camera_connected", data);
-							node.Cameras.Append(data.camera);
-						break;
-						case 0x22:
-							console.log("on_camera_disconnected", data);
-							node.Cameras.Update(data.camera);
-							node.Cameras.Modal.Hide();
-						break;
-						case 0x23:
-							console.log("on_camera_connected", data);
-							node.Cameras.Remove(data.uid);
-							node.Cameras.Modal.Hide();			
-						// User Code #1 - End
-						default:
-						break;
 					}
+					break;	
+					case "on_camera_connected":
+						console.log("on_camera_connected", data);
+						node.Cameras.Append(data.camera);
+					break;
+					case "on_camera_disconnected":
+						console.log("on_camera_disconnected", data);
+						node.Cameras.Update(data.camera);
+						node.Cameras.Modal.Hide();
+					break;
+					case "on_camera_delete":
+						console.log("on_camera_delete", data);
+						node.Cameras.Remove(data.uid);
+						node.Cameras.Modal.Hide();			
+					// User Code #1 - End
+					default:
+					break;
 				}
 			}
 			// Self-genrated area

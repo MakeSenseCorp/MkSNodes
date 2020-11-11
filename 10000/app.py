@@ -44,8 +44,8 @@ class Context():
 		self.CameraNodes 				= {}
 
 		self.Timer.AddTimeItem(10, self.PrintConnections)
-		self.Timer.AddTimeItem(5, self.SearchForCameras)
-		self.Timer.AddTimeItem(1, self.GetFrame)
+		self.Timer.AddTimeItem(10, self.SearchForCameras)
+		# self.Timer.AddTimeItem(1,  self.GetFrame)
 	
 	def SaveCameraDBToFile(self):
 		# Save new camera to database
@@ -107,6 +107,7 @@ class Context():
 				subindex  	= payload["subindex"]
 				direction 	= payload["direction"]
 				data 		= payload["data"]
+				self.Node.LogMSG("({classname})# [OperationsHandler] {0}".format(subindex,classname=self.ClassName),5)
 				if 0x0 == subindex:
 					self.Node.LogMSG("({classname})# [OperationsHandler] PING subindex {0}".format(source,classname=self.ClassName),5)
 					# PING
@@ -126,17 +127,17 @@ class Context():
 							"status":			"INIT",
 							"ts":				time.time()
 						}
-						# self.Node.RegisterOnNodeChangeEvent(source)
+						self.Node.RegisterOnNodeChangeEvent(source)
 					else:
 						pass
 				if 0x1 == subindex:
 					# INFO
-					self.Node.LogMSG("({classname})# [OperationsHandler] INFO {0}".format(data, classname=self.ClassName),5)
+					self.Node.LogMSG("({classname})# [OperationsHandler] INFO".format(classname=self.ClassName),5)
 					cameras = None
 					if "cameras" in data:
 						cameras 	= data["cameras"]
 						for camera in cameras:
-							self.Node.LogMSG("({classname})# [OperationsHandler] INFO {0}".format(camera, classname=self.ClassName),5)
+							# self.Node.LogMSG("({classname})# [OperationsHandler] INFO {0}".format(camera, classname=self.ClassName),5)
 							status, idx = self.CameraExistInDB(camera["uid"])
 							if status is False:
 								# Append camera to DB
@@ -183,7 +184,7 @@ class Context():
 					else:
 						# GET
 						pass
-				if 0x14 == subindex:
+				elif 0x14 == subindex:
 					# SENSETIVITY
 					if direction:
 						# SET
@@ -191,7 +192,7 @@ class Context():
 					else:
 						# GET
 						pass
-				if 0x15 == subindex:
+				elif 0x15 == subindex:
 					# RESOLUTION
 					if direction:
 						# SET
@@ -199,13 +200,45 @@ class Context():
 					else:
 						# GET
 						pass
-				if 0x16 == subindex:
+				elif 0x16 == subindex:
 					# QUALITY
 					if direction:
 						# SET
 						pass
 					else:
 						# GET
+						pass
+				elif 0x100 == subindex:
+					# EVENT
+					self.Node.LogMSG("({classname})# [OperationsHandler] EVENT {0}".format(data["event"], classname=self.ClassName),5)
+					# Emit to registered UIs
+					THIS.Node.EmitOnNodeChange(data)
+					
+					if data["event"] in "on_camera_connected":
+						camera = data["data"]["camera"]
+						status, idx = self.CameraExistInDB(camera["uid"])
+						if status is False:
+							pass
+						else:
+							# Update camera DB
+							if idx is not None:
+								self.UpdateCamerDBCacheByIndex(idx, camera)
+						self.SaveCameraDBToFile()
+					elif data["event"] in "on_camera_disconnected":
+						camera = data["data"]["camera"]
+						status, idx = self.CameraExistInDB(camera["uid"])
+						if status is False:
+							pass
+						else:
+							# Update camera DB
+							if idx is not None:
+								self.UpdateCamerDBCacheByIndex(idx, camera)
+						self.SaveCameraDBToFile()
+					elif data["event"] in "on_camera_delete":
+						status, idx = self.CameraExistInDB(camera["uid"])
+					elif data["event"] in "on_frame_change":
+						pass
+					else:
 						pass
 				else:
 					pass
@@ -366,7 +399,7 @@ class Context():
 		if db_str != "":
 			self.DB = json.loads(db_str)
 
-		self.Node.SearchNodes(0x1000)
+		self.SearchForCameras()
 		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName),5)
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):

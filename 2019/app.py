@@ -140,9 +140,7 @@ class Context():
 		}
 	
 	def OperationsHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# [OperationsHandler]".format(classname=self.ClassName),5)
 		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
-
 		self.Node.LogMSG("({classname})# [OperationsHandler] {0}".format(payload,classname=self.ClassName),5)
 
 		if "index" in payload and "subindex" in payload:
@@ -209,7 +207,7 @@ class Context():
 							else:
 								# GET
 								pass
-						if 0x14 == subindex:
+						elif 0x14 == subindex:
 							# SENSETIVITY
 							if direction:
 								# SET
@@ -218,7 +216,7 @@ class Context():
 							else:
 								# GET
 								pass
-						if 0x15 == subindex:
+						elif 0x15 == subindex:
 							# RESOLUTION
 							if direction:
 								# SET
@@ -226,7 +224,7 @@ class Context():
 							else:
 								# GET
 								pass
-						if 0x16 == subindex:
+						elif 0x16 == subindex:
 							# QUALITY
 							if direction:
 								# SET
@@ -276,9 +274,13 @@ class Context():
 			objFile.SaveJSON("db.json", self.DB)
 			# Emit to registered UIs
 			THIS.Node.EmitOnNodeChange({
-				'index': 		0x1000,
-				'subindex': 	0x23,
-				'direction':	0x1,
+				'event': 'on_camera_delete',
+				'data': {
+					'uid': uid
+				}
+			})
+			self.Node.EmitOnNodeChangeByIndex(0x1000, {
+				'event': 'on_camera_delete',
 				'data': {
 					'uid': uid
 				}
@@ -399,9 +401,13 @@ class Context():
 			
 		self.Node.LogMSG("({classname})# Emit camera_connected {dev}".format(dev=camera_db["dev"],classname=self.ClassName),5)
 		THIS.Node.EmitOnNodeChange({
-			'index': 		0x1000,
-			'subindex': 	0x21,
-			'direction':	0x1,
+			'event': 'on_camera_connected',
+			'data': {
+				'camera': camera_db
+			}
+		})
+		self.Node.EmitOnNodeChangeByIndex(0x1000, {
+			'event': 'on_camera_connected',
 			'data': {
 				'camera': camera_db
 			}
@@ -487,9 +493,14 @@ class Context():
 
 	def OnFrameChangeHandler(self, meta, frame):
 		THIS.Node.EmitOnNodeChange({
-			'index': 		0x1000,
-			'subindex': 	0x20,
-			'direction':	0x1,
+			'event': 'on_frame_change',
+			'data': {
+				'meta': meta,
+				'frame': base64.encodestring(frame)
+			}
+		})
+		self.Node.EmitOnNodeChangeByIndex(0x1000, {
+			'event': 'on_frame_change',
 			'data': {
 				'meta': meta,
 				'frame': base64.encodestring(frame)
@@ -512,9 +523,13 @@ class Context():
 			if uid == camera["uid"]:
 				# Emit to UI
 				THIS.Node.EmitOnNodeChange({
-					'index': 		0x1000,
-					'subindex': 	0x22,
-					'direction':	0x1,
+					'event': 'on_camera_disconnected',
+					'data': {
+						'camera': camera
+					}
+				})
+				self.Node.EmitOnNodeChangeByIndex(0x1000, {
+					'event': 'on_camera_disconnected',
 					'data': {
 						'camera': camera
 					}

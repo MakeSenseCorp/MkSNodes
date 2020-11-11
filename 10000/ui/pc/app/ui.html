@@ -152,21 +152,9 @@
 						// Set frame
 						var imgObj = document.getElementById("id_frame_" + data.meta.uid);
 						if (imgObj !== null) {
-							/*
-							idx = node.Cameras.GetNextFrameIndex()
-							this.Cameras.Frames[idx] = new Image()
-							this.Cameras.Frames[1 - idx] = null;
-							this.Cameras.Frames[idx].src = "data:image/jpg;base64," + data.frame;
-							*/
 							imgObj.src = "data:image/jpg;base64," + data.frame;
 							// Set FPS
 							document.getElementById("id_camera_fps").innerHTML = data.meta.fps;
-							// Set sensetivity slider
-							$('#id_sensetivity').slider('setValue', data.meta.sensetivity);
-							document.getElementById("id_sensetivity_value").innerHTML = data.meta.sensetivity;
-							// Set FPS slider
-							$('#id_fps').slider('setValue', Math.round(data.meta.user_fps));
-							document.getElementById("id_fps_value").innerHTML = Math.round(data.meta.user_fps);
 						}
 					}
 					break;				
@@ -271,24 +259,6 @@
 										<span class="text-muted">FPS</span>
 										<span class="text-muted" id="id_camera_fps">0 fps</span>
 									</h7>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-6">
-							<div class="card">
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Sensetivity</span>
-										<span class="badge badge-secondary badge-pill" id="id_sensetivity_value">0</span>
-									</h6>
-									<input style="width: 100%" type="text" data-slider-min="70" data-slider-max="100" data-slider-step="1" id="id_sensetivity">
-								</div>
-								<div class="card-body">
-									<h6 class="d-flex justify-content-between align-items-center mb-3">
-										<span class="text-muted">Frame Per Second</span>
-										<span class="badge badge-secondary badge-pill" id="id_fps_value">0</span>
-									</h6>
-									<input style="width: 100%" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" id="id_fps">
 								</div>
 							</div>
 						</div>
@@ -403,40 +373,6 @@
 				this.Modal.Show();
 
 				if (this.Cameras[data.uid].status == "Connected") {
-					// Init sensitivity slider
-					$('#id_sensetivity').slider({
-						value : 0,
-						formatter: function(value) {
-							return 'Current value: ' + value;
-						}
-					});
-					$('#id_sensetivity').slider().on('slide', function(ev) {
-						document.getElementById("id_sensetivity_value").innerHTML = ev.value;
-						node.API.SendCustomCommand(NodeUUID, "options", {
-							option: "set_sensetivity",
-							uid: data.uid,
-							value: ev.value
-						}, function(res) {
-							console.log(res.data.payload)
-						});
-					});
-					// Init fps slider
-					$('#id_fps').slider({
-						value : 0,
-						formatter: function(value) {
-							return 'Current value: ' + value;
-						}
-					});
-					$('#id_fps').slider().on('slide', function(ev) {
-						document.getElementById("id_fps_value").innerHTML = ev.value;
-						node.API.SendCustomCommand(NodeUUID, "options", {
-							option: "set_fps",
-							uid: data.uid,
-							value: ev.value
-						}, function(res) {
-							console.log(res.data.payload)
-						});
-					})
 				}
 			}
 			// User Code #1 - End
