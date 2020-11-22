@@ -66,6 +66,7 @@ class Context():
 		self.DB["cameras"] = db_cameras
 	
 	def UpdateCamerDBCacheByIndex(self, index, camera):
+		print ("({classname})# UpdateCamerDBCacheByIndex ... {0}".format(camera,classname=self.ClassName))
 		db_camera = self.DB["cameras"][index]
 		db_camera["sensetivity"] 	= camera["sensetivity"]
 		db_camera["fps"] 			= camera["fps"]
@@ -322,73 +323,6 @@ class Context():
 		if info["uuid"] in self.CameraNodes:
 			self.CameraNodes[info["uuid"]]["status"] = "OP"
 			self.Node.LogMSG("({classname})# [OnGetNodeInfoHandler] Camera Node Operational {0}".format(info["uuid"],classname=self.ClassName),5)
-	
-	def UpdateCameraStracture(self, db_camera, dev_path):
-		camera_db 		= None
-		camera 			= MkSUVCCamera.UVCCamera(dev_path)
-		camera_drv_name	= camera.CameraDriverName
-		camera_found 	= False
-
-		# Update camera path (if it was changed)
-		for item in db_camera:
-			# Invalid driver name
-			if camera_drv_name == "":
-				self.Node.LogMSG("({classname})# Found path is not valid camera {0}".format(camera_drv_name,classname=self.ClassName),5)
-				return
-			else:
-				# Is camera exist in DB
-				if camera_drv_name in item["driver_name"]:
-					camera_found = True
-					camera_db 	 = item
-					break
-		
-		if camera_found is True:
-			camera_db["dev"] 	= dev_path.split('/')[-1]
-			camera_db["path"] 	= dev_path
-			camera.SetHighDiff(int(camera_db["high_diff"]))
-			camera.SetSecondsPerFrame(float(camera_db["seconds_between_frame"]))
-			camera.SetSensetivity(int(camera_db["sensetivity"]))
-			camera.SetFPS(int(camera_db["user_fps"]))
-		else:
-			self.Node.LogMSG("({classname})# New camera... Adding to the database... {0}".format(camera_drv_name,classname=self.ClassName),5)
-			camera_db = {
-				"status": "Disconnected", 
-				"enable": 1, 
-				"uid": camera.UID, 
-				"fps": 1, 
-				"name": 'Camera_' + camera.UID,
-				"face_detect_enabled": 0,
-				"security_enabled": 0,
-				"motion_detection_enabled": 0
-			}
-			# Append new camera.
-			db_camera.append(camera_db)
-			camera.SetSensetivity(95)
-			camera.SetHighDiff(5000)
-			camera.SetSecondsPerFrame(1)
-			# Add camera to camera obejct DB
-			self.ObjCameras.append(camera)
-			camera_db["enable"] = 1
-		
-		# Start camera thread
-		camera.OnFrameChangeCallback = self.OnFrameChangeHandler
-		camera.OnCameraFailCallback = self.OnCameraFailHandler
-		camera.Start()
-		
-		# Update camera object with values from database
-		camera.Name = camera_db["name"]
-		camera_db["enable"] = 1
-		camera_db["status"] = "Connected"
-		# Add camera to camera obejct DB
-		self.ObjCameras.append(camera)
-			
-		self.Node.LogMSG("({classname})# Emit camera_connected {dev}".format(dev=camera_db["dev"],classname=self.ClassName),5)
-		THIS.Node.EmitOnNodeChange({
-			'event': "on_camera_connected",
-			'data': {
-				'camera': camera_db
-			}
-		})
 
 	def NodeSystemLoadedHandler(self):
 		self.Node.LogMSG("({classname})# Loading system ...".format(classname=self.ClassName),5)

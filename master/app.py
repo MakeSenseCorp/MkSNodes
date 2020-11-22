@@ -8,6 +8,9 @@ import thread
 import threading
 import re
 import zipfile
+import Queue
+import subprocess
+from datetime import datetime
 
 from mksdk import MkSGlobals
 from mksdk import MkSFile
@@ -20,6 +23,142 @@ from mksdk import MkSFileUploader
 from mksdk import MkSPackageInstaller
 from mksdk import MkSScheduling
 
+from email.MIMEMultipart 	import MIMEMultipart
+from email.MIMEText 		import MIMEText
+from email.MIMEImage 		import MIMEImage
+import smtplib, ssl
+import base64
+
+class IServce():
+	def __init__(self):
+		self.WorkerRunning	= False
+		self.LocalQueue		= Queue.Queue()
+		self.Locker			= threading.Lock()
+	
+	def Start(self):
+		self.WorkerRunning = True
+		print("({classname})# Start".format(classname=self.ClassName))
+		thread.start_new_thread(self.Worker, ())
+	
+	def Stop(self):
+		self.WorkerRunning = False
+		print("({classname})# Stop".format(classname=self.ClassName))
+	
+	def QueueItem(self, item):
+		print("({classname})# QueueItem {0}".format(self.WorkerRunning,classname=self.ClassName))
+		if self.WorkerRunning is True:
+			print("({classname})# QueueItem".format(classname=self.ClassName))
+			self.Locker.acquire()
+			try:
+				self.LocalQueue.put(item)
+			except Exception as e:
+				print("({classname})# ERROR [QueueItem] {error}".format(classname=self.ClassName,error=str(e)))
+			self.Locker.release()
+			return True
+		return False
+
+class SMSService(IServce):
+	def __init__(self):
+		IServce.__init__(self)
+		self.ClassName	= "SMS Service"
+	
+	def Worker(self):
+		while(self.WorkerRunning):
+			try:
+				item = self.LocalQueue.get(block=True,timeout=None)
+			except Exception as e:
+				print("({classname})# ERROR - [Worker] {error}".format(classname=self.ClassName,error=str(e)))
+		print("({classname})# Exit".format(classname=self.ClassName))
+
+class IPScannerService(IServce):
+	def __init__(self):
+		IServce.__init__(self)
+		self.ClassName		= "IPScanner Service"
+		self.Networks		= []
+		self.OnlineDevices	= {}
+		self.Utilities 		= MkSUtils.Utils()
+		self.ScannerLock	= threading.Lock()
+	
+	def SearchNetworks(self):
+		print("({classname})# Searching for networks ...".format(classname=self.ClassName))
+		items = self.Utilities.GetSystemIPs()
+		for item in items:
+			if ("127.0.0" not in item[0] and "" != item[0]):
+				net = ".".join(item[0].split('.')[0:-1]) + '.'
+				if net not in self.Networks:
+					self.Networks.append(net)
+		
+		for network in self.Networks:
+			thread.start_new_thread(self.PingDevicesThread, (network, range(1,50), 1,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(50,100), 2,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(100,150), 3,))
+			thread.start_new_thread(self.PingDevicesThread, (network, range(150,200), 4,))
+
+	def PingDevicesThread(self, network, ip_range, index):
+		while (self.WorkerRunning is True):
+			for client in ip_range:
+				if (self.WorkerRunning is False):
+					print("({classname})# Exit this thread {0}".format(index,classname=self.ClassName))
+					return
+				ip = network + str(client)
+				res = MkSUtils.Ping(ip)
+				self.ScannerLock.acquire()
+				if (res is True):
+					self.OnlineDevices[ip] = {
+						'ip':		ip, 
+						'datetime':	datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+						'ts':		time.time()
+					}
+				self.ScannerLock.release()
+				time.sleep(0.5)
+	
+	def Worker(self):
+		self.SearchNetworks()
+		while(self.WorkerRunning):
+			try:
+				time.sleep(1)
+			except Exception as e:
+				print("({classname})# ERROR - [Worker] {error}".format(classname=self.ClassName,error=str(e)))
+		print("({classname})# Exit".format(classname=self.ClassName))
+
+class EMailService(IServce):
+	def __init__(self):
+		IServce.__init__(self)
+		self.ClassName		= "EMAil Service"
+		self.GmailUser 		= "yegeniy.kiveisha.mks@gmail.com"
+		self.GmailPassword 	= "makesense100$"
+		self.SMTPServer		= "smtp.gmail.com:587"
+	
+	def SendEmail(self, item):
+		try:
+			to 		= item["to"]
+			subject = item["subject"]
+			body 	= item["body"]
+			context = ssl.create_default_context()
+			message = 'Subject: {}\n\n{}'.format(subject, body)
+
+			server = smtplib.SMTP(self.SMTPServer)
+			server.ehlo()
+			server.starttls()
+			server.login(self.GmailUser, self.GmailPassword)
+			server.sendmail(self.GmailUser, to, message)
+			server.close()
+
+			print("({classname})# Mail was sent.".format(classname=self.ClassName))
+		except Exception as e:
+			self.Node.LogException("[Request_SendEmailHtmlHandler]",e,3)
+	
+	def Worker(self):
+		print("({classname})# Worker {0}".format(self.WorkerRunning,classname=self.ClassName))
+		while(self.WorkerRunning):
+			try:
+				item = self.LocalQueue.get(block=True,timeout=None)
+				print("({classname})# Send mail request".format(classname=self.ClassName))
+				self.SendEmail(item)
+			except Exception as e:
+				print("({classname})# ERROR - [Worker] {0} {error}".format(item,classname=self.ClassName,error=str(e)))
+		print("({classname})# Exit".format(classname=self.ClassName))
+
 class Context():
 	def __init__(self, node):
 		self.ClassName 						= "Master Application"
@@ -29,6 +168,11 @@ class Context():
 		self.Uploader 						= None
 		self.Node							= node
 		self.SystemLoaded					= False
+		self.Services 						= {
+			'email':						EMailService(),
+			'sms':							SMSService(),
+			'ipscanner':					IPScannerService()
+		}
 		self.RequestHandlers				= {
 			'on_node_change':				self.Request_OnNodeChangeHandler,
 			'get_connections_list':			self.Request_GetConnectionsListRequestHandler,
@@ -43,6 +187,7 @@ class Context():
 			'uninstall':					self.Request_UninstallHandler,
 			'upload_file':					self.Request_UploadFileHandler,
 			'get_git_packages':				self.Request_GetGitPackagesHandler,
+			'service':						self.Request_ServiceHandler,
 			'undefined':					self.UndefindHandler
 		}
 		self.ResponseHandlers				= {
@@ -52,7 +197,6 @@ class Context():
 		self.ServicesDB 					= None
 		self.RunningServices				= []
 		self.RunningNodes					= []
-		self.NetworkDevicesList 			= []
 		self.Node.DebugMode 				= True
 		self.Shutdown 						= False
 		self.UploadLocker					= threading.Lock()
@@ -63,6 +207,19 @@ class Context():
 		self.Node.LogMSG("UndefindHandler",5)
 		return {
 			'error': 'none'
+		}
+	
+	def Request_ServiceHandler(self, sock, packet):
+		self.Node.LogMSG("({classname})# [Request_ServiceHandler]".format(classname=self.ClassName),5)
+		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
+		service = payload["service"]
+		data 	= payload["data"]
+		if self.Services[service].QueueItem(data) is False:
+			return {
+				'status': 'error'
+			}
+		return {
+			'status': 'ok'
 		}
 	
 	def Request_GetGitPackagesHandler(self, sock, packet):
@@ -185,10 +342,6 @@ class Context():
 		self.Node.LogMSG("({classname})# Node change event recieved ...".format(classname=self.ClassName),5)
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
 		src = THIS.Node.Network.BasicProtocol.GetSourceFromJson(packet)
-
-		# if src in THIS.Node.Services[103]["uuid"]:
-		if ('online_devices' in payload["event"]):
-			self.NetworkDevicesList = payload["online_devices"]
 
 		return {
 			'error': 'none'
@@ -333,6 +486,12 @@ class Context():
 		if (self.ServicesDB is not None):
 			onBootServices = self.ServicesDB["on_boot_services"]
 
+		network_devices = []
+		for key in self.Services["ipscanner"].OnlineDevices:
+			network_devices.append(self.Services["ipscanner"].OnlineDevices[key])
+		
+		self.Node.LogMSG("({classname})# [Request_GetMasterPublicInfoHandler] {0}".format(network_devices,classname=self.ClassName),5)
+
 		payload = {
 			'cpu_usage': str(cpuUsage),
 			'cpu_temperature': str(temperature),
@@ -348,7 +507,7 @@ class Context():
 			'machine_name': str(machineName),
 			'network': network,
 			'on_boot_services': onBootServices,
-			'network_devices': self.NetworkDevicesList
+			'network_devices': network_devices
 		}
 
 		return payload
@@ -366,14 +525,15 @@ class Context():
 	
 	def Request_SetServiceInfoHandler(self, sock, packet):
 		self.Node.LogMSG("({classname})# [Request_SetServiceInfoHandler] {0}".format(packet,classname=self.ClassName),5)
+
 		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
-		uuid 	= payload["uuid"]
+		ntype 	= payload["type"]
 		enabled = payload["enabled"]
 		
 		service_found = None
 		dbOnBootServices = self.ServicesDB["on_boot_services"]
 		for item in dbOnBootServices:
-			if (item["uuid"] == uuid):
+			if (item["type"] == ntype):
 				item["enabled"] = enabled
 				service_found = item
 				break
@@ -383,45 +543,9 @@ class Context():
 			# Save new switch to database
 			self.File.SaveJSON(os.path.join(self.Node.MKSPath,"services.json"), self.ServicesDB)
 			if enabled == 0:
-				# Find service need attention
-				connections = THIS.Node.GetConnectedNodes()
-				service_need_attention = None
-				for key in connections:
-					node = connections[key]
-					if node.Obj["type"] == service_found["type"]:
-						service_need_attention = {
-							"uuid": node.Obj["uuid"],
-							"name": node.Obj["name"],
-							"type": node.Obj["type"],
-							"pid": node.Obj["pid"]
-						}
-						break
+				self.Services[ntype].Stop()
 			else:
-				service_need_attention = {
-					"uuid": item["uuid"],
-					"name": item["name"],
-					"type": item["type"],
-					"pid": 0
-				}
-			
-			if service_need_attention is not None:
-				# Find guardian instance and send message
-				connections = THIS.Node.GetConnectedNodes()
-				for key in connections:
-					node = connections[key]
-					if node.Obj["type"] == 2:
-						message = THIS.Node.BasicProtocol.BuildRequest("DIRECT", node.Obj["uuid"], THIS.Node.UUID, "services_mngr", {
-							"command": "enable",
-							"service": {
-								"enabled": enabled,
-								"uuid": service_need_attention["uuid"],
-								"name": service_need_attention["name"],
-								"type": service_need_attention["type"],
-								"pid": service_need_attention["pid"]
-							}
-						}, {})
-						local_packet  = THIS.Node.BasicProtocol.AppendMagic(message)
-						THIS.Node.SocketServer.Send(node.Socket, local_packet)
+				self.Services[ntype].Start()
 		
 		payload = { 'error': 'ok' }
 		return payload
@@ -550,6 +674,10 @@ class Context():
 			return
 		
 		self.ServicesDB = json.loads(strServicesJson)
+		for service in self.ServicesDB["on_boot_services"]:
+			if (service["enabled"] == 1):
+				self.Node.LogMSG("({classname})# Start service - {0}".format(service["name"],classname=self.ClassName),5)
+				self.Services[service["type"]].Start()
 		self.Node.LogMSG("({classname})# Node system was succesfully loaded.".format(classname=self.ClassName),5)
 
 	def PrintConnections(self):

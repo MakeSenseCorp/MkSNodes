@@ -406,6 +406,7 @@ class Context():
 				'camera': camera_db
 			}
 		})
+		camera_db["fps"] = camera_db["user_fps"]
 		self.Node.EmitOnNodeChangeByIndex(0x1000, {
 			'event': 'on_camera_connected',
 			'data': {
@@ -449,6 +450,7 @@ class Context():
 		# Save new camera to database
 		objFile.SaveJSON("db.json", self.DB)
 		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName),5)
+		self.Node.SendMail("yevgeniy.kiveisha@gmail.com", "Simple test", "Hi, JUst want to inform you about weither change!")
 	
 	def OnApplicationCommandRequestHandler(self, sock, packet):
 		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
@@ -528,6 +530,7 @@ class Context():
 						'camera': camera
 					}
 				})
+				camera["fps"] = camera["user_fps"]
 				self.Node.EmitOnNodeChangeByIndex(0x1000, {
 					'event': 'on_camera_disconnected',
 					'data': {

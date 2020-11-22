@@ -513,18 +513,17 @@
 					var data = [];
 					var checkBox = `
 						<div class="custom-control custom-switch">
-							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateServiceEnable(this, '[UUID]')" id="switch_id_[UUID]">
-							<label class="custom-control-label" for="switch_id_[UUID]"></label>
+							<input type="checkbox" class="custom-control-input" [DISABLED] [STATE] onchange="node.Machine.UpdateServiceEnable(this, '[TYPE]')" id="switch_id_[TYPE]">
+							<label class="custom-control-label" for="switch_id_[TYPE]"></label>
 						</div>
 					`;
 					document.getElementById("on_boot_services_count_id").innerHTML = on_boot_services.length;
 					on_boot_services.forEach(function(element) {
 						row = []
 						row.push(element.name);
-						row.push(element.uuid);
 						html = checkBox;
 						html = html.split("[DISABLED]").join("");
-						html = html.split("[UUID]").join(element.uuid);
+						html = html.split("[TYPE]").join(element.type);
 						if (element.enabled == 1) {
 							html = html.split("[STATE]").join("checked");
 						} else {
@@ -535,21 +534,21 @@
 					});
 
 					table = new MksBasicTable();
-					table.SetSchema(["#","Name","UUID","Activate"]);
+					table.SetSchema(["#","Name","Activate"]);
 					table.SetData(data);
 					table.Build(document.getElementById("on_boot_services_list_id"));
 				});
 			}
 
-			PC.prototype.UpdateServiceEnable = function(elem, uuid) {
+			PC.prototype.UpdateServiceEnable = function(elem, type) {
 				if (elem.checked) {
 					this.API.SendCustomCommand(NodeUUID, "set_service_info", {
-						uuid: uuid,
+						type: type,
 						enabled: 1
 					}, function(res) { });
 				} else {
 					this.API.SendCustomCommand(NodeUUID, "set_service_info", {
-						uuid: uuid,
+						type: type,
 						enabled: 0
 					}, function(res) { });
 				}
