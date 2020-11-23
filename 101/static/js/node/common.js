@@ -1,1 +1,0 @@
-var GlobalIpAddress = "10.0.0.10:8080";
