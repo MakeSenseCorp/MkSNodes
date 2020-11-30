@@ -34,6 +34,8 @@ class IServce():
 		self.WorkerRunning	= False
 		self.LocalQueue		= Queue.Queue()
 		self.Locker			= threading.Lock()
+		self.OnEvent 		= None
+		self.EventLocker	= threading.Lock()
 	
 	def Start(self):
 		self.WorkerRunning = True
@@ -109,14 +111,34 @@ class IPScannerService(IServce):
 						'datetime':	datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
 						'ts':		time.time()
 					}
+					self.EventLocker.acquire()
+					if self.OnEvent is not None:
+						self.OnEvent("new_ip", ip)
+					self.EventLocker.release()
+
 				self.ScannerLock.release()
 				time.sleep(0.5)
 	
 	def Worker(self):
 		self.SearchNetworks()
+		delete_item = None
 		while(self.WorkerRunning):
 			try:
-				time.sleep(1)
+				for ip in self.OnlineDevices:
+					if (MkSUtils.Ping(ip) is False):
+						self.EventLocker.acquire()
+						if self.OnEvent is not None:
+							self.OnEvent("remove_ip", ip)
+						self.EventLocker.release()
+						delete_item = ip
+						break
+					time.sleep(1)
+				
+				if delete_item is not None:
+					self.ScannerLock.acquire()
+					delete_item = None
+					del self.OnlineDevices[delete_item]
+					self.ScannerLock.release()
 			except Exception as e:
 				print("({classname})# ERROR - [Worker] {error}".format(classname=self.ClassName,error=str(e)))
 		print("({classname})# Exit".format(classname=self.ClassName))
@@ -124,7 +146,7 @@ class IPScannerService(IServce):
 class EMailService(IServce):
 	def __init__(self):
 		IServce.__init__(self)
-		self.ClassName		= "EMAil Service"
+		self.ClassName		= "EMail Service"
 		self.GmailUser 		= "yegeniy.kiveisha.mks@gmail.com"
 		self.GmailPassword 	= "makesense100$"
 		self.SMTPServer		= "smtp.gmail.com:587"
@@ -173,7 +195,7 @@ class Context():
 			'sms':							SMSService(),
 			'ipscanner':					IPScannerService()
 		}
-		self.RequestHandlers				= {
+		self.Node.ApplicationRequestHandlers	= {
 			'on_node_change':				self.Request_OnNodeChangeHandler,
 			'get_connections_list':			self.Request_GetConnectionsListRequestHandler,
 			'get_master_public_info':		self.Request_GetMasterPublicInfoHandler,
@@ -190,8 +212,7 @@ class Context():
 			'service':						self.Request_ServiceHandler,
 			'undefined':					self.UndefindHandler
 		}
-		self.ResponseHandlers				= {
-			'get_online_devices':			self.Response_GetOnlineDevicesHandler,
+		self.Node.ApplicationResponseHandlers	= {
 		}
 		self.InstalledNodesDB				= None
 		self.ServicesDB 					= None
@@ -234,17 +255,20 @@ class Context():
 			if (configFileStr is not None and len(configFileStr) > 0):
 				configFile = json.loads(configFileStr)
 				if ("info" in configFile["node"]):
-					installed = 0
-					if configFile["node"]["info"]["type"] not in [1,2]:
-						if configFile["node"]["info"]["is_service"] == "False":
-							for node in nodes:
-								if configFile["node"]["info"]["uuid"] == node["uuid"]:
-									installed = 1
-							packages.append({
-								"type": configFile["node"]["info"]["type"],
-								"uuid": configFile["node"]["info"]["uuid"],
-								"installed": installed
-							})
+					try:
+						installed = 0
+						if configFile["node"]["info"]["type"] not in [1,2]:
+							if configFile["node"]["info"]["is_service"] == "False":
+								for node in nodes:
+									if configFile["node"]["info"]["uuid"] == node["uuid"]:
+										installed = 1
+								packages.append({
+									"type": configFile["node"]["info"]["type"],
+									"uuid": configFile["node"]["info"]["uuid"],
+									"installed": installed
+								})
+					except Exception as e:
+						pass
 
 		return {
 			'status': 'ok',
@@ -346,15 +370,7 @@ class Context():
 		return {
 			'error': 'none'
 		}
-	
-	'''
-	TODO - I think this is not being used.
-	'''
-	def Response_GetOnlineDevicesHandler(self, sock, packet):
-		self.Node.LogMSG("({classname})# Online network device list ...".format(classname=self.ClassName),5)
-		payload = THIS.Node.Network.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG(payload,5)
-	
+
 	def Request_GetConnectionsListRequestHandler(self, sock, packet):
 		if THIS.Node.Network.GetNetworkState() is "CONN":
 			conns = []
@@ -549,20 +565,6 @@ class Context():
 		
 		payload = { 'error': 'ok' }
 		return payload
-		
-	def OnApplicationCommandRequestHandler(self, sock, packet):
-		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
-		if command in self.RequestHandlers:
-			return self.RequestHandlers[command](sock, packet)
-		
-		return {
-			'error': 'cmd_no_support'
-		}
-
-	def OnApplicationCommandResponseHandler(self, sock, packet):
-		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
-		if command in self.ResponseHandlers:
-			self.ResponseHandlers[command](sock, packet)
 	
 	def OnTerminateConnectionHandler(self, conn):
 		self.Node.LogMSG("({classname})# [OnTerminateConnectionHandler]".format(classname=self.ClassName),5)
@@ -584,9 +586,9 @@ class Context():
 
 	def WSDataArrivedHandler(self, sock, packet):
 		try:
-			#print ("(Master Appplication)# [Gateway] Data arrived.")
 			command = packet['data']['header']['command']
-			return self.RequestHandlers[command](sock, packet)
+			self.Node.LogMSG("({classname})# [WSDataArrivedHandler] {0}".format(command,classname=self.ClassName),5)
+			return self.Node.ApplicationRequestHandlers[command](sock, packet)
 		except Exception as e:
 			self.Node.LogMSG("({classname})# ERROR - Data arrived issue\n(EXEPTION)# {error}".format(
 						classname=self.ClassName,
@@ -731,8 +733,6 @@ def main():
 	THIS.Node.GatewayConnectedCallback 				= THIS.WSConnectedHandler
 	THIS.Node.OnWSConnectionClosed 					= THIS.WSConnectionClosedHandler
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
-	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnTerminateConnectionCallback			= THIS.OnTerminateConnectionHandler
 	# Stream sockets events
 	THIS.Node.OnStreamSocketCreatedEvent 			= THIS.OnStreamSocketCreatedHandler

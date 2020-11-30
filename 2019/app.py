@@ -89,15 +89,25 @@ class Context():
 		self.States = {
 		}
 		# Handlers
-		self.RequestHandlers		= {
+		self.Node.ApplicationRequestHandlers	= {
 			'get_sensor_info':			self.GetSensorInfoHandler,
-			'operations':				self.OperationsHandler,
 			'get_frame':				self.GetFrameHandler,
 			'delete_camera_from_db':	self.DeleteCameraFromDBHandler,
 			'undefined':				self.UndefindHandler
 		}
-		self.ResponseHandlers		= {
+		self.Node.ApplicationResponseHandlers	= {
 			'undefined':				self.UndefindHandler
+		}
+		self.Node.Operations[0x1000]	= {
+			0x0: 	self.OperationPing,
+			0x1: 	self.OperationInfo,
+			0x11:  	self.OperationFrame,
+			0x12:	self.OperationCameraInfo,
+			0x13:	self.OperationFPS,
+			0x14:	self.OperationSensetivity,
+			0x15:	self.OperationResolution,
+			0x16:	self.OperationQuality,
+			0x100:	self.OperationEvent
 		}
 		# Application variables
 		self.DB							= None
@@ -105,6 +115,159 @@ class Context():
 
 		self.Timer.AddTimeItem(10, self.PrintConnections)
 		self.Timer.AddTimeItem(10, self.SearchForCameras)
+	
+	def FindCamera(self, uid):
+		camera = None
+		data = payload["data"]
+		for item in self.ObjCameras:
+			if item.UID == uid:
+				camera = item
+				break
+		return camera
+	
+	def OperationPing(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		index 		= payload["index"]
+		subindex  	= payload["subindex"]
+		direction 	= payload["direction"]
+		self.Node.LogMSG("({classname})# [OperationPing] {0}".format(source,classname=self.ClassName),5)
+
+		return {
+			'return_code': 'ok'
+		}
+	
+	def OperationInfo(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		self.Node.LogMSG("({classname})# [OperationInfo] {0}".format(source,classname=self.ClassName),5)
+		cameras = []
+		for camera in self.DB["cameras"]:
+			cameras.append({
+				"uid": camera["uid"],
+				"fps": camera["user_fps"],
+				"sensetivity": camera["sensetivity"],
+				"enable": camera["enable"],
+				"status": camera["status"]
+			})
+		return {
+			'cameras': cameras,
+			'node': self.Node.NodeInfo,
+			'local_connection': {
+				'ip': 	self.Node.MyLocalIP,
+				'port': self.Node.SlaveListenerPort
+			}
+		}
+
+	def OperationFrame(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationFrame] {0}".format(source,classname=self.ClassName),5)
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationCameraInfo(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationCameraInfo] {0}".format(source,classname=self.ClassName),5)
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationFPS(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationFPS] {0}".format(source,classname=self.ClassName),5)
+			if direction:
+				# SET
+				camera.SetFPS(int(data["value"]))
+				camera.SetSecondsPerFrame(1.0 / float(data["value"]))
+				self.UpdateCamerDB(data["uid"], "user_fps", int(data["value"]))
+				self.UpdateCamerDB(data["uid"], "seconds_between_frame", 1.0 / float(data["value"]))
+			else:
+				# GET
+				pass
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationSensetivity(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationSensetivity] {0}".format(source,classname=self.ClassName),5)
+			if direction:
+				# SET
+				camera.SetSensetivity(int(data["value"]))
+				self.UpdateCamerDB(data["uid"], "sensetivity", int(data["value"]))
+			else:
+				# GET
+				pass
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationResolution(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationResolution] {0}".format(source,classname=self.ClassName),5)
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationQuality(self, sock, packet):
+		source = self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		data 		= payload["data"]
+
+		camera = self.FindCamera(data["uid"])
+		if camera is not None:
+			self.Node.LogMSG("({classname})# [OperationQuality] {0}".format(source,classname=self.ClassName),5)
+		
+		return {
+			'return_code': 'ok'
+		}
+
+	def OperationEvent(self, sock, packet):
+		source 		= self.Node.BasicProtocol.GetSourceFromJson(packet)
+		payload 	= self.Node.BasicProtocol.GetPayloadFromJson(packet)
+		direction 	= payload["direction"]
+		data 		= payload["data"]
+		self.Node.LogMSG("({classname})# [OperationEvent] {0} {1}".format(source,data["event"],classname=self.ClassName),5)
+
+		return {
+			'return_code': 'ok'
+		}
 
 	def UndefindHandler(self, sock, packet):
 		print ("UndefindHandler")
@@ -137,120 +300,6 @@ class Context():
 
 		return {
 			'return_code': 'no_frame'
-		}
-	
-	def OperationsHandler(self, sock, packet):
-		payload = THIS.Node.BasicProtocol.GetPayloadFromJson(packet)
-		self.Node.LogMSG("({classname})# [OperationsHandler] {0}".format(payload,classname=self.ClassName),5)
-
-		if "index" in payload and "subindex" in payload:
-			index 		= payload["index"]
-			subindex  	= payload["subindex"]
-			direction 	= payload["direction"]
-			data 		= {}
-			if index == 0x1000: # CAMERA
-				# Node details request
-				if subindex >= 0 and subindex <= 10:
-					if 0x0 == subindex:
-						# PING
-						self.Node.LogMSG("({classname})# [OperationsHandler] subindex PING".format(classname=self.ClassName),5)
-						data = {
-							'return_code': 'ok'
-						}
-					elif 0x1 == subindex:
-						# INFO
-						self.Node.LogMSG("({classname})# [OperationsHandler] subindex INFO".format(classname=self.ClassName),5)
-						cameras = []
-						for camera in self.DB["cameras"]:
-							cameras.append({
-								"uid": camera["uid"],
-								"fps": camera["user_fps"],
-								"sensetivity": camera["sensetivity"],
-								"enable": camera["enable"],
-								"status": camera["status"]
-							})
-						data = {
-							'cameras': cameras,
-							'node': self.Node.NodeInfo,
-							'local_connection': {
-								'ip': 	self.Node.MyLocalIP,
-								'port': self.Node.SlaveListenerPort
-							}
-						}
-				else:
-					# Detailed camera request
-					camera = None
-					data = payload["data"]
-					for item in self.ObjCameras:
-						if item.UID == data["uid"]:
-							camera = item
-							break
-
-					if camera is not None:
-						if 0x11 == subindex:
-							# GETFRAME
-							self.Node.LogMSG("({classname})# [OperationsHandler] subindex GETFRAME".format(classname=self.ClassName),5)
-							data = {
-								"frame": "frame"
-							}
-						elif 0x12 == subindex:
-							# CAMERAINFO
-							pass
-						elif 0x13 == subindex:
-							# FPS
-							if direction:
-								# SET
-								camera.SetFPS(int(data["value"]))
-								camera.SetSecondsPerFrame(1.0 / float(data["value"]))
-								self.UpdateCamerDB(data["uid"], "user_fps", int(data["value"]))
-								self.UpdateCamerDB(data["uid"], "seconds_between_frame", 1.0 / float(data["value"]))
-							else:
-								# GET
-								pass
-						elif 0x14 == subindex:
-							# SENSETIVITY
-							if direction:
-								# SET
-								camera.SetSensetivity(int(data["value"]))
-								self.UpdateCamerDB(data["uid"], "sensetivity", int(data["value"]))
-							else:
-								# GET
-								pass
-						elif 0x15 == subindex:
-							# RESOLUTION
-							if direction:
-								# SET
-								pass
-							else:
-								# GET
-								pass
-						elif 0x16 == subindex:
-							# QUALITY
-							if direction:
-								# SET
-								pass
-							else:
-								# GET
-								pass
-						else:
-							pass
-				
-				return {
-					"index": 	 index,
-					"subindex":	 subindex,
-					"direction": direction,
-					"data": data
-				}
-			return {
-				"index": 	 index,
-				"subindex":	 subindex,
-				"direction": direction,
-				"data": {
-					'return_code': 'fail'
-				}
-			}
-		return {
-			'error': 'fail'
 		}
 	
 	def DeleteCameraFromDBHandler(self, sock, packet):
@@ -452,20 +501,6 @@ class Context():
 		self.Node.LogMSG("({classname})# Loading system ... DONE.".format(classname=self.ClassName),5)
 		self.Node.SendMail("yevgeniy.kiveisha@gmail.com", "Simple test", "Hi, JUst want to inform you about weither change!")
 	
-	def OnApplicationCommandRequestHandler(self, sock, packet):
-		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
-		if command in self.RequestHandlers:
-			return self.RequestHandlers[command](sock, packet)
-		
-		return {
-			'error': 'cmd_no_support'
-		}
-
-	def OnApplicationCommandResponseHandler(self, sock, packet):
-		command = self.Node.BasicProtocol.GetCommandFromJson(packet)
-		if command in self.ResponseHandlers:
-			self.ResponseHandlers[command](sock, packet)
-	
 	def OnGetNodesListHandler(self, uuids):
 		print ("OnGetNodesListHandler", uuids)
 
@@ -551,8 +586,6 @@ def main():
 	
 	# Node callbacks
 	THIS.Node.NodeSystemLoadedCallback				= THIS.NodeSystemLoadedHandler
-	THIS.Node.OnApplicationRequestCallback			= THIS.OnApplicationCommandRequestHandler
-	THIS.Node.OnApplicationResponseCallback			= THIS.OnApplicationCommandResponseHandler
 	THIS.Node.OnGetNodesListCallback				= THIS.OnGetNodesListHandler
 	THIS.Node.OnGetNodeInfoCallback					= THIS.OnGetNodeInfoHandler
 	# Stream sockets events
@@ -569,14 +602,12 @@ if __name__ == "__main__":
 '''
 0x1000
 	0x0 	(REQUIRED) 	PING
-	0x1 	(REQUIRED) 	GETFRAME
-	0x2		(REQUIRED) 	CAMERAINFO
-	0x3		(REQUIRED) 	FPS
-	0x4		(REQUIRED) 	SENSETIVITY
-	0x5		(REQUIRED) 	RESOLUTION
-	0x6		(REQUIRED) 	QUALITY
-	0x20	(REQUIRED) 	ON_FRAME_CHANGE
-	0x21	(REQUIRED) 	ON_CAMERA_CONNECTED
-	0x22	(REQUIRED) 	ON_CAMERA_DISCONNECTED
-	0x23 	(CUSTOM) 	ON_DELTE_CAMERA_FROM_DB
+	0x1 	(REQUIRED) 	INFO
+	0x11 	(REQUIRED) 	GETFRAME
+	0x12	(REQUIRED) 	CAMERAINFO
+	0x13	(REQUIRED) 	FPS
+	0x14	(REQUIRED) 	SENSETIVITY
+	0x15	(REQUIRED) 	RESOLUTION
+	0x16	(REQUIRED) 	QUALITY
+	0x100	(REQUIRED) 	EVENT
 '''
